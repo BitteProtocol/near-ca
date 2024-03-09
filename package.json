@@ -1,0 +1,36 @@
+{
+  "name": "near-ca",
+  "module": "index.ts",
+  "type": "module",
+  "version": "0.0.0-alpha.1",
+  "main": "dist/index.js",
+  "types": "dist/index.d.ts",
+  "scripts": {
+    "build": "rm -rf ./dist && tsc"
+  },
+  "devDependencies": {
+    "@types/bn.js": "^5.1.5",
+    "@types/bun": "latest",
+    "@types/elliptic": "^6.4.18",
+    "@types/keccak": "^3.0.4",
+    "typescript": "^5.4.2"
+  },
+  "dependencies": {
+    "@ethereumjs/common": "^4.2.0",
+    "@ethereumjs/tx": "^5.2.1",
+    "@ethereumjs/util": "^9.0.2",
+    "@near-js/accounts": "^1.0.3",
+    "@near-js/crypto": "^1.2.1",
+    "@near-js/keystores": "^0.0.9",
+    "bn.js": "^5.2.1",
+    "bs58check": "^3.0.1",
+    "elliptic": "^6.5.5",
+    "ethers": "^5.7.2",
+    "hash.js": "^1.1.7",
+    "keccak": "^3.0.4",
+    "near-api-js": "^3.0.3",
+    "web3": "^4.5.0",
+    "typescript": "^5.0.0"
+
+  }
+}
