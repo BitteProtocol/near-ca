@@ -47,6 +47,24 @@ export const deriveEthAddress = async (derivationPath: string) => {
   return uncompressedHexPointToEvmAddress(publicKey);
 };
 
+async function queryGasPrice() {
+  const res = await fetch(
+    "https://sepolia.beaconcha.in/api/v1/execution/gasnow"
+  );
+  const json = await res.json();
+  // @ts-ignore
+  const maxPriorityFeePerGas = BigInt(json.data.rapid);
+
+  // Since we don't have a direct `baseFeePerGas`, we'll use a workaround.
+  // Ideally, you should fetch the current `baseFeePerGas` from the network.
+  // Here, we'll just set a buffer based on `maxPriorityFeePerGas` for demonstration purposes.
+  // This is NOT a recommended practice for production environments.
+  const buffer = BigInt(2 * 1e9); // Example buffer of 2 Gwei, assuming the API values are in WEI
+  const maxFeePerGas = maxPriorityFeePerGas + buffer;
+
+  return { maxFeePerGas, maxPriorityFeePerGas };
+}
+
 export const createPayload = async (
   sender: string,
   receiver: string,
@@ -54,18 +72,19 @@ export const createPayload = async (
   data?: string
 ) => {
   const nonce = await web3.eth.getTransactionCount(sender);
-  const feeData = await provider.getFeeData();
+  const { maxFeePerGas, maxPriorityFeePerGas } = await queryGasPrice();
 
   const transactionData = {
     nonce,
-    gasLimit: feeData.lastBaseFeePerGas?.toBigInt(),
-    maxFeePerGas: feeData.maxFeePerGas?.toBigInt(),
-    maxPriorityFeePerGas: feeData.maxPriorityFeePerGas?.toBigInt(),
+    gasLimit: 1000000,
+    maxFeePerGas: maxFeePerGas,
+    maxPriorityFeePerGas: maxPriorityFeePerGas,
     to: receiver,
     value: BigInt(web3.utils.toWei(amount, "ether")),
-    chain: config.chainId,
     data: data || "0x",
   };
+
+  console.log(transactionData);
 
   const transaction = FeeMarketEIP1559Transaction.fromTxData(transactionData, {
     common,
@@ -148,7 +167,10 @@ export const signAndSendTransaction = async (
   sender: string,
   receiver: string,
   amount: number,
-  data?: string
+  data?: string,
+  options?: {
+    path: string;
+  }
 ) => {
   const { transaction, payload } = await createPayload(
     sender,
@@ -157,7 +179,10 @@ export const signAndSendTransaction = async (
     data
   );
 
-  const { big_r, big_s } = await requestSignature(payload, "ethereum,1");
+  const { big_r, big_s } = await requestSignature(
+    payload,
+    options?.path || "ethereum,1"
+  );
 
   const signature = reconstructSignature(transaction, big_r, big_s, sender);
 
