@@ -3,7 +3,7 @@ import {
   signAndSendTransaction
 } from "../src/chains/ethereum";
 
-const run = async () => {
+const run = async (): Promise<void> => {
   const sender = await deriveEthAddress("ethereum,1");
   // TODO - encode call Data from OpenSeaSDK.
   // https://github.com/ProjectOpenSea/opensea-js/blob/main/developerDocs/advanced-use-cases.md

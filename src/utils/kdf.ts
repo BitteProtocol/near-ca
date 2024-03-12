@@ -2,43 +2,21 @@ import { base_decode } from "near-api-js/lib/utils/serialize";
 import { ec as EC } from "elliptic";
 import BN from "bn.js";
 import keccak from "keccak";
-import hash from "hash.js";
-import bs58check from "bs58check";
 
-export const najPublicKeyStrToUncompressedHexPoint = (
+export function najPublicKeyStrToUncompressedHexPoint(
   najPublicKeyStr: string
-) => {
-  return (
-    "04" +
-    Buffer.from(base_decode(najPublicKeyStr.split(":")[1])).toString("hex")
-  );
-};
+): string {
+  const decodedKey = base_decode(najPublicKeyStr.split(":")[1]);
+  return "04" + Buffer.from(decodedKey).toString("hex");
+}
 
-const sha256Hash = async (str: string) => {
-  const encoder = new TextEncoder();
-  const data = encoder.encode(str);
-
-  const hashBuffer = await crypto.subtle.digest("SHA-256", data);
-
-  const hashArray = [...new Uint8Array(hashBuffer)];
-  return hashArray.map((b) => b.toString(16).padStart(2, "0")).join("");
-};
-
-const sha256StringToScalarLittleEndian = (hashString: string) => {
-  const littleEndianString = hashString.match(/../g)!.reverse().join("");
-
-  const scalar = new BN(littleEndianString, 16);
-
-  return scalar;
-};
-
-export const deriveChildPublicKey = async (
+export async function deriveChildPublicKey(
   parentUncompressedPublicKeyHex: string,
   signerId: string,
   path = ""
-) => {
+): Promise<string> {
   const ec = new EC("secp256k1");
-  let scalar: string = await sha256Hash(
+  const scalar = await sha256Hash(
     `near-mpc-recovery v0.1.0 epsilon derivation:${signerId},${path}`
   );
 
@@ -55,21 +33,29 @@ export const deriveChildPublicKey = async (
 
   // Add the result to the old public key point
   const newPublicKeyPoint = oldPublicKeyPoint.add(scalarTimesG);
+  const newX = newPublicKeyPoint.getX().toString("hex").padStart(64, "0");
+  const newY = newPublicKeyPoint.getY().toString("hex").padStart(64, "0");
+  return "04" + newX + newY;
+}
 
-  return (
-    "04" +
-    (newPublicKeyPoint.getX().toString("hex").padStart(64, "0") +
-      newPublicKeyPoint.getY().toString("hex").padStart(64, "0"))
-  );
-};
-
-export const uncompressedHexPointToEvmAddress = (
-  uncompressedHexPoint: string
-) => {
+export function uncompressedHexPointToEvmAddress(uncompressedHexPoint: string): string {
   const address = keccak("keccak256")
     .update(Buffer.from(uncompressedHexPoint.substring(2), "hex"))
     .digest("hex");
 
   // Ethereum address is last 20 bytes of hash (40 characters), prefixed with 0x
   return "0x" + address.substring(address.length - 40);
-};
+}
+
+async function sha256Hash(str: string): Promise<string> {
+  const encoder = new TextEncoder();
+  const data = encoder.encode(str);
+  const hashBuffer = await crypto.subtle.digest("SHA-256", data);
+  const hashArray = [...new Uint8Array(hashBuffer)];
+  return hashArray.map((b) => b.toString(16).padStart(2, "0")).join("");
+}
+
+function sha256StringToScalarLittleEndian(hashString: string): BN {
+  const littleEndianString = hashString.match(/../g)!.reverse().join("");
+  return new BN(littleEndianString, 16);
+}

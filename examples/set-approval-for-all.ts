@@ -4,11 +4,11 @@ import {
 } from "../src/chains/ethereum";
 import {
   erc721Interface
-} from "../src/utils/interfaces"
+} from "../src/utils/interfaces";
 
 
 
-const run = async () => {
+const run = async (): Promise<void> => {
 
   const sender = await deriveEthAddress("ethereum,1");
   const value = 0;

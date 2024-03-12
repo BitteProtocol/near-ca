@@ -5,13 +5,14 @@ import { BN } from "bn.js";
 import { providers } from "ethers";
 import { Contract, providers as nearProviders } from "near-api-js";
 import { functionCall } from "near-api-js/lib/transaction";
-import Web3 from "web3";
+import {Web3, Bytes} from "web3";
 import {
   deriveChildPublicKey,
   najPublicKeyStrToUncompressedHexPoint,
   uncompressedHexPointToEvmAddress,
 } from "../utils/kdf";
 import { NO_DEPOSIT, getNearAccount, provider as nearProvider } from "./near";
+import { GasPriceResponse, GasPrices, TxPayload } from "../types";
 
 const config = {
   chainId: 11155111,
@@ -23,8 +24,8 @@ export const web3 = new Web3(config.providerUrl);
 export const common = new Common({ chain: config.chain });
 export const provider = new providers.JsonRpcProvider(config.providerUrl);
 
-export const deriveEthAddress = async (derivationPath: string) => {
-  const { account } = await getNearAccount();
+export const deriveEthAddress = async (derivationPath: string): Promise<string> => {
+  const account = await getNearAccount();
   const multichainContract = new Contract(
     account,
     process.env.NEAR_MULTICHAIN_CONTRACT!,
@@ -35,7 +36,6 @@ export const deriveEthAddress = async (derivationPath: string) => {
     }
   );
 
-  // @ts-ignore
   const rootPublicKey = await multichainContract.public_key();
 
   const publicKey = await deriveChildPublicKey(
@@ -47,12 +47,11 @@ export const deriveEthAddress = async (derivationPath: string) => {
   return uncompressedHexPointToEvmAddress(publicKey);
 };
 
-async function queryGasPrice() {
+async function queryGasPrice(): Promise<GasPrices> {
   const res = await fetch(
     "https://sepolia.beaconcha.in/api/v1/execution/gasnow"
   );
-  const json = await res.json();
-  // @ts-ignore
+  const json = await res.json() as GasPriceResponse;
   const maxPriorityFeePerGas = BigInt(json.data.rapid);
 
   // Since we don't have a direct `baseFeePerGas`, we'll use a workaround.
@@ -62,7 +61,7 @@ async function queryGasPrice() {
   const buffer = BigInt(2 * 1e9); // Example buffer of 2 Gwei, assuming the API values are in WEI
   const maxFeePerGas = maxPriorityFeePerGas + buffer;
   const returnData = { maxFeePerGas, maxPriorityFeePerGas };
-  console.log("Gas estimates", returnData)
+  console.log("Gas estimates", returnData);
   return { maxFeePerGas, maxPriorityFeePerGas };
 }
 
@@ -71,7 +70,7 @@ export const createPayload = async (
   receiver: string,
   amount: number,
   data?: string
-) => {
+): Promise<TxPayload> => {
   const nonce = await web3.eth.getTransactionCount(sender);
   const { maxFeePerGas, maxPriorityFeePerGas } = await queryGasPrice();
 
@@ -108,7 +107,7 @@ export const reconstructSignature = (
   big_r: string,
   big_s: string,
   sender: string
-) => {
+): FeeMarketEIP1559Transaction => {
   const r = Buffer.from(big_r.substring(2), "hex");
   const s = Buffer.from(big_s, "hex");
 
@@ -127,15 +126,15 @@ export const reconstructSignature = (
 
 export const relayTransaction = async (
   signedTransaction: FeeMarketEIP1559Transaction
-) => {
+): Promise<Bytes> => {
   const serializedTx = bytesToHex(signedTransaction.serialize());
   const relayed = await web3.eth.sendSignedTransaction(serializedTx);
   console.log("Transaction Confirmed:", relayed.transactionHash);
   return relayed.transactionHash;  
 };
 
-export const requestSignature = async (payload: number[], path: string) => {
-  const { account } = await getNearAccount();
+export const requestSignature = async (payload: number[], path: string): Promise<{big_r: string, big_s: string}> => {
+  const account = await getNearAccount();
 
   const multichainContract = new Contract(
     account,
@@ -166,7 +165,7 @@ export const requestSignature = async (payload: number[], path: string) => {
   const [big_r, big_s] = await nearProviders.getTransactionLastResult(
     transaction
   );
-
+  console.log(big_r, big_s);
   return { big_r, big_s };
 };
 
@@ -178,8 +177,8 @@ export const signAndSendTransaction = async (
   options?: {
     path: string;
   }
-) => {
-  console.log("Create Paylod for", sender);
+): Promise<void> => {
+  console.log("Creating Payload for sender:", sender);
   const { transaction, payload } = await createPayload(
     sender,
     receiver,

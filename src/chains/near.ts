@@ -1,4 +1,4 @@
-import { keyStores, KeyPair, connect, providers } from "near-api-js";
+import { keyStores, KeyPair, connect, providers, Account } from "near-api-js";
 
 export const TGAS = 1000000000000;
 export const THIRTY_TGAS = "30000000000000";
@@ -13,7 +13,7 @@ export const provider = new providers.JsonRpcProvider({
   url: nearConfig.nodeUrl,
 });
 
-export const getNearAccount = async () => {
+export const getNearAccount = async (): Promise<Account> => {
   const keyStore = new keyStores.InMemoryKeyStore();
 
   const keyPair = KeyPair.fromString(process.env.NEAR_ACCOUNT_PRIVATE_KEY!);
@@ -23,5 +23,5 @@ export const getNearAccount = async () => {
   const near = await connect({ ...nearConfig, keyStore });
   const account = await near.account(process.env.NEAR_ACCOUNT_ID!);
 
-  return { account, nearConfig };
+  return account;
 };

@@ -4,7 +4,7 @@ import {
   web3,
 } from "../src/chains/ethereum";
 
-const run = async () => {
+const run = async (): Promise<void> => {
   const ethAddress = await deriveEthAddress("ethereum,1");
   const functionSignature = web3.eth.abi.encodeFunctionCall(
     {
