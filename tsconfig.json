@@ -6,6 +6,7 @@
     "jsx": "react-jsx",
     "allowJs": true,
     "moduleResolution": "Node",
+    "resolveJsonModule": true,
 
     "declaration": true,
     "outDir": "dist",

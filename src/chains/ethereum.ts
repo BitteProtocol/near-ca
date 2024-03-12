@@ -61,7 +61,8 @@ async function queryGasPrice() {
   // This is NOT a recommended practice for production environments.
   const buffer = BigInt(2 * 1e9); // Example buffer of 2 Gwei, assuming the API values are in WEI
   const maxFeePerGas = maxPriorityFeePerGas + buffer;
-
+  const returnData = { maxFeePerGas, maxPriorityFeePerGas };
+  console.log("Gas estimates", returnData)
   return { maxFeePerGas, maxPriorityFeePerGas };
 }
 
@@ -76,24 +77,29 @@ export const createPayload = async (
 
   const transactionData = {
     nonce,
-    gasLimit: 1000000,
-    maxFeePerGas: maxFeePerGas,
-    maxPriorityFeePerGas: maxPriorityFeePerGas,
     to: receiver,
     value: BigInt(web3.utils.toWei(amount, "ether")),
     data: data || "0x",
+    maxFeePerGas,
+    maxPriorityFeePerGas,
   };
-
-  console.log(transactionData);
-
-  const transaction = FeeMarketEIP1559Transaction.fromTxData(transactionData, {
+  const estimatedGas = await provider.estimateGas({
+    ...transactionData,
+    from: sender,
+  });
+  console.log(`Using gas estimate of at ${estimatedGas} GWei`);
+  const transactionDataWithGasLimit = {
+    ...transactionData,
+    gasLimit: BigInt(estimatedGas.toString()),
+  };
+  console.log("TxData:", transactionDataWithGasLimit);
+  const transaction = FeeMarketEIP1559Transaction.fromTxData(transactionDataWithGasLimit, {
     common,
   });
 
   const payload = Array.from(
     new Uint8Array(transaction.getHashedMessageToSign().slice().reverse())
   );
-
   return { transaction, payload };
 };
 
@@ -124,7 +130,8 @@ export const relayTransaction = async (
 ) => {
   const serializedTx = bytesToHex(signedTransaction.serialize());
   const relayed = await web3.eth.sendSignedTransaction(serializedTx);
-  return relayed.transactionHash;
+  console.log("Transaction Confirmed:", relayed.transactionHash);
+  return relayed.transactionHash;  
 };
 
 export const requestSignature = async (payload: number[], path: string) => {
@@ -172,6 +179,7 @@ export const signAndSendTransaction = async (
     path: string;
   }
 ) => {
+  console.log("Create Paylod for", sender);
   const { transaction, payload } = await createPayload(
     sender,
     receiver,
@@ -185,6 +193,6 @@ export const signAndSendTransaction = async (
   );
 
   const signature = reconstructSignature(transaction, big_r, big_s, sender);
-
+  console.log("Relaying signed tx to EVM...");
   await relayTransaction(signature);
 };
