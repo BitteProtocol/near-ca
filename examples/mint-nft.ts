@@ -1,11 +1,11 @@
 import {
-  deriveEthAddress,
   signAndSendTransaction,
   web3,
 } from "../src/chains/ethereum";
+import { setupAccount } from "./setup";
 
 const run = async (): Promise<void> => {
-  const ethAddress = await deriveEthAddress("ethereum,1");
+  const sender = await setupAccount();
   const functionSignature = web3.eth.abi.encodeFunctionCall(
     {
       name: "safeMint",
@@ -21,7 +21,7 @@ const run = async (): Promise<void> => {
   );
 
   await signAndSendTransaction(
-    ethAddress,
+    sender,
     "0xAA5FcF171dDf9FE59c985A28747e650C2e9069cA",
     0,
     functionSignature
