@@ -35,9 +35,9 @@ export const deriveEthAddress = async (derivationPath: string): Promise<string> 
       useLocalViewExecution: false,
     }
   );
-
-  const rootPublicKey = await multichainContract.public_key();
-
+  
+  const rootPublicKey = await (multichainContract as any).public_key();
+  console.log("Root PK", rootPublicKey);
   const publicKey = await deriveChildPublicKey(
     najPublicKeyStrToUncompressedHexPoint(rootPublicKey),
     process.env.NEAR_ACCOUNT_ID!,

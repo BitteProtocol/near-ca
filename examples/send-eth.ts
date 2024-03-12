@@ -2,6 +2,8 @@ import {
   deriveEthAddress,
   signAndSendTransaction
 } from "../src/chains/ethereum";
+import dotenv from "dotenv";
+dotenv.config();
 
 const run = async (): Promise<void> => {
   const ethAddress = await deriveEthAddress("ethereum,1");
@@ -13,4 +15,4 @@ const run = async (): Promise<void> => {
   );
 };
 
-run();
+run().then(() => console.log("Done!"));
