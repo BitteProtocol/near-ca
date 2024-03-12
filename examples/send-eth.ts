@@ -15,4 +15,4 @@ const run = async (): Promise<void> => {
   );
 };
 
-run().then(() => console.log("Done!"));
+run();

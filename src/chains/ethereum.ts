@@ -3,7 +3,7 @@ import { FeeMarketEIP1559Transaction } from "@ethereumjs/tx";
 import { bytesToHex } from "@ethereumjs/util";
 import { BN } from "bn.js";
 import { providers } from "ethers";
-import { Contract, providers as nearProviders } from "near-api-js";
+import { providers as nearProviders } from "near-api-js";
 import { functionCall } from "near-api-js/lib/transaction";
 import {Web3, Bytes} from "web3";
 import {
@@ -13,6 +13,7 @@ import {
 } from "../utils/kdf";
 import { NO_DEPOSIT, getNearAccount, provider as nearProvider } from "./near";
 import { GasPriceResponse, GasPrices, TxPayload } from "../types";
+import { getMultichainContract } from "../mpc_contract";
 
 const config = {
   chainId: 11155111,
@@ -26,18 +27,9 @@ export const provider = new providers.JsonRpcProvider(config.providerUrl);
 
 export const deriveEthAddress = async (derivationPath: string): Promise<string> => {
   const account = await getNearAccount();
-  const multichainContract = new Contract(
-    account,
-    process.env.NEAR_MULTICHAIN_CONTRACT!,
-    {
-      changeMethods: ["sign"],
-      viewMethods: ["public_key"],
-      useLocalViewExecution: false,
-    }
-  );
-  
-  const rootPublicKey = await (multichainContract as any).public_key();
-  console.log("Root PK", rootPublicKey);
+  const multichainContract = getMultichainContract(account);
+  const rootPublicKey = await multichainContract.public_key();
+
   const publicKey = await deriveChildPublicKey(
     najPublicKeyStrToUncompressedHexPoint(rootPublicKey),
     process.env.NEAR_ACCOUNT_ID!,
@@ -52,6 +44,7 @@ async function queryGasPrice(): Promise<GasPrices> {
     "https://sepolia.beaconcha.in/api/v1/execution/gasnow"
   );
   const json = await res.json() as GasPriceResponse;
+  console.log("Response", json);
   const maxPriorityFeePerGas = BigInt(json.data.rapid);
 
   // Since we don't have a direct `baseFeePerGas`, we'll use a workaround.
@@ -135,16 +128,7 @@ export const relayTransaction = async (
 
 export const requestSignature = async (payload: number[], path: string): Promise<{big_r: string, big_s: string}> => {
   const account = await getNearAccount();
-
-  const multichainContract = new Contract(
-    account,
-    process.env.NEAR_MULTICHAIN_CONTRACT!,
-    {
-      changeMethods: ["sign"],
-      viewMethods: ["public_key"],
-      useLocalViewExecution: false,
-    }
-  );
+  const multichainContract = getMultichainContract(account);
   const request = await account.signAndSendTransaction({
     receiverId: multichainContract.contractId,
     actions: [
@@ -165,7 +149,6 @@ export const requestSignature = async (payload: number[], path: string): Promise
   const [big_r, big_s] = await nearProviders.getTransactionLastResult(
     transaction
   );
-  console.log(big_r, big_s);
   return { big_r, big_s };
 };
 
