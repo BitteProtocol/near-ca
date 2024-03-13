@@ -1,4 +1,3 @@
-
 import dotenv from "dotenv";
 import { deriveEthAddress } from "../src/chains/ethereum";
 dotenv.config();
