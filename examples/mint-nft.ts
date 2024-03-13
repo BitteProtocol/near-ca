@@ -1,7 +1,4 @@
-import {
-  signAndSendTransaction,
-  web3,
-} from "../src/chains/ethereum";
+import { signAndSendTransaction, web3 } from "../src/chains/ethereum";
 import { setupAccount } from "./setup";
 
 const run = async (): Promise<void> => {

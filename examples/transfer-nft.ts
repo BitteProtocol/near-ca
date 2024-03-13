@@ -1,6 +1,4 @@
-import {
-  signAndSendTransaction
-} from "../src/chains/ethereum";
+import { signAndSendTransaction } from "../src/chains/ethereum";
 import { erc721Interface } from "../src/utils/interfaces";
 import { setupAccount } from "./setup";
 
@@ -12,14 +10,12 @@ const run = async (): Promise<void> => {
   const tokenId = 3;
   const to = "0x8d99F8b2710e6A3B94d9bf465A98E5273069aCBd";
 
-  const callData = erc721Interface().encodeFunctionData("safeTransferFrom(address,address,uint256)", [sender, to, tokenId]);
-  
-  await signAndSendTransaction(
-    sender,
-    tokenAddress,
-    value,
-    callData
+  const callData = erc721Interface().encodeFunctionData(
+    "safeTransferFrom(address,address,uint256)",
+    [sender, to, tokenId]
   );
+
+  await signAndSendTransaction(sender, tokenAddress, value, callData);
 };
 
 run();

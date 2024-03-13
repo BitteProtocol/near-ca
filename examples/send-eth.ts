@@ -1,6 +1,4 @@
-import {
-  signAndSendTransaction
-} from "../src/chains/ethereum";
+import { signAndSendTransaction } from "../src/chains/ethereum";
 import dotenv from "dotenv";
 import { setupAccount } from "./setup";
 dotenv.config();
