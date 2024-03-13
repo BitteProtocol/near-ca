@@ -11,7 +11,7 @@ const run = async (): Promise<void> => {
   await signAndSendTransaction(
     sender,
     "0xAA5FcF171dDf9FE59c985A28747e650C2e9069cA",
-    0.001
+    0.0001
   );
 };
 

@@ -17,8 +17,10 @@ jobs:
         with:
           node-version: '20'
 
-      - name: Install Dependencies
-        run: npm install
+      - name: Install & Build
+        run: yarn && yarn build
 
-      - name: Lint
-        run: npm run lint
+      - name: Lint & Test
+        run: |
+          yarn lint
+          yarn test

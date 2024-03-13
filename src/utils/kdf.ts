@@ -38,7 +38,9 @@ export async function deriveChildPublicKey(
   return "04" + newX + newY;
 }
 
-export function uncompressedHexPointToEvmAddress(uncompressedHexPoint: string): string {
+export function uncompressedHexPointToEvmAddress(
+  uncompressedHexPoint: string
+): string {
   const address = keccak("keccak256")
     .update(Buffer.from(uncompressedHexPoint.substring(2), "hex"))
     .digest("hex");
