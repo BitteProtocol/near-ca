@@ -14,6 +14,7 @@ import {
 import { NO_DEPOSIT, getNearAccount, provider as nearProvider } from "./near";
 import { GasPriceResponse, GasPrices, TxPayload } from "../types";
 import { getMultichainContract } from "../mpc_contract";
+import { getFirstNonZeroGasPrice } from "../utils/gasPrice";
 
 const config = {
   chainId: 11155111,
@@ -43,9 +44,8 @@ async function queryGasPrice(): Promise<GasPrices> {
   const res = await fetch(
     "https://sepolia.beaconcha.in/api/v1/execution/gasnow"
   );
-  const json = await res.json() as GasPriceResponse;
-  console.log("Response", json);
-  const maxPriorityFeePerGas = BigInt(json.data.rapid);
+  const gasPrices = await res.json() as GasPriceResponse;
+  const maxPriorityFeePerGas = BigInt(getFirstNonZeroGasPrice(gasPrices)!);
 
   // Since we don't have a direct `baseFeePerGas`, we'll use a workaround.
   // Ideally, you should fetch the current `baseFeePerGas` from the network.
