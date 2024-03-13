@@ -27,6 +27,8 @@
     "typescript": "^5.4.2"
   },
   "dependencies": {
+    "@biconomy/account": "^4.1.1",
+    "@biconomy/paymaster": "^4.1.1",
     "@ethereumjs/common": "^4.2.0",
     "@ethereumjs/tx": "^5.2.1",
     "@ethereumjs/util": "^9.0.2",
