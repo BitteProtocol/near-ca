@@ -22,13 +22,9 @@ interface SignResult {
 }
 
 export function getMultichainContract(account: Account): MultichainContract {
-  return new Contract(
-    account,
-    process.env.NEAR_MULTICHAIN_CONTRACT!,
-    {
-      changeMethods: ["sign"],
-      viewMethods: ["public_key"],
-      useLocalViewExecution: false,
-    }
-  ) as MultichainContract;
+  return new Contract(account, process.env.NEAR_MULTICHAIN_CONTRACT!, {
+    changeMethods: ["sign"],
+    viewMethods: ["public_key"],
+    useLocalViewExecution: false,
+  }) as MultichainContract;
 }

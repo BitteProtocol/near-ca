@@ -4,7 +4,7 @@
 
 NEAR-CA is a TypeScript library that provides an abstraction layer for interacting with the NEAR blockchain. It simplifies the process of performing transactions and managing accounts on NEAR and Ethereum chains. 
 
-Intended to be used on server-side applications only. This works best with [Bun](https://bun.sh).
+Intended to be used on server-side applications only.
 
 ## Features
 
@@ -18,17 +18,7 @@ Intended to be used on server-side applications only. This works best with [Bun]
 To install NEAR-CA, run the following command:
 
 ```bash
-bun add near-ca
-```
-
-Alternatively,
-
-```bash
-npm  add near-ca
-```
-
-```bash
-pnpm  add near-ca
+yarn add near-ca
 ```
 
 ## Usage
@@ -63,8 +53,15 @@ await signAndSendTransaction(
 
 ## Examples
 
+Each of the following scripts can be run with 
+
+```bash
+npx ts-node examples/*.ts
+```
+
 1. [Mint NFT](./examples/mint-nft.ts)
-1. [Send ETH](./examples/send-eth.ts)
+2. [Send ETH](./examples/send-eth.ts)
+3. [Transfer NFT](./examples/transfer-nft.ts)
 
 ## Configuration
 

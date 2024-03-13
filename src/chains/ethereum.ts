@@ -5,7 +5,7 @@ import { BN } from "bn.js";
 import { providers } from "ethers";
 import { providers as nearProviders } from "near-api-js";
 import { functionCall } from "near-api-js/lib/transaction";
-import {Web3, Bytes} from "web3";
+import { Web3, Bytes } from "web3";
 import {
   deriveChildPublicKey,
   najPublicKeyStrToUncompressedHexPoint,
@@ -26,7 +26,9 @@ export const web3 = new Web3(config.providerUrl);
 export const common = new Common({ chain: config.chain });
 export const provider = new providers.JsonRpcProvider(config.providerUrl);
 
-export const deriveEthAddress = async (derivationPath: string): Promise<string> => {
+export const deriveEthAddress = async (
+  derivationPath: string
+): Promise<string> => {
   const account = await getNearAccount();
   const multichainContract = getMultichainContract(account);
   const rootPublicKey = await multichainContract.public_key();
@@ -44,7 +46,7 @@ async function queryGasPrice(): Promise<GasPrices> {
   const res = await fetch(
     "https://sepolia.beaconcha.in/api/v1/execution/gasnow"
   );
-  const gasPrices = await res.json() as GasPriceResponse;
+  const gasPrices = (await res.json()) as GasPriceResponse;
   const maxPriorityFeePerGas = BigInt(getFirstNonZeroGasPrice(gasPrices)!);
 
   // Since we don't have a direct `baseFeePerGas`, we'll use a workaround.
@@ -72,8 +74,6 @@ export const createPayload = async (
     to: receiver,
     value: BigInt(web3.utils.toWei(amount, "ether")),
     data: data || "0x",
-    maxFeePerGas,
-    maxPriorityFeePerGas,
   };
   const estimatedGas = await provider.estimateGas({
     ...transactionData,
@@ -83,11 +83,16 @@ export const createPayload = async (
   const transactionDataWithGasLimit = {
     ...transactionData,
     gasLimit: BigInt(estimatedGas.toString()),
+    maxFeePerGas,
+    maxPriorityFeePerGas,
   };
   console.log("TxData:", transactionDataWithGasLimit);
-  const transaction = FeeMarketEIP1559Transaction.fromTxData(transactionDataWithGasLimit, {
-    common,
-  });
+  const transaction = FeeMarketEIP1559Transaction.fromTxData(
+    transactionDataWithGasLimit,
+    {
+      common,
+    }
+  );
 
   const payload = Array.from(
     new Uint8Array(transaction.getHashedMessageToSign().slice().reverse())
@@ -123,10 +128,13 @@ export const relayTransaction = async (
   const serializedTx = bytesToHex(signedTransaction.serialize());
   const relayed = await web3.eth.sendSignedTransaction(serializedTx);
   console.log("Transaction Confirmed:", relayed.transactionHash);
-  return relayed.transactionHash;  
+  return relayed.transactionHash;
 };
 
-export const requestSignature = async (payload: number[], path: string): Promise<{big_r: string, big_s: string}> => {
+export const requestSignature = async (
+  payload: number[],
+  path: string
+): Promise<{ big_r: string; big_s: string }> => {
   const account = await getNearAccount();
   const multichainContract = getMultichainContract(account);
   const request = await account.signAndSendTransaction({
@@ -146,9 +154,8 @@ export const requestSignature = async (payload: number[], path: string): Promise
     "unnused"
   );
 
-  const [big_r, big_s] = await nearProviders.getTransactionLastResult(
-    transaction
-  );
+  const [big_r, big_s] =
+    await nearProviders.getTransactionLastResult(transaction);
   return { big_r, big_s };
 };
 
