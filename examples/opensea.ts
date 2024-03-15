@@ -11,6 +11,9 @@ function sleep(ms: number): Promise<void> {
   return new Promise((resolve) => setTimeout(resolve, ms));
 }
 
+// Uses OpenseaSDK:
+// https://github.com/ProjectOpenSea/opensea-js/blob/main/developerDocs/advanced-use-cases.md
+
 const run = async (): Promise<void> => {
   // const slug = "marksman-ladders-v3";
   // const slug = "mintbase-chain-abstraction";
