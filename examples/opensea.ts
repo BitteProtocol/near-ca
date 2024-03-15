@@ -2,20 +2,24 @@ import { OpenSeaSDK, Chain, OrderSide } from "opensea-js";
 import { setupAccount } from "./setup";
 import { provider, signAndSendTransaction } from "../src/chains/ethereum";
 import { openSeaInterface } from "../src/utils/interfaces";
+import { sleep } from "../src/utils/sleep";
+import * as readline from "readline";
+
+const rl = readline.createInterface({
+  input: process.stdin,
+  output: process.stdout,
+});
+
+// This script uses the OpenSea SDK:
+// https://github.com/ProjectOpenSea/opensea-js/blob/main/developerDocs/advanced-use-cases.md
 const openseaSDK = new OpenSeaSDK(provider, {
   chain: Chain.Sepolia,
   // apiKey: YOUR_API_KEY,
 });
 
-function sleep(ms: number): Promise<void> {
-  return new Promise((resolve) => setTimeout(resolve, ms));
-}
+const run = async (slug: string): Promise<void> => {
+  // const slug = "mintbase-chain-abstraction-v2";
 
-// Uses OpenseaSDK:
-// https://github.com/ProjectOpenSea/opensea-js/blob/main/developerDocs/advanced-use-cases.md
-
-const run = async (): Promise<void> => {
-  const slug = "mintbase-chain-abstraction-v2";
   console.log("Retrieving Listings for...");
   const listings = await openseaSDK.api.getAllListings(slug);
   if (listings.listings.length === 0) {
@@ -59,4 +63,7 @@ const run = async (): Promise<void> => {
   await signAndSendTransaction(sender, tx.to, tx.value / 10 ** 18, callData);
 };
 
-run();
+rl.question("Provide collection slug: ", (input) => {
+  run(input);
+});
+
