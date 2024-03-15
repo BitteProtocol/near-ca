@@ -12,25 +12,24 @@ function sleep(ms: number): Promise<void> {
 }
 
 const run = async (): Promise<void> => {
-  const sender = await setupAccount();
-  // Returns NOTHING.
-  console.log("Get Listings...");
-  // "marksman-ladders-v3"
+  // const slug = "marksman-ladders-v3";
   // const slug = "mintbase-chain-abstraction";
   // const slug = "wutangkillabeez-1";
-  const slug = "ums-econtract-1";
+  // const slug = "ums-econtract-1";
+  const slug = "mintbase-chain-abstraction-v2";
+  console.log("Retrieving Listings for...");
   const listings = await openseaSDK.api.getAllListings(slug);
   // console.log("Listings:", listings);
   if (listings.listings.length === 0) {
     console.log(`No available listings for collection: ${slug}`);
     return;
   }
-  console.log(`Got ${listings.listings.length} Listings`);
+  console.log(
+    `Got ${listings.listings.length} Listings, preparing to purchase first available.`
+  );
   const firstListing = listings.listings[0];
-  // const collectionSlug = "wutangkillabeez-1";
-  // const collection = await openseaSDK.api.getCollection(collectionSlug);
-  // console.log("Collection:", collection);
   await sleep(1000);
+  const sender = await setupAccount();
   const data = await openseaSDK.api.generateFulfillmentData(
     sender,
     firstListing.order_hash,
@@ -38,12 +37,8 @@ const run = async (): Promise<void> => {
     OrderSide.ASK
   );
 
-  // console.log(data);
   const tx = data.fulfillment_data.transaction;
-  // const functionSig = data.fulfillment_data.transaction.function;
-  // console.log("Function Signature:", functionSig);
   const input_data = tx.input_data;
-  // console.log(JSON.stringify(tx));
 
   // @ts-expect-error: Undocumented field on type FulfillmentData within FulfillmentDataResponse
   const order = input_data.parameters;
@@ -63,17 +58,6 @@ const run = async (): Promise<void> => {
       [order]
     );
   }
-
-  // const transactionPayload = {
-  //   to: tx.to,
-  //   value: tx.value,
-  //   data: callData
-  // };
-  // console.log("From:", sender);
-  // console.log("Prepped Payload:", JSON.stringify(transactionPayload));
-  // if (tx.value < 0) {
-  //   await signAndSendTransaction(sender, tx.to, tx.value / 10 ** 18, callData);
-  // }
   await signAndSendTransaction(sender, tx.to, tx.value / 10 ** 18, callData);
 };
 
