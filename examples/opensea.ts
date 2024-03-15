@@ -15,14 +15,9 @@ function sleep(ms: number): Promise<void> {
 // https://github.com/ProjectOpenSea/opensea-js/blob/main/developerDocs/advanced-use-cases.md
 
 const run = async (): Promise<void> => {
-  // const slug = "marksman-ladders-v3";
-  // const slug = "mintbase-chain-abstraction";
-  // const slug = "wutangkillabeez-1";
-  // const slug = "ums-econtract-1";
   const slug = "mintbase-chain-abstraction-v2";
   console.log("Retrieving Listings for...");
   const listings = await openseaSDK.api.getAllListings(slug);
-  // console.log("Listings:", listings);
   if (listings.listings.length === 0) {
     console.log(`No available listings for collection: ${slug}`);
     return;
