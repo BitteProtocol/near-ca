@@ -2,7 +2,7 @@ import { Common } from "@ethereumjs/common";
 import { FeeMarketEIP1559Transaction } from "@ethereumjs/tx";
 import { bytesToHex } from "@ethereumjs/util";
 import { BN } from "bn.js";
-import { providers } from "ethers";
+import { ethers } from "ethers";
 import { providers as nearProviders } from "near-api-js";
 import { functionCall } from "near-api-js/lib/transaction";
 import { Web3, Bytes } from "web3";
@@ -18,13 +18,18 @@ import { getFirstNonZeroGasPrice } from "../utils/gasPrice";
 
 const config = {
   chainId: 11155111,
-  providerUrl: "https://rpc.sepolia.ethpandaops.io",
+  // providerUrl: "https://rpc.sepolia.ethpandaops.io",
+  // providerUrl: "https://sepolia.gateway.tenderly.co",
+  providerUrl: "https://rpc2.sepolia.org",
   chain: "sepolia",
 };
 
 export const web3 = new Web3(config.providerUrl);
 export const common = new Common({ chain: config.chain });
-export const provider = new providers.JsonRpcProvider(config.providerUrl);
+export const provider = new ethers.JsonRpcProvider(
+  config.providerUrl,
+  config.chainId
+);
 
 export const deriveEthAddress = async (
   derivationPath: string
@@ -66,13 +71,12 @@ export const createPayload = async (
   amount: number,
   data?: string
 ): Promise<TxPayload> => {
-  const nonce = await web3.eth.getTransactionCount(sender);
+  const nonce = await provider.getTransactionCount(sender);
   const { maxFeePerGas, maxPriorityFeePerGas } = await queryGasPrice();
-
   const transactionData = {
     nonce,
     to: receiver,
-    value: BigInt(web3.utils.toWei(amount, "ether")),
+    value: ethers.parseEther(amount.toString()),
     data: data || "0x",
   };
   const estimatedGas = await provider.estimateGas({

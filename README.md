@@ -13,6 +13,17 @@ Intended to be used on server-side applications only.
 - Key derivation functions for cryptographic operations.
 - Support for EIP-1559 transactions on Ethereum.
 
+## Local Testing
+
+```sh
+# Install
+yarn
+# Credentials
+cp .env.example .env  <---- paste your Near credentials
+# Buy NFT buy collection slug:
+npx ts-node examples/transfer-nft.ts
+```
+
 ## Installation
 
 To install NEAR-CA, run the following command:
