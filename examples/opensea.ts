@@ -66,4 +66,3 @@ const run = async (slug: string): Promise<void> => {
 rl.question("Provide collection slug: ", (input) => {
   run(input);
 });
-
