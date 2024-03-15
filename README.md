@@ -21,7 +21,8 @@ yarn
 # Credentials
 cp .env.example .env  <---- paste your Near credentials
 # Buy NFT buy collection slug:
-npx ts-node examples/transfer-nft.ts
+npx ts-node examples/opensea.ts
+# You will be prompted to provide a collectionSlug
 ```
 
 ## Installation

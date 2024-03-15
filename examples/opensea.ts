@@ -30,6 +30,7 @@ const run = async (slug: string): Promise<void> => {
     `Got ${listings.listings.length} Listings, preparing to purchase first available.`
   );
   const firstListing = listings.listings[0];
+  // This sleep is due to free-tier testnet rate limiting.
   await sleep(1000);
   const sender = await setupAccount();
   const data = await openseaSDK.api.generateFulfillmentData(
@@ -41,7 +42,8 @@ const run = async (slug: string): Promise<void> => {
 
   const tx = data.fulfillment_data.transaction;
   const input_data = tx.input_data;
-
+  
+  // TODO - report or fix these bugs with OpenseaSDK
   // @ts-expect-error: Undocumented field on type FulfillmentData within FulfillmentDataResponse
   const order = input_data.parameters;
   // @ts-expect-error: Undocumented field on type FulfillmentData within FulfillmentDataResponse
