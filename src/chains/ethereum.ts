@@ -1,11 +1,10 @@
-import { Common } from "@ethereumjs/common";
 import { FeeMarketEIP1559Transaction } from "@ethereumjs/tx";
 import { bytesToHex } from "@ethereumjs/util";
 import { BN } from "bn.js";
 import { ethers } from "ethers";
 import { providers as nearProviders } from "near-api-js";
 import { functionCall } from "near-api-js/lib/transaction";
-import { Web3, Bytes } from "web3";
+import { Bytes } from "web3";
 import {
   deriveChildPublicKey,
   najPublicKeyStrToUncompressedHexPoint,
@@ -15,21 +14,7 @@ import { NO_DEPOSIT, getNearAccount, provider as nearProvider } from "./near";
 import { GasPriceResponse, GasPrices, TxPayload } from "../types";
 import { getMultichainContract } from "../mpc_contract";
 import { getFirstNonZeroGasPrice } from "../utils/gasPrice";
-
-const config = {
-  chainId: 11155111,
-  // providerUrl: "https://rpc.sepolia.ethpandaops.io",
-  // providerUrl: "https://sepolia.gateway.tenderly.co",
-  providerUrl: "https://rpc2.sepolia.org",
-  chain: "sepolia",
-};
-
-export const web3 = new Web3(config.providerUrl);
-export const common = new Common({ chain: config.chain });
-export const provider = new ethers.JsonRpcProvider(
-  config.providerUrl,
-  config.chainId
-);
+import { common, provider, web3 } from "../config";
 
 export const deriveEthAddress = async (
   derivationPath: string
@@ -47,9 +32,9 @@ export const deriveEthAddress = async (
   return uncompressedHexPointToEvmAddress(publicKey);
 };
 
-async function queryGasPrice(): Promise<GasPrices> {
+async function queryGasPrice(network: string): Promise<GasPrices> {
   const res = await fetch(
-    "https://sepolia.beaconcha.in/api/v1/execution/gasnow"
+    `https://${network}.beaconcha.in/api/v1/execution/gasnow`
   );
   const gasPrices = (await res.json()) as GasPriceResponse;
   const maxPriorityFeePerGas = BigInt(getFirstNonZeroGasPrice(gasPrices)!);
@@ -72,7 +57,9 @@ export const createPayload = async (
   data?: string
 ): Promise<TxPayload> => {
   const nonce = await provider.getTransactionCount(sender);
-  const { maxFeePerGas, maxPriorityFeePerGas } = await queryGasPrice();
+  const { maxFeePerGas, maxPriorityFeePerGas } = await queryGasPrice(
+    (await provider.getNetwork()).name
+  );
   const transactionData = {
     nonce,
     to: receiver,
