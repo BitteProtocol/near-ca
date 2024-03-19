@@ -22,3 +22,9 @@ export interface TxPayload {
   transaction: FeeMarketEIP1559Transaction;
   payload: number[];
 }
+
+export interface MinimalTxData {
+  to: string;
+  value: string | bigint;
+  data?: string;
+}

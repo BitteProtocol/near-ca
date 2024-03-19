@@ -42,7 +42,7 @@ const run = async (slug: string): Promise<void> => {
 
   const tx = data.fulfillment_data.transaction;
   const input_data = tx.input_data;
-  
+
   // TODO - report or fix these bugs with OpenseaSDK
   // @ts-expect-error: Undocumented field on type FulfillmentData within FulfillmentDataResponse
   const order = input_data.parameters;

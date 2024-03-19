@@ -12,7 +12,12 @@ import {
   uncompressedHexPointToEvmAddress,
 } from "../utils/kdf";
 import { NO_DEPOSIT, getNearAccount, provider as nearProvider } from "./near";
-import { GasPriceResponse, GasPrices, TxPayload } from "../types";
+import {
+  GasPriceResponse,
+  GasPrices,
+  MinimalTxData,
+  TxPayload,
+} from "../types";
 import { getMultichainContract } from "../mpc_contract";
 import { getFirstNonZeroGasPrice } from "../utils/gasPrice";
 
@@ -65,23 +70,21 @@ async function queryGasPrice(): Promise<GasPrices> {
   return { maxFeePerGas, maxPriorityFeePerGas };
 }
 
-export const createPayload = async (
-  sender: string,
-  receiver: string,
-  amount: number,
-  data?: string
-): Promise<TxPayload> => {
-  const nonce = await provider.getTransactionCount(sender);
+async function buildEIP1559Tx(
+  from: string,
+  txData: MinimalTxData
+): Promise<FeeMarketEIP1559Transaction> {
+  const nonce = await provider.getTransactionCount(from);
   const { maxFeePerGas, maxPriorityFeePerGas } = await queryGasPrice();
   const transactionData = {
     nonce,
-    to: receiver,
-    value: ethers.parseEther(amount.toString()),
-    data: data || "0x",
+    to: txData.to,
+    value: BigInt(txData.value),
+    data: txData.data || "0x",
   };
   const estimatedGas = await provider.estimateGas({
     ...transactionData,
-    from: sender,
+    from,
   });
   console.log(`Using gas estimate of at ${estimatedGas} GWei`);
   const transactionDataWithGasLimit = {
@@ -91,13 +94,16 @@ export const createPayload = async (
     maxPriorityFeePerGas,
   };
   console.log("TxData:", transactionDataWithGasLimit);
-  const transaction = FeeMarketEIP1559Transaction.fromTxData(
-    transactionDataWithGasLimit,
-    {
-      common,
-    }
-  );
+  return FeeMarketEIP1559Transaction.fromTxData(transactionDataWithGasLimit, {
+    common,
+  });
+}
 
+export const createPayload = async (
+  from: string,
+  txData: MinimalTxData
+): Promise<TxPayload> => {
+  const transaction = await buildEIP1559Tx(from, txData);
   const payload = Array.from(
     new Uint8Array(transaction.getHashedMessageToSign().slice().reverse())
   );
@@ -172,20 +178,69 @@ export const signAndSendTransaction = async (
     path: string;
   }
 ): Promise<void> => {
+  const signature = await signTx(sender, receiver, amount, data, options);
+  console.log("Relaying signed tx to EVM...");
+  await relayTransaction(signature);
+};
+
+export const signTx = async (
+  sender: string,
+  receiver: string,
+  amount: number,
+  data?: string,
+  options?: {
+    path: string;
+  }
+): Promise<FeeMarketEIP1559Transaction> => {
   console.log("Creating Payload for sender:", sender);
-  const { transaction, payload } = await createPayload(
-    sender,
-    receiver,
-    amount,
-    data
-  );
+  const { transaction, payload } = await createPayload(sender, {
+    to: receiver,
+    value: ethers.parseEther(amount.toString()),
+    data,
+  });
 
   const { big_r, big_s } = await requestSignature(
     payload,
     options?.path || "ethereum,1"
   );
 
-  const signature = reconstructSignature(transaction, big_r, big_s, sender);
-  console.log("Relaying signed tx to EVM...");
-  await relayTransaction(signature);
+  return reconstructSignature(transaction, big_r, big_s, sender);
 };
+
+export const signHashedMessage = async (
+  sender: string,
+  tx: MinimalTxData,
+  hash: string,
+  options?: {
+    path: string;
+  }
+): Promise<FeeMarketEIP1559Transaction> => {
+  console.log("Creating Payload for sender:", sender);
+  const payload = Array.from(
+    new Uint8Array(hexStringToByteArray(hash).slice().reverse())
+  );
+  const { big_r, big_s } = await requestSignature(
+    payload,
+    options?.path || "ethereum,1"
+  );
+
+  return reconstructSignature(
+    await buildEIP1559Tx(sender, tx),
+    big_r,
+    big_s,
+    sender
+  );
+};
+
+function hexStringToByteArray(hexString: string): Uint8Array {
+  // Remove any leading "0x" if present
+  if (hexString.startsWith("0x")) {
+    hexString = hexString.slice(2);
+  }
+
+  const bytes = new Uint8Array(hexString.length / 2);
+  for (let i = 0, j = 0; i < hexString.length; i += 2, j++) {
+    bytes[j] = parseInt(hexString.substring(i, i + 2), 16);
+  }
+  return bytes;
+}
