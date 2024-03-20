@@ -14,7 +14,7 @@ import { NO_DEPOSIT, getNearAccount, provider as nearProvider } from "./near";
 import { GasPriceResponse, GasPrices, TxPayload } from "../types";
 import { getMultichainContract } from "../mpc_contract";
 import { getFirstNonZeroGasPrice } from "../utils/gasPrice";
-import { common, provider, web3 } from "../config";
+import { common, provider } from "../config";
 
 export const deriveEthAddress = async (
   derivationPath: string
@@ -78,6 +78,8 @@ export const createPayload = async (
     maxPriorityFeePerGas,
   };
   console.log("TxData:", transactionDataWithGasLimit);
+  // const ethersTx: Transaction = ethers.Transaction.from(transactionDataWithGasLimit as TransactionLike);
+  // console.log("EthersTX", JSON.stringify(ethersTx));
   const transaction = FeeMarketEIP1559Transaction.fromTxData(
     transactionDataWithGasLimit,
     {
@@ -117,9 +119,13 @@ export const relayTransaction = async (
   signedTransaction: FeeMarketEIP1559Transaction
 ): Promise<Bytes> => {
   const serializedTx = bytesToHex(signedTransaction.serialize());
-  const relayed = await web3.eth.sendSignedTransaction(serializedTx);
-  console.log("Transaction Confirmed:", relayed.transactionHash);
-  return relayed.transactionHash;
+  // const relayed = await web3.eth.sendSignedTransaction(serializedTx);
+  const relayed: ethers.TransactionResponse = await provider.send(
+    "eth_sendRawTransaction",
+    [serializedTx]
+  );
+  console.log("Transaction Confirmed:", relayed.hash);
+  return relayed.hash;
 };
 
 export const requestSignature = async (

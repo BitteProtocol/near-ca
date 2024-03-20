@@ -40,7 +40,6 @@
     "hash.js": "^1.1.7",
     "keccak": "^3.0.4",
     "near-api-js": "^3.0.3",
-    "opensea-js": "^7.0.9",
-    "web3": "^4.5.0"
+    "opensea-js": "^7.0.9"
   }
 }
