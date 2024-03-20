@@ -78,6 +78,8 @@ export const createPayload = async (
     maxPriorityFeePerGas,
   };
   console.log("TxData:", transactionDataWithGasLimit);
+  // const ethersTx: Transaction = ethers.Transaction.from(transactionDataWithGasLimit as TransactionLike);
+  // console.log("EthersTX", JSON.stringify(ethersTx));
   const transaction = FeeMarketEIP1559Transaction.fromTxData(
     transactionDataWithGasLimit,
     {
@@ -168,7 +170,7 @@ export const signAndSendTransaction = async (
     amount,
     data
   );
-
+  console.log("Requesting signature from Near...");
   const { big_r, big_s } = await requestSignature(
     payload,
     options?.path || "ethereum,1"

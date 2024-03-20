@@ -5,7 +5,7 @@ import { sleep } from "../src/utils/sleep";
 import * as readline from "readline";
 import { ethers } from "ethers";
 import { client } from "../src/config";
-import { Address, Hex } from "viem";
+import { Address, Hex, encodeFunctionData } from "viem";
 import seaportABI from "../src/abis/Seaport.json";
 
 const rl = readline.createInterface({
@@ -61,16 +61,18 @@ const run = async (slug: string): Promise<void> => {
   let callData = "0x";
   if (tx.function.includes("fulfillOrder")) {
     console.log("Using fulfillOrder");
-    callData = openSeaInterface().encodeFunctionData("fulfillOrder", [
-      order,
-      fulfillerConduitKey,
-    ]);
+    callData = encodeFunctionData({
+      abi: seaportABI,
+      functionName: "fulfillOrder",
+      args: [order, fulfillerConduitKey],
+    });
   } else {
     console.log("Using fulfillBasicOrder_efficient_6GL6yc");
-    callData = openSeaInterface().encodeFunctionData(
-      "fulfillBasicOrder_efficient_6GL6yc",
-      [order]
-    );
+    callData = encodeFunctionData({
+      abi: seaportABI,
+      functionName: "fulfillBasicOrder_efficient_6GL6yc",
+      args: [order],
+    });
   }
   await signAndSendTransaction(
     sender,
