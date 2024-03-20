@@ -1,7 +1,6 @@
 import { FeeMarketEIP1559Transaction } from "@ethereumjs/tx";
 import { bytesToHex } from "@ethereumjs/util";
 import { BN } from "bn.js";
-// import { ethers } from "ethers";
 import { providers as nearProviders } from "near-api-js";
 import { functionCall } from "near-api-js/lib/transaction";
 import {
@@ -61,11 +60,6 @@ export const createPayload = async (
     client.chain.name
   );
   const transactionData = {
-    // ETHERS:
-    // nonce,
-    // to: receiver,
-    // value: ethers.parseEther(amount.toString()),
-    // data: data || "0x",
     nonce,
     account: sender,
     to: receiver,
@@ -84,8 +78,6 @@ export const createPayload = async (
     maxPriorityFeePerGas,
   };
   console.log("TxData:", transactionDataWithGasLimit);
-  // const ethersTx: Transaction = ethers.Transaction.from(transactionDataWithGasLimit as TransactionLike);
-  // console.log("EthersTX", JSON.stringify(ethersTx));
   const transaction = FeeMarketEIP1559Transaction.fromTxData(
     transactionDataWithGasLimit,
     {
@@ -125,17 +117,6 @@ export const relayTransaction = async (
   signedTransaction: FeeMarketEIP1559Transaction
 ): Promise<string> => {
   const serializedTx = bytesToHex(signedTransaction.serialize()) as Hex;
-
-  // web3js
-  // const relayed = await web3.eth.sendSignedTransaction(serializedTx);
-
-  // ethersjs
-  // const relayed: ethers.TransactionResponse = await provider.send(
-  //   "eth_sendRawTransaction",
-  //   [serializedTx]
-  // );
-
-  // viem
   const txHash = await client.sendRawTransaction({
     serializedTransaction: serializedTx,
   });
