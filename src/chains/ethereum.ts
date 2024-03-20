@@ -1,24 +1,24 @@
 import { FeeMarketEIP1559Transaction } from "@ethereumjs/tx";
 import { bytesToHex } from "@ethereumjs/util";
 import { BN } from "bn.js";
-import { ethers } from "ethers";
+// import { ethers } from "ethers";
 import { providers as nearProviders } from "near-api-js";
 import { functionCall } from "near-api-js/lib/transaction";
-import { Bytes } from "web3";
 import {
   deriveChildPublicKey,
   najPublicKeyStrToUncompressedHexPoint,
   uncompressedHexPointToEvmAddress,
 } from "../utils/kdf";
+import { Address, parseEther, Hex } from "viem";
 import { NO_DEPOSIT, getNearAccount, provider as nearProvider } from "./near";
 import { GasPriceResponse, GasPrices, TxPayload } from "../types";
 import { getMultichainContract } from "../mpc_contract";
 import { getFirstNonZeroGasPrice } from "../utils/gasPrice";
-import { common, provider } from "../config";
+import { client, common } from "../config";
 
 export const deriveEthAddress = async (
   derivationPath: string
-): Promise<string> => {
+): Promise<Address> => {
   const account = await getNearAccount();
   const multichainContract = getMultichainContract(account);
   const rootPublicKey = await multichainContract.public_key();
@@ -51,24 +51,30 @@ async function queryGasPrice(network: string): Promise<GasPrices> {
 }
 
 export const createPayload = async (
-  sender: string,
-  receiver: string,
+  sender: Address,
+  receiver: Address,
   amount: number,
-  data?: string
+  data?: Hex
 ): Promise<TxPayload> => {
-  const nonce = await provider.getTransactionCount(sender);
+  const nonce = await client.getTransactionCount({ address: sender });
   const { maxFeePerGas, maxPriorityFeePerGas } = await queryGasPrice(
-    (await provider.getNetwork()).name
+    client.chain.name
   );
   const transactionData = {
+    // ETHERS:
+    // nonce,
+    // to: receiver,
+    // value: ethers.parseEther(amount.toString()),
+    // data: data || "0x",
     nonce,
+    account: sender,
     to: receiver,
-    value: ethers.parseEther(amount.toString()),
+    value: parseEther(amount.toString()),
     data: data || "0x",
   };
-  const estimatedGas = await provider.estimateGas({
+  const estimatedGas = await client.estimateGas({
     ...transactionData,
-    from: sender,
+    // from: sender,
   });
   console.log(`Using gas estimate of at ${estimatedGas} GWei`);
   const transactionDataWithGasLimit = {
@@ -117,15 +123,24 @@ export const reconstructSignature = (
 
 export const relayTransaction = async (
   signedTransaction: FeeMarketEIP1559Transaction
-): Promise<Bytes> => {
-  const serializedTx = bytesToHex(signedTransaction.serialize());
+): Promise<string> => {
+  const serializedTx = bytesToHex(signedTransaction.serialize()) as Hex;
+
+  // web3js
   // const relayed = await web3.eth.sendSignedTransaction(serializedTx);
-  const relayed: ethers.TransactionResponse = await provider.send(
-    "eth_sendRawTransaction",
-    [serializedTx]
-  );
-  console.log("Transaction Confirmed:", relayed.hash);
-  return relayed.hash;
+
+  // ethersjs
+  // const relayed: ethers.TransactionResponse = await provider.send(
+  //   "eth_sendRawTransaction",
+  //   [serializedTx]
+  // );
+
+  // viem
+  const txHash = await client.sendRawTransaction({
+    serializedTransaction: serializedTx,
+  });
+  console.log("Transaction Confirmed:", txHash);
+  return txHash;
 };
 
 export const requestSignature = async (
@@ -157,10 +172,10 @@ export const requestSignature = async (
 };
 
 export const signAndSendTransaction = async (
-  sender: string,
-  receiver: string,
+  sender: Address,
+  receiver: Address,
   amount: number,
-  data?: string,
+  data?: Hex,
   options?: {
     path: string;
   }

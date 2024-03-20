@@ -1,5 +1,6 @@
 import { base_decode } from "near-api-js/lib/utils/serialize";
 import { ec as EC } from "elliptic";
+import { Address } from "viem";
 import BN from "bn.js";
 import keccak from "keccak";
 
@@ -40,13 +41,13 @@ export async function deriveChildPublicKey(
 
 export function uncompressedHexPointToEvmAddress(
   uncompressedHexPoint: string
-): string {
+): Address {
   const address = keccak("keccak256")
     .update(Buffer.from(uncompressedHexPoint.substring(2), "hex"))
     .digest("hex");
 
   // Ethereum address is last 20 bytes of hash (40 characters), prefixed with 0x
-  return "0x" + address.substring(address.length - 40);
+  return ("0x" + address.substring(address.length - 40)) as Address;
 }
 
 async function sha256Hash(str: string): Promise<string> {
