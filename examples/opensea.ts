@@ -17,11 +17,11 @@ const rl = readline.createInterface({
 // https://github.com/ProjectOpenSea/opensea-js/blob/main/developerDocs/advanced-use-cases.md
 const run = async (slug: string): Promise<void> => {
   // This fake provider is required to construct an openseaSDK instance (although we do not make use of it).
-  const provider = new ethers.JsonRpcProvider(
+  const dummyProvider = new ethers.JsonRpcProvider(
     "fakeURL",
     await client.getChainId()
   );
-  const openseaSDK = new OpenSeaSDK(provider, {
+  const openseaSDK = new OpenSeaSDK(dummyProvider, {
     chain: Chain.Sepolia,
     // apiKey: YOUR_API_KEY,
   });
@@ -55,8 +55,6 @@ const run = async (slug: string): Promise<void> => {
   const order = input_data.parameters;
   // @ts-expect-error: Undocumented field on type FulfillmentData within FulfillmentDataResponse
   const fulfillerConduitKey = input_data.fulfillerConduitKey;
-
-  const openSeaInterface = new ethers.Interface(seaportABI);
 
   let callData = "0x";
   if (tx.function.includes("fulfillOrder")) {
