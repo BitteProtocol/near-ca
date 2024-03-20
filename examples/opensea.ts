@@ -1,9 +1,10 @@
 import { OpenSeaSDK, Chain, OrderSide } from "opensea-js";
 import { setupAccount } from "./setup";
-import { provider, signAndSendTransaction } from "../src/chains/ethereum";
+import { signAndSendTransaction } from "../src/chains/ethereum";
 import { openSeaInterface } from "../src/utils/interfaces";
 import { sleep } from "../src/utils/sleep";
 import * as readline from "readline";
+import { provider } from "../src/config";
 
 const rl = readline.createInterface({
   input: process.stdin,

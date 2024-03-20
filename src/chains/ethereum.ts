@@ -4,7 +4,6 @@ import { BN } from "bn.js";
 import { ethers } from "ethers";
 import { providers as nearProviders } from "near-api-js";
 import { functionCall } from "near-api-js/lib/transaction";
-import { Bytes } from "web3";
 import {
   deriveChildPublicKey,
   najPublicKeyStrToUncompressedHexPoint,
@@ -117,9 +116,8 @@ export const reconstructSignature = (
 
 export const relayTransaction = async (
   signedTransaction: FeeMarketEIP1559Transaction
-): Promise<Bytes> => {
+): Promise<string> => {
   const serializedTx = bytesToHex(signedTransaction.serialize());
-  // const relayed = await web3.eth.sendSignedTransaction(serializedTx);
   const relayed: ethers.TransactionResponse = await provider.send(
     "eth_sendRawTransaction",
     [serializedTx]
