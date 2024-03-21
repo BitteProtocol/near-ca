@@ -1,10 +1,10 @@
 import { encodeFunctionData } from "viem";
-import { setupNearEthConnection } from "./setup";
+import { setupNearEthAdapter } from "./setup";
 
 const run = async (): Promise<void> => {
-  const evm = await setupNearEthConnection();
+  const adapter = await setupNearEthAdapter();
 
-  await evm.signAndSendTransaction({
+  await adapter.signAndSendTransaction({
     receiver: "0xAA5FcF171dDf9FE59c985A28747e650C2e9069cA",
     amount: 0,
     data: encodeFunctionData({

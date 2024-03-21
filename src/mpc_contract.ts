@@ -5,7 +5,7 @@ import {
   najPublicKeyStrToUncompressedHexPoint,
   uncompressedHexPointToEvmAddress,
 } from "./utils/kdf";
-import { NO_DEPOSIT, NINTEY_TGAS, getNearAccount } from "./chains/near";
+import { NO_DEPOSIT, NINTEY_TGAS, nearAccountFromEnv } from "./chains/near";
 import BN from "bn.js";
 
 interface ChangeMethodArgs<T> {
@@ -44,7 +44,7 @@ export class MultichainContract {
   }
 
   static async fromEnv(): Promise<MultichainContract> {
-    const account = await getNearAccount();
+    const account = await nearAccountFromEnv();
     return new MultichainContract(
       account,
       process.env.NEAR_MULTICHAIN_CONTRACT!

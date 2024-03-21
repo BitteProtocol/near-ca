@@ -1,9 +1,9 @@
 import erc1155Abi from "./abis/ERC1155.json";
-import { setupNearEthConnection } from "./setup";
+import { setupNearEthAdapter } from "./setup";
 import { encodeFunctionData } from "viem";
 
 const run = async (): Promise<void> => {
-  const evm = await setupNearEthConnection();
+  const evm = await setupNearEthAdapter();
   const amount = 0;
   // TODO retrieve from user:
   const tokenAddress = "0x284c37b0fcb72034ff25855da57fcf097b255474";

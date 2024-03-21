@@ -1,1 +1,1 @@
-export { EVM } from "./chains/ethereum";
+export { NearEthAdapter } from "./chains/ethereum";
