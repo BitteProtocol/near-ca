@@ -4,7 +4,6 @@ import { setupNearEthConnection } from "./setup";
 
 const run = async (): Promise<void> => {
   const evm = await setupNearEthConnection();
-  const sender = await evm.getSender();
   const amount = 0;
   // TODO retrieve from user:
   const tokenAddress = "0xb5EF4EbB25fCA7603C028610ddc9233d399dA34d";
@@ -14,7 +13,7 @@ const run = async (): Promise<void> => {
   const callData = encodeFunctionData({
     abi: erc721ABI,
     functionName: "safeTransferFrom(address,address,uint256)",
-    args: [sender, to, tokenId],
+    args: [evm.sender, to, tokenId],
   });
 
   await evm.signAndSendTransaction({
