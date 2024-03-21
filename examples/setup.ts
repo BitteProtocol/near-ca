@@ -1,7 +1,5 @@
 import dotenv from "dotenv";
-import { MultichainContract } from "../src/mpc_contract";
-import { NearEthAdapter } from "../src/chains/ethereum";
-import { nearAccountFromEnv } from "../src/chains/near";
+import { MultichainContract, NearEthAdapter, nearAccountFromEnv } from "../src";
 
 export async function setupNearEthAdapter(): Promise<NearEthAdapter> {
   dotenv.config();

@@ -11,7 +11,8 @@ import {
 } from "viem";
 import { BaseTx, NearEthAdapterParams, TxPayload } from "../types";
 import { queryGasPrice } from "../utils/gasPrice";
-import { MultichainContract } from "../mpc_contract";
+import { MultichainContract } from "../mpcContract";
+import BN from "bn.js";
 
 export class NearEthAdapter {
   private client: PublicClient;
@@ -60,13 +61,14 @@ export class NearEthAdapter {
    *
    * @param {BaseTx} txData - Minimal transaction data to be signed by Near MPC and executed on EVM.
    */
-  async signAndSendTransaction(txData: BaseTx): Promise<Hash> {
+  async signAndSendTransaction(txData: BaseTx, nearGas?: BN): Promise<Hash> {
     console.log("Creating Payload for sender:", this.sender);
     const { transaction, payload } = await this.createTxPayload(txData);
     console.log("Requesting signature from Near...");
     const { big_r, big_s } = await this.mpcContract.requestSignature(
       payload,
-      this.derivationPath
+      this.derivationPath,
+      nearGas
     );
 
     const signedTx = NearEthAdapter.reconstructSignature(

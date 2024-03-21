@@ -1,9 +1,7 @@
+import BN from "bn.js";
 import { keyStores, KeyPair, connect, Account } from "near-api-js";
 
-export const TGAS = 1000000000000;
-export const THIRTY_TGAS = "30000000000000";
-export const SIXTY_TGAS = "60000000000000";
-export const NINTEY_TGAS = "90000000000000";
+export const TGAS = new BN(1000000000000);
 export const NO_DEPOSIT = "0";
 
 export interface NearConfig {

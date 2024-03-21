@@ -1,4 +1,4 @@
-import { setupNearEthAdapter } from "./setup";
+import { setupNearEthAdapter } from "../setup";
 
 const run = async (): Promise<void> => {
   const neareth = await setupNearEthAdapter();

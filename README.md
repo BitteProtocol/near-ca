@@ -20,7 +20,7 @@ Intended to be used on server-side applications only.
 yarn
 # Credentials
 cp .env.example .env  <---- paste your Near credentials
-# Buy NFT buy collection slug:
+# Buy NFT by collection slug:
 npx ts-node examples/opensea.ts
 # You will be prompted to provide a collectionSlug
 ```
@@ -37,33 +37,41 @@ yarn add near-ca
 
 For Ethereum, you can derive addresses, create payloads for transactions, and send signed transactions.
 
-Example: Deriving an Ethereum address and sending a transaction
+### Example: Setup NearEthAdapter and Send ETH
 
 ```typescript
-const ethAddress = await deriveEthAddress("ethereum,1");
-const functionSignature = web3.eth.abi.encodeFunctionCall(
-    {
-    name: "safeMint",
-    type: "function",
-    inputs: [
-        {
-        type: "address",
-        name: "to",
-        },
-    ],
-    },
-    ["0xAA5FcF171dDf9FE59c985A28747e650C2e9069cA"]
-);
+import dotenv from "dotenv";
+import { MultichainContract, NearEthAdapter, nearAccountFromEnv } from "near-ca";
 
-await signAndSendTransaction(
-    ethAddress,
-    "0xAA5FcF171dDf9FE59c985A28747e650C2e9069cA",
-    0,
-    functionSignature
-);
+dotenv.config();
+// Could also import and use nearAccountFromKeyPair here ;)
+const account = await nearAccountFromEnv();
+// Near Config
+const near = {
+    mpcContract: new MultichainContract(
+        account,
+        process.env.NEAR_MULTICHAIN_CONTRACT!
+    ),
+    derivationPath: "ethereum,1",
+};
+
+// EVM Config
+const evm = {
+    providerUrl: process.env.NODE_URL!,
+    scanUrl: process.env.SCAN_URL!,
+    gasStationUrl: process.env.GAS_STATION_URL!,
+};
+
+const neareth = NearEthAdapter.fromConfig({ near, evm });
+
+await evm.signAndSendTransaction({
+    receiver: "0xdeADBeeF0000000000000000000000000b00B1e5",
+    amount: 0.00000001,
+    // Optional Set nearGas (default is 200 TGAS - which still sometimes doesn't work!)
+});
 ```
 
-## Examples
+### Other Examples
 
 Each of the following scripts can be run with 
 
@@ -71,9 +79,12 @@ Each of the following scripts can be run with
 npx ts-node examples/*.ts
 ```
 
-1. [Mint NFT](./examples/mint-nft.ts)
-2. [Send ETH](./examples/send-eth.ts)
-3. [Transfer NFT](./examples/transfer-nft.ts)
+1. [(Basic) Send ETH](./examples/send-eth.ts)
+2. **WETH**
+    - [Deposit (aka wrap-ETH)](./examples/weth/wrap.ts)
+    - [Withdraw (aka unwrap-ETH)](./examples/weth/wrap.ts)
+3. [Transfer ERC721](./examples/nft/erc721/transfer.ts)
+4. [(Advanced) Buy NFT On Opensea](./examples/opensea.ts)
 
 ## Configuration
 
@@ -82,5 +93,8 @@ Before using NEAR-CA, ensure you have the following environment variables set:
 - `NEAR_ACCOUNT_ID`: Your NEAR account identifier.
 - `NEAR_ACCOUNT_PRIVATE_KEY`: Your NEAR account private key.
 - `NEAR_MULTICHAIN_CONTRACT`: The NEAR contract that handles multichain operations.
+- `NODE_URL=https://rpc.sepolia.org`
+- `SCAN_URL=https://sepolia.etherscan.io`
+- `GAS_STATION_URL=https://sepolia.beaconcha.in/api/v1/execution/gasnow`
 
 Copy the `.env.example` file and place these values in `.env`

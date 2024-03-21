@@ -1,6 +1,6 @@
 import { FeeMarketEIP1559Transaction } from "@ethereumjs/tx";
 import { Address, Hex } from "viem";
-import { MultichainContract } from "./mpc_contract";
+import { MultichainContract } from "./mpcContract";
 
 export interface BaseTx {
   /// Recipient of the transaction

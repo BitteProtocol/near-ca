@@ -1,6 +1,6 @@
-import erc721ABI from "./abis/ERC721.json";
+import erc721ABI from "../../abis/ERC721.json";
 import { encodeFunctionData } from "viem";
-import { setupNearEthAdapter } from "./setup";
+import { setupNearEthAdapter } from "../../setup";
 
 const run = async (): Promise<void> => {
   const neareth = await setupNearEthAdapter();

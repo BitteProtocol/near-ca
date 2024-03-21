@@ -5,7 +5,7 @@ import {
   najPublicKeyStrToUncompressedHexPoint,
   uncompressedHexPointToEvmAddress,
 } from "./utils/kdf";
-import { NO_DEPOSIT, NINTEY_TGAS, nearAccountFromEnv } from "./chains/near";
+import { NO_DEPOSIT, nearAccountFromEnv, TGAS } from "./chains/near";
 import BN from "bn.js";
 
 interface ChangeMethodArgs<T> {
@@ -65,11 +65,13 @@ export class MultichainContract {
 
   requestSignature = async (
     payload: number[],
-    path: string
+    path: string,
+    gas?: BN
   ): Promise<SignResult> => {
     const [big_r, big_s] = await this.contract.sign({
       args: { path, payload },
-      gas: new BN(NINTEY_TGAS),
+      // Default of 200 TGAS
+      gas: gas || TGAS.muln(200),
       attachedDeposit: new BN(NO_DEPOSIT),
     });
     return { big_r, big_s };

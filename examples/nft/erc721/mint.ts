@@ -1,5 +1,5 @@
 import { encodeFunctionData } from "viem";
-import { setupNearEthAdapter } from "./setup";
+import { setupNearEthAdapter } from "../../setup";
 
 const run = async (): Promise<void> => {
   const adapter = await setupNearEthAdapter();
