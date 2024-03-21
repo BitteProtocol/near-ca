@@ -1,10 +1,9 @@
-import { signAndSendTransaction } from "../src/chains/ethereum";
-import wethABI from "../src/abis/WETH.json";
+import wethABI from "./abis/WETH.json";
 import { encodeFunctionData, parseEther } from "viem";
-import { setupAccount } from "./setup";
+import { setupNearEthConnection } from "./setup";
 
 const run = async (): Promise<void> => {
-  const sender = await setupAccount();
+  const evm = await setupNearEthConnection();
   const sepoliaWETH = "0xfff9976782d46cc05630d1f6ebab18b2324d6b14";
   const ethAmount = 0.01;
   const callData = encodeFunctionData({
@@ -12,7 +11,12 @@ const run = async (): Promise<void> => {
     functionName: "withdraw",
     args: [parseEther(ethAmount.toString())],
   });
-  await signAndSendTransaction(sender, sepoliaWETH, 0, callData);
+
+  await evm.signAndSendTransaction({
+    receiver: sepoliaWETH,
+    amount: 0,
+    data: callData,
+  });
 };
 
 run();

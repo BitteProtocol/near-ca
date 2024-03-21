@@ -1,11 +1,11 @@
-import { signAndSendTransaction } from "../src/chains/ethereum";
-import erc721ABI from "../src/abis/ERC721.json";
+import erc721ABI from "./abis/ERC721.json";
 import { encodeFunctionData } from "viem";
-import { setupAccount } from "./setup";
+import { setupNearEthConnection } from "./setup";
 
 const run = async (): Promise<void> => {
-  const sender = await setupAccount();
-  const value = 0;
+  const evm = await setupNearEthConnection();
+  const sender = await evm.getSender();
+  const amount = 0;
   // TODO retrieve from user:
   const tokenAddress = "0xb5EF4EbB25fCA7603C028610ddc9233d399dA34d";
   const tokenId = 17;
@@ -17,7 +17,11 @@ const run = async (): Promise<void> => {
     args: [sender, to, tokenId],
   });
 
-  await signAndSendTransaction(sender, tokenAddress, value, callData);
+  await evm.signAndSendTransaction({
+    receiver: tokenAddress,
+    amount,
+    data: callData,
+  });
 };
 
 run();

@@ -1,12 +1,11 @@
 import { OpenSeaSDK, Chain, OrderSide } from "opensea-js";
-import { setupAccount } from "./setup";
-import { signAndSendTransaction } from "../src/chains/ethereum";
+import { setupNearEthConnection } from "./setup";
 import { sleep } from "../src/utils/sleep";
 import * as readline from "readline";
 import { ethers } from "ethers";
 import { client } from "../src/config";
 import { Address, Hex, encodeFunctionData } from "viem";
-import seaportABI from "../src/abis/Seaport.json";
+import seaportABI from "./abis/Seaport.json";
 
 const rl = readline.createInterface({
   input: process.stdin,
@@ -28,22 +27,27 @@ const run = async (slug: string): Promise<void> => {
   // const slug = "mintbase-chain-abstraction-v2";
 
   console.log("Retrieving Listings for...");
-  const listings = await openseaSDK.api.getAllListings(slug);
-  if (listings.listings.length === 0) {
+  const listings = (await openseaSDK.api.getAllListings(slug)).listings;
+  if (listings.length === 0) {
     console.log(`No available listings for collection: ${slug}`);
     return;
   }
-  console.log(
-    `Got ${listings.listings.length} Listings, preparing to purchase first available.`
+  listings.sort((a, b) =>
+    a.price.current.value.localeCompare(b.price.current.value)
   );
-  const firstListing = listings.listings[0];
+  const cheapestAvailable = listings[0];
+  console.log(
+    `Got ${listings.length} Listings, purchasing the cheapest available`
+  );
+
   // This sleep is due to free-tier testnet rate limiting.
   await sleep(1000);
-  const sender = await setupAccount();
+  const evm = await setupNearEthConnection();
+  const sender = await evm.getSender();
   const data = await openseaSDK.api.generateFulfillmentData(
     sender,
-    firstListing.order_hash,
-    firstListing.protocol_address,
+    cheapestAvailable.order_hash,
+    cheapestAvailable.protocol_address,
     OrderSide.ASK
   );
 
@@ -72,12 +76,11 @@ const run = async (slug: string): Promise<void> => {
       args: [order],
     });
   }
-  await signAndSendTransaction(
-    sender,
-    tx.to as Address,
-    tx.value / 10 ** 18,
-    callData as Hex
-  );
+  await evm.signAndSendTransaction({
+    receiver: tx.to as Address,
+    amount: tx.value / 10 ** 18,
+    data: callData as Hex,
+  });
 };
 
 rl.question("Provide collection slug: ", (input) => {

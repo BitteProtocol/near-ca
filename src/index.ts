@@ -1,2 +1,1 @@
-import { deriveEthAddress, signAndSendTransaction } from "./chains/ethereum";
-export { deriveEthAddress, signAndSendTransaction };
+export { EVM } from "./chains/ethereum";
