@@ -35,9 +35,9 @@ const run = async (slug: string): Promise<void> => {
   listings.sort((a, b) =>
     a.price.current.value.localeCompare(b.price.current.value)
   );
-  const firstListing = listings[0];
+  const cheapestAvailable = listings[0];
   console.log(
-    `Got ${listings.length} Listings, cheapest available (${JSON.stringify(firstListing)})`
+    `Got ${listings.length} Listings, purchasing the cheapest available`
   );
 
   // This sleep is due to free-tier testnet rate limiting.
@@ -46,8 +46,8 @@ const run = async (slug: string): Promise<void> => {
   const sender = await evm.getSender();
   const data = await openseaSDK.api.generateFulfillmentData(
     sender,
-    firstListing.order_hash,
-    firstListing.protocol_address,
+    cheapestAvailable.order_hash,
+    cheapestAvailable.protocol_address,
     OrderSide.ASK
   );
 
