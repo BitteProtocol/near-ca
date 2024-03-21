@@ -44,8 +44,6 @@ async function queryGasPrice(network: string): Promise<GasPrices> {
   // This is NOT a recommended practice for production environments.
   const buffer = BigInt(2 * 1e9); // Example buffer of 2 Gwei, assuming the API values are in WEI
   const maxFeePerGas = maxPriorityFeePerGas + buffer;
-  const returnData = { maxFeePerGas, maxPriorityFeePerGas };
-  console.log("Gas estimates", returnData);
   return { maxFeePerGas, maxPriorityFeePerGas };
 }
 
@@ -68,9 +66,8 @@ export const createPayload = async (
   };
   const estimatedGas = await client.estimateGas({
     ...transactionData,
-    // from: sender,
   });
-  console.log(`Using gas estimate of at ${estimatedGas} GWei`);
+  console.log(`Using estimated gasLimit of ${estimatedGas} GWei`);
   const transactionDataWithGasLimit = {
     ...transactionData,
     gasLimit: BigInt(estimatedGas.toString()),
@@ -78,8 +75,6 @@ export const createPayload = async (
     maxPriorityFeePerGas,
   };
   console.log("TxData:", transactionDataWithGasLimit);
-  // const ethersTx: Transaction = ethers.Transaction.from(transactionDataWithGasLimit as TransactionLike);
-  // console.log("EthersTX", JSON.stringify(ethersTx));
   const transaction = FeeMarketEIP1559Transaction.fromTxData(
     transactionDataWithGasLimit,
     {
