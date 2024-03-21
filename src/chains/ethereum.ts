@@ -23,6 +23,8 @@ export class EVM {
   private scanUrl: string;
   private gasStationUrl: string;
   private mpcContract: MultichainContract;
+  private derivationPath: string;
+  sender: Address;
 
   /**
    * Constructs an EVM instance with the provided configuration.
@@ -38,40 +40,48 @@ export class EVM {
     scanUrl: string;
     gasStationUrl: string;
     mpcContract: MultichainContract;
+    derivationPath: string;
+    sender: Address;
   }) {
     this.client = createPublicClient({ transport: http(config.providerUrl) });
     this.scanUrl = config.scanUrl;
     this.mpcContract = config.mpcContract;
     this.gasStationUrl = config.gasStationUrl;
+    this.derivationPath = config.derivationPath;
+    this.sender = config.sender;
   }
 
-  getSender(derivationPath?: string): Promise<Address> {
-    const path = derivationPath || "ethereum,1";
-    return this.mpcContract.deriveEthAddress(path);
-  }
-
-  signAndSendTransaction = async (
-    txData: BaseTx,
-    options?: {
-      derivationPath: string;
-    }
-  ): Promise<void> => {
+  static async fromConfig(config: {
+    providerUrl: string;
+    scanUrl: string;
+    gasStationUrl: string;
+    mpcContract: MultichainContract;
+    derivationPath?: string;
+  }): Promise<EVM> {
+    const { derivationPath, ...rest } = config;
     // Sender is uniquely determined by the derivation path!
-    const path = options?.derivationPath || "ethereum,1";
-    const sender = await this.getSender(path);
-    console.log("Creating Payload for sender:", sender);
-    const { transaction, payload } = await this.createTxPayload(txData, sender);
+    const path = derivationPath || "ethereum,1";
+    return new EVM({
+      sender: await config.mpcContract.deriveEthAddress(path),
+      derivationPath: path,
+      ...rest,
+    });
+  }
+
+  signAndSendTransaction = async (txData: BaseTx): Promise<void> => {
+    console.log("Creating Payload for sender:", this.sender);
+    const { transaction, payload } = await this.createTxPayload(txData);
     console.log("Requesting signature from Near...");
     const { big_r, big_s } = await this.mpcContract.requestSignature(
       payload,
-      path
+      this.derivationPath
     );
 
     const signedTx = EVM.reconstructSignature(
       transaction,
       big_r,
       big_s,
-      sender
+      this.sender
     );
     console.log("Relaying signed tx to EVM...");
     await this.relayTransaction(signedTx);
@@ -93,14 +103,15 @@ export class EVM {
   }
 
   private async buildTransaction(
-    tx: BaseTx,
-    sender: Address
+    tx: BaseTx
   ): Promise<FeeMarketEIP1559Transaction> {
-    const nonce = await this.client.getTransactionCount({ address: sender });
+    const nonce = await this.client.getTransactionCount({
+      address: this.sender,
+    });
     const { maxFeePerGas, maxPriorityFeePerGas } = await this.queryGasPrice();
     const transactionData = {
       nonce,
-      account: sender,
+      account: this.sender,
       to: tx.receiver,
       value: parseEther(tx.amount.toString()),
       data: tx.data || "0x",
@@ -117,8 +128,8 @@ export class EVM {
     return FeeMarketEIP1559Transaction.fromTxData(transactionDataWithGasLimit);
   }
 
-  async createTxPayload(tx: BaseTx, sender: Address): Promise<TxPayload> {
-    const transaction = await this.buildTransaction(tx, sender);
+  async createTxPayload(tx: BaseTx): Promise<TxPayload> {
+    const transaction = await this.buildTransaction(tx);
     console.log("Built Transaction", JSON.stringify(transaction));
     const payload = Array.from(
       new Uint8Array(transaction.getHashedMessageToSign().slice().reverse())
@@ -130,7 +141,7 @@ export class EVM {
     transaction: FeeMarketEIP1559Transaction,
     big_r: string,
     big_s: string,
-    sender: string
+    sender: Address
   ): FeeMarketEIP1559Transaction => {
     const r = Buffer.from(big_r.substring(2), "hex");
     const s = Buffer.from(big_s, "hex");

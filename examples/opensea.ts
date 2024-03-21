@@ -43,9 +43,8 @@ const run = async (slug: string): Promise<void> => {
   // This sleep is due to free-tier testnet rate limiting.
   await sleep(1000);
   const evm = await setupNearEthConnection();
-  const sender = await evm.getSender();
   const data = await openseaSDK.api.generateFulfillmentData(
-    sender,
+    evm.sender,
     cheapestAvailable.order_hash,
     cheapestAvailable.protocol_address,
     OrderSide.ASK
