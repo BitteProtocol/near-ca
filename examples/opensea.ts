@@ -1,10 +1,12 @@
 import { OpenSeaSDK, Chain, OrderSide } from "opensea-js";
 import { setupAccount } from "./setup";
 import { signAndSendTransaction } from "../src/chains/ethereum";
-import { openSeaInterface } from "../src/utils/interfaces";
 import { sleep } from "../src/utils/sleep";
 import * as readline from "readline";
-import { provider } from "../src/config";
+import { ethers } from "ethers";
+import { client } from "../src/config";
+import { Address, Hex, encodeFunctionData } from "viem";
+import seaportABI from "../src/abis/Seaport.json";
 
 const rl = readline.createInterface({
   input: process.stdin,
@@ -13,12 +15,16 @@ const rl = readline.createInterface({
 
 // This script uses the OpenSea SDK:
 // https://github.com/ProjectOpenSea/opensea-js/blob/main/developerDocs/advanced-use-cases.md
-const openseaSDK = new OpenSeaSDK(provider, {
-  chain: Chain.Sepolia,
-  // apiKey: YOUR_API_KEY,
-});
-
 const run = async (slug: string): Promise<void> => {
+  // This fake provider is required to construct an openseaSDK instance (although we do not make use of it).
+  const dummyProvider = new ethers.JsonRpcProvider(
+    "fakeURL",
+    await client.getChainId()
+  );
+  const openseaSDK = new OpenSeaSDK(dummyProvider, {
+    chain: Chain.Sepolia,
+    // apiKey: YOUR_API_KEY,
+  });
   // const slug = "mintbase-chain-abstraction-v2";
 
   console.log("Retrieving Listings for...");
@@ -49,21 +55,29 @@ const run = async (slug: string): Promise<void> => {
   const order = input_data.parameters;
   // @ts-expect-error: Undocumented field on type FulfillmentData within FulfillmentDataResponse
   const fulfillerConduitKey = input_data.fulfillerConduitKey;
+
   let callData = "0x";
   if (tx.function.includes("fulfillOrder")) {
     console.log("Using fulfillOrder");
-    callData = openSeaInterface().encodeFunctionData("fulfillOrder", [
-      order,
-      fulfillerConduitKey,
-    ]);
+    callData = encodeFunctionData({
+      abi: seaportABI,
+      functionName: "fulfillOrder",
+      args: [order, fulfillerConduitKey],
+    });
   } else {
     console.log("Using fulfillBasicOrder_efficient_6GL6yc");
-    callData = openSeaInterface().encodeFunctionData(
-      "fulfillBasicOrder_efficient_6GL6yc",
-      [order]
-    );
+    callData = encodeFunctionData({
+      abi: seaportABI,
+      functionName: "fulfillBasicOrder_efficient_6GL6yc",
+      args: [order],
+    });
   }
-  await signAndSendTransaction(sender, tx.to, tx.value / 10 ** 18, callData);
+  await signAndSendTransaction(
+    sender,
+    tx.to as Address,
+    tx.value / 10 ** 18,
+    callData as Hex
+  );
 };
 
 rl.question("Provide collection slug: ", (input) => {

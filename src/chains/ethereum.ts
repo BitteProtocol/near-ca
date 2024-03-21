@@ -1,7 +1,6 @@
 import { FeeMarketEIP1559Transaction } from "@ethereumjs/tx";
 import { bytesToHex } from "@ethereumjs/util";
 import { BN } from "bn.js";
-import { ethers } from "ethers";
 import { providers as nearProviders } from "near-api-js";
 import { functionCall } from "near-api-js/lib/transaction";
 import {
@@ -9,15 +8,16 @@ import {
   najPublicKeyStrToUncompressedHexPoint,
   uncompressedHexPointToEvmAddress,
 } from "../utils/kdf";
+import { Address, parseEther, Hex } from "viem";
 import { NO_DEPOSIT, getNearAccount, provider as nearProvider } from "./near";
 import { GasPriceResponse, GasPrices, TxPayload } from "../types";
 import { getMultichainContract } from "../mpc_contract";
 import { getFirstNonZeroGasPrice } from "../utils/gasPrice";
-import { common, provider } from "../config";
+import { client, common } from "../config";
 
 export const deriveEthAddress = async (
   derivationPath: string
-): Promise<string> => {
+): Promise<Address> => {
   const account = await getNearAccount();
   const multichainContract = getMultichainContract(account);
   const rootPublicKey = await multichainContract.public_key();
@@ -44,32 +44,30 @@ async function queryGasPrice(network: string): Promise<GasPrices> {
   // This is NOT a recommended practice for production environments.
   const buffer = BigInt(2 * 1e9); // Example buffer of 2 Gwei, assuming the API values are in WEI
   const maxFeePerGas = maxPriorityFeePerGas + buffer;
-  const returnData = { maxFeePerGas, maxPriorityFeePerGas };
-  console.log("Gas estimates", returnData);
   return { maxFeePerGas, maxPriorityFeePerGas };
 }
 
 export const createPayload = async (
-  sender: string,
-  receiver: string,
+  sender: Address,
+  receiver: Address,
   amount: number,
-  data?: string
+  data?: Hex
 ): Promise<TxPayload> => {
-  const nonce = await provider.getTransactionCount(sender);
+  const nonce = await client.getTransactionCount({ address: sender });
   const { maxFeePerGas, maxPriorityFeePerGas } = await queryGasPrice(
-    (await provider.getNetwork()).name
+    client.chain.name
   );
   const transactionData = {
     nonce,
+    account: sender,
     to: receiver,
-    value: ethers.parseEther(amount.toString()),
+    value: parseEther(amount.toString()),
     data: data || "0x",
   };
-  const estimatedGas = await provider.estimateGas({
+  const estimatedGas = await client.estimateGas({
     ...transactionData,
-    from: sender,
   });
-  console.log(`Using gas estimate of at ${estimatedGas} GWei`);
+  console.log(`Using estimated gasLimit of ${estimatedGas} GWei`);
   const transactionDataWithGasLimit = {
     ...transactionData,
     gasLimit: BigInt(estimatedGas.toString()),
@@ -77,8 +75,6 @@ export const createPayload = async (
     maxPriorityFeePerGas,
   };
   console.log("TxData:", transactionDataWithGasLimit);
-  // const ethersTx: Transaction = ethers.Transaction.from(transactionDataWithGasLimit as TransactionLike);
-  // console.log("EthersTX", JSON.stringify(ethersTx));
   const transaction = FeeMarketEIP1559Transaction.fromTxData(
     transactionDataWithGasLimit,
     {
@@ -117,13 +113,12 @@ export const reconstructSignature = (
 export const relayTransaction = async (
   signedTransaction: FeeMarketEIP1559Transaction
 ): Promise<string> => {
-  const serializedTx = bytesToHex(signedTransaction.serialize());
-  const relayed: ethers.TransactionResponse = await provider.send(
-    "eth_sendRawTransaction",
-    [serializedTx]
-  );
-  console.log("Transaction Confirmed:", relayed.hash);
-  return relayed.hash;
+  const serializedTx = bytesToHex(signedTransaction.serialize()) as Hex;
+  const txHash = await client.sendRawTransaction({
+    serializedTransaction: serializedTx,
+  });
+  console.log("Transaction Confirmed:", txHash);
+  return txHash;
 };
 
 export const requestSignature = async (
@@ -155,10 +150,10 @@ export const requestSignature = async (
 };
 
 export const signAndSendTransaction = async (
-  sender: string,
-  receiver: string,
+  sender: Address,
+  receiver: Address,
   amount: number,
-  data?: string,
+  data?: Hex,
   options?: {
     path: string;
   }
@@ -170,7 +165,7 @@ export const signAndSendTransaction = async (
     amount,
     data
   );
-
+  console.log("Requesting signature from Near...");
   const { big_r, big_s } = await requestSignature(
     payload,
     options?.path || "ethereum,1"

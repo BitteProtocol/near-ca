@@ -1,5 +1,6 @@
 import { Common } from "@ethereumjs/common";
-import { ethers } from "ethers";
+import { createPublicClient, http } from "viem";
+import { sepolia } from "viem/chains";
 
 const config = {
   chainId: 11155111,
@@ -10,7 +11,8 @@ const config = {
 };
 
 export const common = new Common({ chain: config.chain });
-export const provider = new ethers.JsonRpcProvider(
-  config.providerUrl,
-  config.chainId
-);
+
+export const client = createPublicClient({
+  chain: sepolia,
+  transport: http(),
+});
