@@ -1,9 +1,7 @@
 import { OpenSeaSDK, Chain, OrderSide } from "opensea-js";
-import { setupNearEthConnection } from "./setup";
-import { sleep } from "../src/utils/sleep";
+import { setupNearEthAdapter, sleep } from "./setup";
 import * as readline from "readline";
 import { ethers } from "ethers";
-import { client } from "../src/config";
 import { Address, Hex, encodeFunctionData } from "viem";
 import seaportABI from "./abis/Seaport.json";
 
@@ -15,11 +13,9 @@ const rl = readline.createInterface({
 // This script uses the OpenSea SDK:
 // https://github.com/ProjectOpenSea/opensea-js/blob/main/developerDocs/advanced-use-cases.md
 const run = async (slug: string): Promise<void> => {
+  const evm = await setupNearEthAdapter();
   // This fake provider is required to construct an openseaSDK instance (although we do not make use of it).
-  const dummyProvider = new ethers.JsonRpcProvider(
-    "fakeURL",
-    await client.getChainId()
-  );
+  const dummyProvider = new ethers.JsonRpcProvider("fakeURL", 11155111);
   const openseaSDK = new OpenSeaSDK(dummyProvider, {
     chain: Chain.Sepolia,
     // apiKey: YOUR_API_KEY,
@@ -42,7 +38,6 @@ const run = async (slug: string): Promise<void> => {
 
   // This sleep is due to free-tier testnet rate limiting.
   await sleep(1000);
-  const evm = await setupNearEthConnection();
   const data = await openseaSDK.api.generateFulfillmentData(
     evm.sender,
     cheapestAvailable.order_hash,
