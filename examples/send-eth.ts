@@ -1,16 +1,14 @@
-import { signAndSendTransaction } from "../src/chains/ethereum";
 import dotenv from "dotenv";
-import { setupAccount } from "./setup";
+import { setupNearEthConnection } from "./setup";
 dotenv.config();
 
 const run = async (): Promise<void> => {
-  const sender = await setupAccount();
+  const evm = await setupNearEthConnection();
 
-  await signAndSendTransaction(
-    sender,
-    "0xAA5FcF171dDf9FE59c985A28747e650C2e9069cA",
-    0.0001
-  );
+  await evm.signAndSendTransaction({
+    receiver: "0x247b317521D7edCfaf9B6D6C21B55217E5c34E0a",
+    amount: 0.000001,
+  });
 };
 
 run();

@@ -1,8 +1,19 @@
 import dotenv from "dotenv";
-import { Address } from "viem";
-import { deriveEthAddress } from "../src/chains/ethereum";
+import { MultichainContract } from "../src/mpc_contract";
+import { EVM } from "../src/chains/ethereum";
+import { getNearAccount } from "../src/chains/near";
 dotenv.config();
 
-export async function setupAccount(): Promise<Address> {
-  return deriveEthAddress("ethereum,1");
+export async function setupNearEthConnection(): Promise<EVM> {
+  // This also reads from process.env!
+  const account = await getNearAccount();
+  return new EVM({
+    providerUrl: process.env.NODE_URL!,
+    scanUrl: process.env.SCAN_URL!,
+    gasStationUrl: process.env.GAS_STATION_URL!,
+    mpcContract: new MultichainContract(
+      account,
+      process.env.NEAR_MULTICHAIN_CONTRACT!
+    ),
+  });
 }

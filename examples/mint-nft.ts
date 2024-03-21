@@ -1,22 +1,18 @@
-import { signAndSendTransaction } from "../src/chains/ethereum";
 import { encodeFunctionData } from "viem";
-import { setupAccount } from "./setup";
+import { setupNearEthConnection } from "./setup";
 
 const run = async (): Promise<void> => {
-  const sender = await setupAccount();
+  const evm = await setupNearEthConnection();
 
-  const data = encodeFunctionData({
-    abi: ["function safeMint(address to)"],
-    functionName: "safeMint",
-    args: ["0xAA5FcF171dDf9FE59c985A28747e650C2e9069cA"],
+  await evm.signAndSendTransaction({
+    receiver: "0xAA5FcF171dDf9FE59c985A28747e650C2e9069cA",
+    amount: 0,
+    data: encodeFunctionData({
+      abi: ["function safeMint(address to)"],
+      functionName: "safeMint",
+      args: ["0xAA5FcF171dDf9FE59c985A28747e650C2e9069cA"],
+    }),
   });
-
-  await signAndSendTransaction(
-    sender,
-    "0xAA5FcF171dDf9FE59c985A28747e650C2e9069cA",
-    0,
-    data
-  );
 };
 
 run();
