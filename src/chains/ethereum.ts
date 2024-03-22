@@ -81,18 +81,24 @@ export class NearEthAdapter {
     return this.relayTransaction(signedTx);
   }
 
-  async getSignatureRequstPayload(
+  async getSignatureRequestPayload(
     txData: BaseTx,
     nearGas?: BN
-  ): Promise<NearSignPayload> {
+  ): Promise<{
+    transaction: FeeMarketEIP1559Transaction;
+    requestPayload: NearSignPayload;
+  }> {
     console.log("Creating Payload for sender:", this.sender);
-    const { payload } = await this.createTxPayload(txData);
+    const { transaction, payload } = await this.createTxPayload(txData);
     console.log("Requesting signature from Near...");
-    return this.mpcContract.buildSignatureRequestTx(
-      payload,
-      this.derivationPath,
-      nearGas
-    );
+    return {
+      transaction,
+      requestPayload: await this.mpcContract.buildSignatureRequestTx(
+        payload,
+        this.derivationPath,
+        nearGas
+      ),
+    };
   }
 
   reconstructSignature = (
