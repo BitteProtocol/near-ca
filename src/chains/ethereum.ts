@@ -86,7 +86,7 @@ export class NearEthAdapter {
     nearGas?: BN
   ): Promise<NearSignPayload> {
     console.log("Creating Payload for sender:", this.sender);
-    const { payload } = await this.createTxPayload(txData);
+    const { transaction, payload } = await this.createTxPayload(txData);
     console.log("Requesting signature from Near...");
     return this.mpcContract.buildSignatureRequestTx(
       payload,
@@ -138,7 +138,7 @@ export class NearEthAdapter {
    * @param {BaseTx} tx - Minimal transaction data to be signed by Near MPC and executed on EVM.
    * @returns transacion and its bytes (the payload to be signed on Near)
    */
-  private async createTxPayload(tx: BaseTx): Promise<TxPayload> {
+  async createTxPayload(tx: BaseTx): Promise<TxPayload> {
     const transaction = await this.buildTransaction(tx);
     console.log("Built Transaction", JSON.stringify(transaction));
     const payload = Array.from(
