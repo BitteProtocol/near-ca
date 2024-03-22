@@ -1,6 +1,7 @@
 import { FeeMarketEIP1559Transaction } from "@ethereumjs/tx";
 import { Address, Hex } from "viem";
 import { MultichainContract } from "./mpcContract";
+import { FunctionCallAction } from "@near-wallet-selector/core";
 
 export interface BaseTx {
   /// Recipient of the transaction
@@ -28,7 +29,7 @@ export interface EvmParams {
 }
 
 export interface NearParams {
-  // A instance of the NearMPC contract connected to the associated near account.
+  /// An instance of the NearMPC contract connected to the associated near account.
   mpcContract: MultichainContract;
   /// path used to generate ETH account from Near account (e.g. "ethereum,1")
   derivationPath?: string;
@@ -42,4 +43,10 @@ export interface GasPrices {
 export interface TxPayload {
   transaction: FeeMarketEIP1559Transaction;
   payload: number[];
+}
+
+export interface NearSignPayload {
+  signerId: string;
+  receiverId: string;
+  actions: Array<FunctionCallAction>;
 }

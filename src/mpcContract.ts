@@ -7,6 +7,7 @@ import {
 } from "./utils/kdf";
 import { NO_DEPOSIT, nearAccountFromEnv, TGAS } from "./chains/near";
 import BN from "bn.js";
+import { NearSignPayload } from "./types";
 
 interface ChangeMethodArgs<T> {
   args: T;
@@ -75,5 +76,27 @@ export class MultichainContract {
       attachedDeposit: new BN(NO_DEPOSIT),
     });
     return { big_r, big_s };
+  };
+
+  buildSignatureRequestTx = async (
+    payload: number[],
+    path: string,
+    gas?: BN
+  ): Promise<NearSignPayload> => {
+    return {
+      signerId: this.contract.account.accountId,
+      receiverId: this.contract.contractId,
+      actions: [
+        {
+          type: "FunctionCall",
+          params: {
+            methodName: "sign",
+            args: { path, payload },
+            gas: (gas || TGAS.muln(200)).toString(),
+            deposit: NO_DEPOSIT,
+          },
+        },
+      ],
+    };
   };
 }

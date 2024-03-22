@@ -9,7 +9,12 @@ import {
   http,
   Hash,
 } from "viem";
-import { BaseTx, NearEthAdapterParams, TxPayload } from "../types";
+import {
+  BaseTx,
+  NearEthAdapterParams,
+  NearSignPayload,
+  TxPayload,
+} from "../types";
 import { queryGasPrice } from "../utils/gasPrice";
 import { MultichainContract } from "../mpcContract";
 import BN from "bn.js";
@@ -71,31 +76,46 @@ export class NearEthAdapter {
       nearGas
     );
 
-    const signedTx = NearEthAdapter.reconstructSignature(
-      transaction,
-      big_r,
-      big_s,
-      this.sender
-    );
+    const signedTx = this.reconstructSignature(transaction, big_r, big_s);
     console.log("Relaying signed tx to EVM...");
     return this.relayTransaction(signedTx);
   }
 
-  /**
-   * Builds a complete, unsigned transaction (with nonce, gas estimates, current prices)
-   * and payload bytes in preparation to be relayed to Near MPC contract.
-   *
-   * @param {BaseTx} tx - Minimal transaction data to be signed by Near MPC and executed on EVM.
-   * @returns transacion and its bytes (the payload to be signed on Near)
-   */
-  async createTxPayload(tx: BaseTx): Promise<TxPayload> {
-    const transaction = await this.buildTransaction(tx);
-    console.log("Built Transaction", JSON.stringify(transaction));
-    const payload = Array.from(
-      new Uint8Array(transaction.getHashedMessageToSign().slice().reverse())
+  async getSignatureRequstPayload(
+    txData: BaseTx,
+    nearGas?: BN
+  ): Promise<NearSignPayload> {
+    console.log("Creating Payload for sender:", this.sender);
+    const { payload } = await this.createTxPayload(txData);
+    console.log("Requesting signature from Near...");
+    return this.mpcContract.buildSignatureRequestTx(
+      payload,
+      this.derivationPath,
+      nearGas
     );
-    return { transaction, payload };
   }
+
+  reconstructSignature = (
+    transaction: FeeMarketEIP1559Transaction,
+    big_r: string,
+    big_s: string
+  ): FeeMarketEIP1559Transaction => {
+    const r = Buffer.from(big_r.substring(2), "hex");
+    const s = Buffer.from(big_s, "hex");
+
+    const candidates = [0n, 1n].map((v) => transaction.addSignature(v, r, s));
+    const signature = candidates.find(
+      (c) =>
+        c.getSenderAddress().toString().toLowerCase() ===
+        this.sender.toLowerCase()
+    );
+
+    if (!signature) {
+      throw new Error("Signature is not valid");
+    }
+
+    return signature;
+  };
 
   /**
    * Relays signed transaction to Etherem mempool for execution.
@@ -111,27 +131,21 @@ export class NearEthAdapter {
     return txHash;
   }
 
-  private static reconstructSignature = (
-    transaction: FeeMarketEIP1559Transaction,
-    big_r: string,
-    big_s: string,
-    sender: Address
-  ): FeeMarketEIP1559Transaction => {
-    const r = Buffer.from(big_r.substring(2), "hex");
-    const s = Buffer.from(big_s, "hex");
-
-    const candidates = [0n, 1n].map((v) => transaction.addSignature(v, r, s));
-    const signature = candidates.find(
-      (c) =>
-        c.getSenderAddress().toString().toLowerCase() === sender.toLowerCase()
+  /**
+   * Builds a complete, unsigned transaction (with nonce, gas estimates, current prices)
+   * and payload bytes in preparation to be relayed to Near MPC contract.
+   *
+   * @param {BaseTx} tx - Minimal transaction data to be signed by Near MPC and executed on EVM.
+   * @returns transacion and its bytes (the payload to be signed on Near)
+   */
+  private async createTxPayload(tx: BaseTx): Promise<TxPayload> {
+    const transaction = await this.buildTransaction(tx);
+    console.log("Built Transaction", JSON.stringify(transaction));
+    const payload = Array.from(
+      new Uint8Array(transaction.getHashedMessageToSign().slice().reverse())
     );
-
-    if (!signature) {
-      throw new Error("Signature is not valid");
-    }
-
-    return signature;
-  };
+    return { transaction, payload };
+  }
 
   private async buildTransaction(
     tx: BaseTx

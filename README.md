@@ -62,9 +62,9 @@ const evm = {
     gasStationUrl: process.env.GAS_STATION_URL!,
 };
 
-const neareth = NearEthAdapter.fromConfig({ near, evm });
+const neareth = await NearEthAdapter.fromConfig({ near, evm });
 
-await evm.signAndSendTransaction({
+await neareth.signAndSendTransaction({
     receiver: "0xdeADBeeF0000000000000000000000000b00B1e5",
     amount: 0.00000001,
     // Optional Set nearGas (default is 200 TGAS - which still sometimes doesn't work!)
