@@ -1,0 +1,25 @@
+name: NPM Publish
+
+on:
+  release:
+    types: [created]
+
+jobs:
+  publish-npm:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          registry-url: https://registry.npmjs.org/
+      - name: Build & Set Package Version to Tag
+        run: |
+          yarn --frozen-lockfile
+          yarn build
+          VERSION=${GITHUB_REF#refs/tags/}
+          npm version $VERSION --no-git-tag-version
+      - name: Publish
+        run: npm publish --access public
+        env:
+          NODE_AUTH_TOKEN: ${{secrets.NPM_TOKEN}}
