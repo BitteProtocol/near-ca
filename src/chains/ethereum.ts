@@ -14,6 +14,7 @@ import {
   NearEthAdapterParams,
   NearContractFunctionPayload,
   TxPayload,
+  TransactionWithSignature,
 } from "../types";
 import { queryGasPrice } from "../utils/gasPrice";
 import { MultichainContract } from "../mpcContract";
@@ -93,7 +94,7 @@ export class NearEthAdapter {
       nearGas
     );
 
-    return this.relayTransaction(transaction, big_r, big_s);
+    return this.relayTransaction({ transaction, signature: { big_r, big_s } });
   }
 
   /**
@@ -125,16 +126,13 @@ export class NearEthAdapter {
   }
 
   /**
-   * Relays signed transaction to Etherem mempool for execution.
-   * @param signedTx - Signed Ethereum transaction.
-   * @returns Transaction Hash of relayed transaction.
+   * Relays valid representation of signed transaction to Etherem mempool for execution.
+   *
+   * @param {TransactionWithSignature} tx - Signed Ethereum transaction.
+   * @returns Hash of relayed transaction.
    */
-  async relayTransaction(
-    transaction: FeeMarketEIP1559Transaction,
-    big_r: string,
-    big_s: string
-  ): Promise<Hash> {
-    const signedTx = await this.reconstructSignature(transaction, big_r, big_s);
+  async relayTransaction(tx: TransactionWithSignature): Promise<Hash> {
+    const signedTx = await this.reconstructSignature(tx);
     return this.relaySignedTransaction(signedTx);
   }
 
@@ -143,7 +141,7 @@ export class NearEthAdapter {
    * and payload bytes in preparation to be relayed to Near MPC contract.
    *
    * @param {BaseTx} tx - Minimal transaction data to be signed by Near MPC and executed on EVM.
-   * @returns transacion and its bytes (the payload to be signed on Near)
+   * @returns Transaction and its bytes (the payload to be signed on Near).
    */
   async createTxPayload(tx: BaseTx): Promise<TxPayload> {
     const transaction = await this.buildTransaction(tx);
@@ -183,12 +181,11 @@ export class NearEthAdapter {
   }
 
   private reconstructSignature = (
-    transaction: FeeMarketEIP1559Transaction,
-    big_r: string,
-    big_s: string
+    tx: TransactionWithSignature
   ): FeeMarketEIP1559Transaction => {
-    const r = Buffer.from(big_r.substring(2), "hex");
-    const s = Buffer.from(big_s, "hex");
+    const { transaction, signature: sig } = tx;
+    const r = Buffer.from(sig.big_r.substring(2), "hex");
+    const s = Buffer.from(sig.big_s, "hex");
 
     const candidates = [0n, 1n].map((v) => transaction.addSignature(v, r, s));
     const signature = candidates.find(
