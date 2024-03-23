@@ -7,24 +7,12 @@ import {
 } from "./utils/kdf";
 import { NO_DEPOSIT, nearAccountFromEnv, TGAS } from "./chains/near";
 import BN from "bn.js";
-import { NearSignPayload } from "./types";
-
-interface ChangeMethodArgs<T> {
-  args: T;
-  gas: BN;
-  attachedDeposit: BN;
-}
-
-interface SignArgs {
-  path: string;
-  payload: number[];
-  key_version: number;
-}
-
-interface SignResult {
-  big_r: string;
-  big_s: string;
-}
+import {
+  ChangeMethodArgs,
+  MPCSignature,
+  NearContractFunctionPayload,
+  SignArgs,
+} from "./types";
 
 interface MultichainContractInterface extends Contract {
   // Define the signature for the `public_key` view method
@@ -34,6 +22,10 @@ interface MultichainContractInterface extends Contract {
   sign: (args: ChangeMethodArgs<SignArgs>) => Promise<[string, string]>;
 }
 
+/**
+ * High-level interface for the Near MPC-Recovery Contract
+ * located in: https://github.com/near/mpc-recovery
+ */
 export class MultichainContract {
   contract: MultichainContractInterface;
 
@@ -66,13 +58,11 @@ export class MultichainContract {
   };
 
   requestSignature = async (
-    payload: number[],
-    path: string,
-    key_version: number,
+    signArgs: SignArgs,
     gas?: BN
-  ): Promise<SignResult> => {
+  ): Promise<MPCSignature> => {
     const [big_r, big_s] = await this.contract.sign({
-      args: { path, payload, key_version },
+      args: signArgs,
       // Default of 200 TGAS
       gas: gas || TGAS.muln(200),
       attachedDeposit: new BN(NO_DEPOSIT),
@@ -80,12 +70,10 @@ export class MultichainContract {
     return { big_r, big_s };
   };
 
-  buildSignatureRequestTx = async (
-    payload: number[],
-    path: string,
-    key_version: number,
+  encodeSignatureRequestTx = async (
+    signArgs: SignArgs,
     gas?: BN
-  ): Promise<NearSignPayload> => {
+  ): Promise<NearContractFunctionPayload> => {
     return {
       signerId: this.contract.account.accountId,
       receiverId: this.contract.contractId,
@@ -94,7 +82,7 @@ export class MultichainContract {
           type: "FunctionCall",
           params: {
             methodName: "sign",
-            args: { path, payload, key_version },
+            args: signArgs,
             gas: (gas || TGAS.muln(200)).toString(),
             deposit: NO_DEPOSIT,
           },
