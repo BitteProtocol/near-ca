@@ -18,6 +18,7 @@ interface ChangeMethodArgs<T> {
 interface SignArgs {
   path: string;
   payload: number[];
+  key_version: number;
 }
 
 interface SignResult {
@@ -67,10 +68,11 @@ export class MultichainContract {
   requestSignature = async (
     payload: number[],
     path: string,
+    key_version: number,
     gas?: BN
   ): Promise<SignResult> => {
     const [big_r, big_s] = await this.contract.sign({
-      args: { path, payload },
+      args: { path, payload, key_version },
       // Default of 200 TGAS
       gas: gas || TGAS.muln(200),
       attachedDeposit: new BN(NO_DEPOSIT),
@@ -81,6 +83,7 @@ export class MultichainContract {
   buildSignatureRequestTx = async (
     payload: number[],
     path: string,
+    key_version: number,
     gas?: BN
   ): Promise<NearSignPayload> => {
     return {
@@ -91,7 +94,7 @@ export class MultichainContract {
           type: "FunctionCall",
           params: {
             methodName: "sign",
-            args: { path, payload },
+            args: { path, payload, key_version },
             gas: (gas || TGAS.muln(200)).toString(),
             deposit: NO_DEPOSIT,
           },

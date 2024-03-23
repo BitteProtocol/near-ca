@@ -73,6 +73,7 @@ export class NearEthAdapter {
     const { big_r, big_s } = await this.mpcContract.requestSignature(
       payload,
       this.derivationPath,
+      0,
       nearGas
     );
 
@@ -96,6 +97,7 @@ export class NearEthAdapter {
       requestPayload: await this.mpcContract.buildSignatureRequestTx(
         payload,
         this.derivationPath,
+        0,
         nearGas
       ),
     };
