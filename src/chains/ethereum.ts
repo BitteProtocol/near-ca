@@ -12,7 +12,7 @@ import {
 import {
   BaseTx,
   NearEthAdapterParams,
-  NearSignPayload,
+  NearContractFunctionPayload,
   TxPayload,
 } from "../types";
 import { queryGasPrice } from "../utils/gasPrice";
@@ -20,12 +20,13 @@ import { MultichainContract } from "../mpcContract";
 import BN from "bn.js";
 
 export class NearEthAdapter {
-  private client: PublicClient;
+  private ethClient: PublicClient;
   private scanUrl: string;
   private gasStationUrl: string;
+
   private mpcContract: MultichainContract;
   private derivationPath: string;
-  sender: Address;
+  private sender: Address;
 
   private constructor(config: {
     providerUrl: string;
@@ -35,12 +36,27 @@ export class NearEthAdapter {
     derivationPath: string;
     sender: Address;
   }) {
-    this.client = createPublicClient({ transport: http(config.providerUrl) });
+    this.ethClient = createPublicClient({
+      transport: http(config.providerUrl),
+    });
     this.scanUrl = config.scanUrl;
     this.mpcContract = config.mpcContract;
     this.gasStationUrl = config.gasStationUrl;
     this.derivationPath = config.derivationPath;
     this.sender = config.sender;
+  }
+
+  /**
+   * @returns ETH address derived by Near account via `derivationPath`.
+   */
+  ethPublicKey(): Address {
+    return this.sender;
+  }
+  /**
+   * @returns Near accountId linked to derived ETH.
+   */
+  nearAccountId(): string {
+    return this.mpcContract.contract.account.accountId;
   }
 
   /**
@@ -65,43 +81,108 @@ export class NearEthAdapter {
    * acquires signature from Near MPC Contract and submits transaction to public mempool.
    *
    * @param {BaseTx} txData - Minimal transaction data to be signed by Near MPC and executed on EVM.
+   * @param {BN} nearGas - manually specified gas to be sent with signature request (default 200 TGAS).
+   * Note that the signature request is a recursive function.
    */
   async signAndSendTransaction(txData: BaseTx, nearGas?: BN): Promise<Hash> {
     console.log("Creating Payload for sender:", this.sender);
-    const { transaction, payload } = await this.createTxPayload(txData);
+    const { transaction, signArgs } = await this.createTxPayload(txData);
     console.log("Requesting signature from Near...");
     const { big_r, big_s } = await this.mpcContract.requestSignature(
-      payload,
-      this.derivationPath,
+      signArgs,
       nearGas
     );
 
-    const signedTx = this.reconstructSignature(transaction, big_r, big_s);
-    console.log("Relaying signed tx to EVM...");
-    return this.relayTransaction(signedTx);
+    return this.relayTransaction(transaction, big_r, big_s);
   }
 
+  /**
+   * Takes a minimally declared Ethereum Transaction,
+   * builds the full transaction payload (with gas estimates, prices etc...),
+   * acquires signature from Near MPC Contract and submits transaction to public mempool.
+   *
+   * @param {BaseTx} txData - Minimal transaction data to be signed by Near MPC and executed on EVM.
+   * @param {BN} nearGas - manually specified gas to be sent with signature request (default 200 TGAS).
+   * Note that the signature request is a recursive function.
+   */
   async getSignatureRequestPayload(
     txData: BaseTx,
     nearGas?: BN
   ): Promise<{
     transaction: FeeMarketEIP1559Transaction;
-    requestPayload: NearSignPayload;
+    requestPayload: NearContractFunctionPayload;
   }> {
     console.log("Creating Payload for sender:", this.sender);
-    const { transaction, payload } = await this.createTxPayload(txData);
+    const { transaction, signArgs } = await this.createTxPayload(txData);
     console.log("Requesting signature from Near...");
     return {
       transaction,
-      requestPayload: await this.mpcContract.buildSignatureRequestTx(
-        payload,
-        this.derivationPath,
+      requestPayload: await this.mpcContract.encodeSignatureRequestTx(
+        signArgs,
         nearGas
       ),
     };
   }
 
-  reconstructSignature = (
+  /**
+   * Relays signed transaction to Etherem mempool for execution.
+   * @param signedTx - Signed Ethereum transaction.
+   * @returns Transaction Hash of relayed transaction.
+   */
+  async relayTransaction(
+    transaction: FeeMarketEIP1559Transaction,
+    big_r: string,
+    big_s: string
+  ): Promise<Hash> {
+    const signedTx = await this.reconstructSignature(transaction, big_r, big_s);
+    return this.relaySignedTransaction(signedTx);
+  }
+
+  /**
+   * Builds a complete, unsigned transaction (with nonce, gas estimates, current prices)
+   * and payload bytes in preparation to be relayed to Near MPC contract.
+   *
+   * @param {BaseTx} tx - Minimal transaction data to be signed by Near MPC and executed on EVM.
+   * @returns transacion and its bytes (the payload to be signed on Near)
+   */
+  async createTxPayload(tx: BaseTx): Promise<TxPayload> {
+    const transaction = await this.buildTransaction(tx);
+    console.log("Built (unsigned) Transaction", transaction.toJSON());
+    const payload = Array.from(
+      new Uint8Array(transaction.getHashedMessageToSign().slice().reverse())
+    );
+    const signArgs = { payload, path: this.derivationPath, key_version: 0 };
+    return { transaction, signArgs };
+  }
+
+  private async buildTransaction(
+    tx: BaseTx
+  ): Promise<FeeMarketEIP1559Transaction> {
+    const nonce = await this.ethClient.getTransactionCount({
+      address: this.sender,
+    });
+    const { maxFeePerGas, maxPriorityFeePerGas } = await queryGasPrice(
+      this.gasStationUrl
+    );
+    const transactionData = {
+      nonce,
+      account: this.sender,
+      to: tx.receiver,
+      value: parseEther(tx.amount.toString()),
+      data: tx.data || "0x",
+    };
+    const estimatedGas = await this.ethClient.estimateGas(transactionData);
+    const transactionDataWithGasLimit = {
+      ...transactionData,
+      gasLimit: BigInt(estimatedGas.toString()),
+      maxFeePerGas,
+      maxPriorityFeePerGas,
+      chainId: await this.ethClient.getChainId(),
+    };
+    return FeeMarketEIP1559Transaction.fromTxData(transactionDataWithGasLimit);
+  }
+
+  private reconstructSignature = (
     transaction: FeeMarketEIP1559Transaction,
     big_r: string,
     big_s: string
@@ -128,56 +209,14 @@ export class NearEthAdapter {
    * @param signedTx - Signed Ethereum transaction.
    * @returns Transaction Hash of relayed transaction.
    */
-  async relayTransaction(signedTx: FeeMarketEIP1559Transaction): Promise<Hash> {
+  private async relaySignedTransaction(
+    signedTx: FeeMarketEIP1559Transaction
+  ): Promise<Hash> {
     const serializedTx = bytesToHex(signedTx.serialize()) as Hex;
-    const txHash = await this.client.sendRawTransaction({
+    const txHash = await this.ethClient.sendRawTransaction({
       serializedTransaction: serializedTx,
     });
     console.log(`Transaction Confirmed: ${this.scanUrl}/tx/${txHash}`);
     return txHash;
-  }
-
-  /**
-   * Builds a complete, unsigned transaction (with nonce, gas estimates, current prices)
-   * and payload bytes in preparation to be relayed to Near MPC contract.
-   *
-   * @param {BaseTx} tx - Minimal transaction data to be signed by Near MPC and executed on EVM.
-   * @returns transacion and its bytes (the payload to be signed on Near)
-   */
-  async createTxPayload(tx: BaseTx): Promise<TxPayload> {
-    const transaction = await this.buildTransaction(tx);
-    console.log("Built Transaction", JSON.stringify(transaction));
-    const payload = Array.from(
-      new Uint8Array(transaction.getHashedMessageToSign().slice().reverse())
-    );
-    return { transaction, payload };
-  }
-
-  private async buildTransaction(
-    tx: BaseTx
-  ): Promise<FeeMarketEIP1559Transaction> {
-    const nonce = await this.client.getTransactionCount({
-      address: this.sender,
-    });
-    const { maxFeePerGas, maxPriorityFeePerGas } = await queryGasPrice(
-      this.gasStationUrl
-    );
-    const transactionData = {
-      nonce,
-      account: this.sender,
-      to: tx.receiver,
-      value: parseEther(tx.amount.toString()),
-      data: tx.data || "0x",
-    };
-    const estimatedGas = await this.client.estimateGas(transactionData);
-    const transactionDataWithGasLimit = {
-      ...transactionData,
-      gasLimit: BigInt(estimatedGas.toString()),
-      maxFeePerGas,
-      maxPriorityFeePerGas,
-      chainId: await this.client.getChainId(),
-    };
-    console.log("TxData:", transactionDataWithGasLimit);
-    return FeeMarketEIP1559Transaction.fromTxData(transactionDataWithGasLimit);
   }
 }
