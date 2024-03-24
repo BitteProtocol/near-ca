@@ -60,6 +60,10 @@ export class NearEthAdapter {
     return this.mpcContract.contract.account.accountId;
   }
 
+  getSender(): string {
+    return this.sender;
+  }
+
   /**
    * Constructs an EVM instance with the provided configuration.
    * @param {NearEthAdapterParams} args - The configuration object for the Adapter instance.
