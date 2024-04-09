@@ -1,3 +1,4 @@
+import { parseEther } from "viem";
 import { setupNearEthAdapter } from "../setup";
 
 const run = async (): Promise<void> => {
@@ -7,8 +8,8 @@ const run = async (): Promise<void> => {
   const deposit = "0xd0e30db0";
 
   await neareth.signAndSendTransaction({
-    receiver: sepoliaWETH,
-    amount: ethAmount,
+    to: sepoliaWETH,
+    value: parseEther(ethAmount.toString()),
     data: deposit,
   });
 };
