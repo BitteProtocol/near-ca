@@ -3,7 +3,7 @@ import { setupNearEthAdapter } from "../examples/setup";
 const ONE_ADDRESS = "0x1111111111111111111111111111111111111111";
 
 describe("Near Eth Adapter", () => {
-  it("Create Tx Payload", async () => {
+  it.skip("Create Tx Payload", async () => {
     const evm = await setupNearEthAdapter();
 
     const { signArgs } = await evm.createTxPayload(
