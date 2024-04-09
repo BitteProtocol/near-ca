@@ -8,9 +8,8 @@ const run = async (): Promise<void> => {
   const withdrawAmount = 0.001;
 
   await neareth.signAndSendTransaction({
-    receiver: sepoliaWETH,
+    to: sepoliaWETH,
     // No eth is "attached" to a WETH withdraw.
-    amount: 0,
     data: encodeFunctionData({
       abi: wethABI,
       functionName: "withdraw",

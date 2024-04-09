@@ -71,8 +71,8 @@ const run = async (slug: string): Promise<void> => {
     });
   }
   await evm.signAndSendTransaction({
-    receiver: tx.to as Address,
-    amount: tx.value / 10 ** 18,
+    to: tx.to as Address,
+    value: BigInt(tx.value),
     data: callData as Hex,
   });
 };

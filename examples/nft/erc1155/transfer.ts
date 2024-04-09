@@ -1,10 +1,9 @@
-import erc1155Abi from "./abis/ERC1155.json";
-import { setupNearEthAdapter } from "./setup";
+import erc1155Abi from "../../abis/ERC1155.json";
+import { setupNearEthAdapter } from "../../setup";
 import { encodeFunctionData } from "viem";
 
 const run = async (): Promise<void> => {
   const evm = await setupNearEthAdapter();
-  const amount = 0;
   // TODO retrieve from user:
   const tokenAddress = "0x284c37b0fcb72034ff25855da57fcf097b255474";
   const tokenId = 1;
@@ -13,12 +12,11 @@ const run = async (): Promise<void> => {
   const callData = encodeFunctionData({
     abi: erc1155Abi,
     functionName: "safeTransferFrom(address,address,uint256,uint256,bytes)",
-    args: [evm.sender, to, tokenId, 1, "0x"],
+    args: [evm.ethPublicKey(), to, tokenId, 1, "0x"],
   });
 
   await evm.signAndSendTransaction({
-    receiver: tokenAddress,
-    amount,
+    to: tokenAddress,
     data: callData,
   });
 };

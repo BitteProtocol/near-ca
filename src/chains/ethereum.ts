@@ -2,7 +2,6 @@ import { FeeMarketEIP1559Transaction } from "@ethereumjs/tx";
 import { bytesToHex } from "@ethereumjs/util";
 import {
   Address,
-  parseEther,
   Hex,
   PublicClient,
   createPublicClient,
@@ -25,7 +24,7 @@ export class NearEthAdapter {
   private scanUrl: string;
   private gasStationUrl: string;
 
-  private mpcContract: MultichainContract;
+  mpcContract: MultichainContract;
   private derivationPath: string;
   private sender: Address;
 
@@ -143,8 +142,8 @@ export class NearEthAdapter {
    * @param {BaseTx} tx - Minimal transaction data to be signed by Near MPC and executed on EVM.
    * @returns Transaction and its bytes (the payload to be signed on Near).
    */
-  async createTxPayload(tx: BaseTx): Promise<TxPayload> {
-    const transaction = await this.buildTransaction(tx);
+  async createTxPayload(tx: BaseTx, nonce?: number): Promise<TxPayload> {
+    const transaction = await this.buildTransaction(tx, nonce);
     console.log("Built (unsigned) Transaction", transaction.toJSON());
     const payload = Array.from(
       new Uint8Array(transaction.getHashedMessageToSign().slice().reverse())
@@ -153,20 +152,22 @@ export class NearEthAdapter {
     return { transaction, signArgs };
   }
 
-  private async buildTransaction(
-    tx: BaseTx
+  async buildTransaction(
+    tx: BaseTx,
+    nonce?: number
   ): Promise<FeeMarketEIP1559Transaction> {
-    const nonce = await this.ethClient.getTransactionCount({
-      address: this.sender,
-    });
     const { maxFeePerGas, maxPriorityFeePerGas } = await queryGasPrice(
       this.gasStationUrl
     );
     const transactionData = {
-      nonce,
+      nonce:
+        nonce ||
+        (await this.ethClient.getTransactionCount({
+          address: this.sender,
+        })),
       account: this.sender,
-      to: tx.receiver,
-      value: parseEther(tx.amount.toString()),
+      to: tx.to,
+      value: tx.value || 0n,
       data: tx.data || "0x",
     };
     const estimatedGas = await this.ethClient.estimateGas(transactionData);
@@ -180,9 +181,9 @@ export class NearEthAdapter {
     return FeeMarketEIP1559Transaction.fromTxData(transactionDataWithGasLimit);
   }
 
-  private reconstructSignature = (
+  reconstructSignature(
     tx: TransactionWithSignature
-  ): FeeMarketEIP1559Transaction => {
+  ): FeeMarketEIP1559Transaction {
     const { transaction, signature: sig } = tx;
     const r = Buffer.from(sig.big_r.substring(2), "hex");
     const s = Buffer.from(sig.big_s, "hex");
@@ -199,14 +200,14 @@ export class NearEthAdapter {
     }
 
     return signature;
-  };
+  }
 
   /**
    * Relays signed transaction to Etherem mempool for execution.
    * @param signedTx - Signed Ethereum transaction.
    * @returns Transaction Hash of relayed transaction.
    */
-  private async relaySignedTransaction(
+  async relaySignedTransaction(
     signedTx: FeeMarketEIP1559Transaction
   ): Promise<Hash> {
     const serializedTx = bytesToHex(signedTx.serialize()) as Hex;

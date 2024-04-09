@@ -6,9 +6,9 @@ import BN from "bn.js";
 
 export interface BaseTx {
   /// Recipient of the transaction
-  receiver: Address;
+  to: Address;
   /// ETH value of transaction
-  amount: number;
+  value?: bigint;
   /// Call Data of the transaction
   data?: Hex;
 }
