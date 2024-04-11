@@ -6,7 +6,6 @@ import {
   http,
   Hash,
   serializeTransaction,
-  parseTransaction,
 } from "viem";
 import {
   BaseTx,
@@ -18,11 +17,7 @@ import {
 import { MultichainContract } from "../mpcContract";
 import BN from "bn.js";
 import { queryGasPrice } from "../utils/gasPrice";
-import {
-  // addSignature,
-  buildTxPayload,
-  ethersJsAddSignature,
-} from "../utils/transaction";
+import { buildTxPayload, ethersJsAddSignature } from "../utils/transaction";
 
 export class NearEthAdapter {
   private ethClient: PublicClient;
@@ -137,8 +132,6 @@ export class NearEthAdapter {
    */
   async relayTransaction(tx: TransactionWithSignature): Promise<Hash> {
     const signedTx = await this.reconstructSignature(tx);
-    console.log(parseTransaction(signedTx));
-    throw new Error("DONT BOTHER");
     return this.relaySignedTransaction(signedTx);
   }
 
@@ -181,7 +174,7 @@ export class NearEthAdapter {
       ]);
     const transactionDataWithGasLimit = {
       ...transactionData,
-      gasLimit: BigInt(estimatedGas.toString()),
+      gas: BigInt(estimatedGas.toString()),
       maxFeePerGas,
       maxPriorityFeePerGas,
       chainId,
@@ -192,7 +185,8 @@ export class NearEthAdapter {
   }
 
   reconstructSignature(tx: TransactionWithSignature): Hex {
-    // TODO - replace with viemAddSignature
+    // TODO - replace with viemAddSignature!
+    // Its off by a single byte.
     return ethersJsAddSignature(tx, this.sender);
   }
 

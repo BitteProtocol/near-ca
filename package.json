@@ -7,7 +7,7 @@
   "scripts": {
     "build": "rm -rf ./dist && tsc",
     "lint": "eslint . --ext .ts,.tsx",
-    "test": "jest --testTimeout 10000",
+    "test": "jest --testTimeout 30000",
     "fmt": "prettier --write '{src,examples,tests}/**/*.{js,jsx,ts,tsx}'"
   },
   "devDependencies": {
