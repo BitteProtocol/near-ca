@@ -1,6 +1,6 @@
 import { setupNearEthAdapter } from "../examples/setup";
 
-describe.skip("End To End", () => {
+describe("End To End", () => {
   it("Runs the Send ETH Tx", async () => {
     const evm = await setupNearEthAdapter();
     await evm.signAndSendTransaction({
