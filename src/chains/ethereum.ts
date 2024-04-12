@@ -147,7 +147,7 @@ export class NearEthAdapter {
     const transaction = await this.buildTransaction(tx, nonce);
     console.log("Built (unsigned) Transaction", transaction);
     const signArgs = {
-      payload: await buildTxPayload(transaction),
+      payload: buildTxPayload(transaction),
       path: this.derivationPath,
       key_version: 0,
     };

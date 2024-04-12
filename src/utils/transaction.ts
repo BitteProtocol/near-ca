@@ -1,16 +1,21 @@
 import {
   Address,
   Hex,
+  RecoverPublicKeyParameters,
+  RecoverPublicKeyReturnType,
   bytesToHex,
   hexToBytes,
+  hexToNumber,
+  isHex,
   keccak256,
   parseTransaction,
-  recoverPublicKey,
   serializeTransaction,
   signatureToHex,
+  toHex,
 } from "viem";
 import { TransactionWithSignature } from "../types";
 import { FeeMarketEIP1559Transaction } from "@ethereumjs/tx";
+import { secp256k1 } from "@noble/curves/secp256k1";
 
 export function ethersJsAddSignature(
   tx: TransactionWithSignature,
@@ -56,7 +61,7 @@ export async function viemAddSig(
       // v: tx.v!,
       yParity: tx.yParity!,
     });
-    const pk = await recoverPublicKey({
+    const pk = recoverPublicKey({
       hash: serializeTransaction(tx),
       signature,
     });
@@ -76,10 +81,60 @@ export async function addSignature(
   return viemAddSig(tx, sender);
 }
 
-export async function buildTxPayload(
-  unsignedTxHash: `0x${string}`
-): Promise<number[]> {
+export function buildTxPayload(unsignedTxHash: `0x${string}`): number[] {
   // Compute the Transaction Message Hash.
-  const messageHash = await keccak256(unsignedTxHash);
+  const messageHash = keccak256(unsignedTxHash);
   return Array.from(hexToBytes(messageHash).slice().reverse());
 }
+
+// This method is
+export function recoverPublicKey({
+  hash,
+  signature,
+}: RecoverPublicKeyParameters): RecoverPublicKeyReturnType {
+  const signatureHex = isHex(signature) ? signature : toHex(signature);
+  const hashHex = isHex(hash) ? hash : toHex(hash);
+
+  // Derive v = recoveryId + 27 from end of the signature (27 is added when signing the message)
+  // The recoveryId represents the y-coordinate on the secp256k1 elliptic curve and can have a value [0, 1].
+  let v = hexToNumber(`0x${signatureHex.slice(130)}`);
+  if (v === 0 || v === 1) v += 27;
+
+  const publicKey = secp256k1.Signature.fromCompact(
+    signatureHex.substring(2, 130)
+  )
+    .addRecoveryBit(v - 27)
+    .recoverPublicKey(hashHex.substring(2))
+    .toHex(false);
+  return `0x${publicKey}`;
+}
+
+// export function getSenderPublicKey(tx: LegacyTxInterface): Uint8Array {
+//   if (tx.cache.senderPubKey !== undefined) {
+//     return tx.cache.senderPubKey
+//   }
+
+//   const msgHash = tx.getMessageToVerifySignature()
+
+//   const { v, r, s } = tx
+
+//   validateHighS(tx)
+
+//   try {
+//     const ecrecoverFunction = tx.common.customCrypto.ecrecover ?? ecrecover
+//     const sender = ecrecoverFunction(
+//       msgHash,
+//       v!,
+//       bigIntToUnpaddedBytes(r!),
+//       bigIntToUnpaddedBytes(s!),
+//       tx.supports(Capability.EIP155ReplayProtection) ? tx.common.chainId() : undefined
+//     )
+//     if (Object.isFrozen(tx)) {
+//       tx.cache.senderPubKey = sender
+//     }
+//     return sender
+//   } catch (e: any) {
+//     const msg = errorMsg(tx, 'Invalid Signature')
+//     throw new Error(msg)
+//   }
+// }
