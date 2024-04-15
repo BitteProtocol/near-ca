@@ -17,7 +17,7 @@ import {
 import { MultichainContract } from "../mpcContract";
 import BN from "bn.js";
 import { queryGasPrice } from "../utils/gasPrice";
-import { buildTxPayload, ethersJsAddSignature } from "../utils/transaction";
+import { buildTxPayload, addSignature } from "../utils/transaction";
 
 export class NearEthAdapter {
   private ethClient: PublicClient;
@@ -185,9 +185,7 @@ export class NearEthAdapter {
   }
 
   reconstructSignature(tx: TransactionWithSignature): Hex {
-    // TODO - replace with viemAddSignature!
-    // Its off by a single byte.
-    return ethersJsAddSignature(tx, this.sender);
+    return addSignature(tx, this.sender);
   }
 
   /**
