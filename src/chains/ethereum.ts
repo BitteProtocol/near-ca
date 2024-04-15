@@ -1,5 +1,3 @@
-import { FeeMarketEIP1559Transaction } from "@ethereumjs/tx";
-import { bytesToHex } from "@ethereumjs/util";
 import {
   Address,
   Hex,
@@ -7,6 +5,7 @@ import {
   createPublicClient,
   http,
   Hash,
+  serializeTransaction,
 } from "viem";
 import {
   BaseTx,
@@ -15,12 +14,13 @@ import {
   TxPayload,
   TransactionWithSignature,
 } from "../types";
-import { queryGasPrice } from "../utils/gasPrice";
 import { MultichainContract } from "../mpcContract";
 import BN from "bn.js";
+import { queryGasPrice } from "../utils/gasPrice";
+import { buildTxPayload, addSignature } from "../utils/transaction";
 
 export class NearEthAdapter {
-  private ethClient: PublicClient;
+  ethClient: PublicClient;
   private scanUrl: string;
   private gasStationUrl: string;
 
@@ -109,7 +109,7 @@ export class NearEthAdapter {
     txData: BaseTx,
     nearGas?: BN
   ): Promise<{
-    transaction: FeeMarketEIP1559Transaction;
+    transaction: Hex;
     requestPayload: NearContractFunctionPayload;
   }> {
     console.log("Creating Payload for sender:", this.sender);
@@ -140,25 +140,21 @@ export class NearEthAdapter {
    * and payload bytes in preparation to be relayed to Near MPC contract.
    *
    * @param {BaseTx} tx - Minimal transaction data to be signed by Near MPC and executed on EVM.
+   * @param {number?} nonce - Optional transaction nonce.
    * @returns Transaction and its bytes (the payload to be signed on Near).
    */
   async createTxPayload(tx: BaseTx, nonce?: number): Promise<TxPayload> {
     const transaction = await this.buildTransaction(tx, nonce);
-    console.log("Built (unsigned) Transaction", transaction.toJSON());
-    const payload = Array.from(
-      new Uint8Array(transaction.getHashedMessageToSign().slice().reverse())
-    );
-    const signArgs = { payload, path: this.derivationPath, key_version: 0 };
+    console.log("Built (unsigned) Transaction", transaction);
+    const signArgs = {
+      payload: buildTxPayload(transaction),
+      path: this.derivationPath,
+      key_version: 0,
+    };
     return { transaction, signArgs };
   }
 
-  async buildTransaction(
-    tx: BaseTx,
-    nonce?: number
-  ): Promise<FeeMarketEIP1559Transaction> {
-    const { maxFeePerGas, maxPriorityFeePerGas } = await queryGasPrice(
-      this.gasStationUrl
-    );
+  async buildTransaction(tx: BaseTx, nonce?: number): Promise<Hex> {
     const transactionData = {
       nonce:
         nonce ||
@@ -167,52 +163,41 @@ export class NearEthAdapter {
         })),
       account: this.sender,
       to: tx.to,
-      value: tx.value || 0n,
-      data: tx.data || "0x",
+      value: tx.value ?? 0n,
+      data: tx.data ?? "0x",
     };
-    const estimatedGas = await this.ethClient.estimateGas(transactionData);
+    const [estimatedGas, { maxFeePerGas, maxPriorityFeePerGas }, chainId] =
+      await Promise.all([
+        this.ethClient.estimateGas(transactionData),
+        queryGasPrice(this.gasStationUrl),
+        this.ethClient.getChainId(),
+      ]);
     const transactionDataWithGasLimit = {
       ...transactionData,
-      gasLimit: BigInt(estimatedGas.toString()),
+      gas: BigInt(estimatedGas.toString()),
       maxFeePerGas,
       maxPriorityFeePerGas,
-      chainId: await this.ethClient.getChainId(),
+      chainId,
     };
-    return FeeMarketEIP1559Transaction.fromTxData(transactionDataWithGasLimit);
+    console.log("Gas Estimation:", estimatedGas);
+    console.log("Transaction Request", transactionDataWithGasLimit);
+    return serializeTransaction(transactionDataWithGasLimit);
   }
 
-  reconstructSignature(
-    tx: TransactionWithSignature
-  ): FeeMarketEIP1559Transaction {
-    const { transaction, signature: sig } = tx;
-    const r = Buffer.from(sig.big_r.substring(2), "hex");
-    const s = Buffer.from(sig.big_s, "hex");
-
-    const candidates = [0n, 1n].map((v) => transaction.addSignature(v, r, s));
-    const signature = candidates.find(
-      (c) =>
-        c.getSenderAddress().toString().toLowerCase() ===
-        this.sender.toLowerCase()
-    );
-
-    if (!signature) {
-      throw new Error("Signature is not valid");
-    }
-
-    return signature;
+  reconstructSignature(tx: TransactionWithSignature): Hex {
+    return addSignature(tx, this.sender);
   }
 
   /**
-   * Relays signed transaction to Etherem mempool for execution.
-   * @param signedTx - Signed Ethereum transaction.
+   * Relays signed transaction to Ethereum mem-pool for execution.
+   * @param serializedTransaction - Signed Ethereum transaction.
    * @returns Transaction Hash of relayed transaction.
    */
-  async relaySignedTransaction(
-    signedTx: FeeMarketEIP1559Transaction
+  private async relaySignedTransaction(
+    serializedTransaction: Hex
   ): Promise<Hash> {
-    const serializedTx = bytesToHex(signedTx.serialize()) as Hex;
     const txHash = await this.ethClient.sendRawTransaction({
-      serializedTransaction: serializedTx,
+      serializedTransaction,
     });
     console.log(`Transaction Confirmed: ${this.scanUrl}/tx/${txHash}`);
     return txHash;

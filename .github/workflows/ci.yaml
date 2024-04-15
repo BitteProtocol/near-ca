@@ -2,9 +2,9 @@ name: Node.js CI
 
 on:
   push:
-    branches: [ main ]
+    branches: [main]
   pull_request:
-    branches: [ main ]
+    branches: [main]
 
 jobs:
   types:
@@ -15,7 +15,7 @@ jobs:
       - name: Set up Node.js
         uses: actions/setup-node@v4
         with:
-          node-version: '20'
+          node-version: "20"
 
       - name: Install & Build
         run: yarn && yarn build
@@ -24,3 +24,11 @@ jobs:
         run: |
           yarn lint
           yarn test
+        env:
+          NODE_URL: https://rpc2.sepolia.org
+          SCAN_URL: https://sepolia.etherscan.io
+          GAS_STATION_URL: https://sepolia.beaconcha.in/api/v1/execution/gasnow
+
+          NEAR_MULTICHAIN_CONTRACT: multichain-testnet-2.testnet
+          NEAR_ACCOUNT_ID: ${{secrets.NEAR_ACCOUNT_ID}}
+          NEAR_ACCOUNT_PRIVATE_KEY: ${{secrets.NEAR_PK}}

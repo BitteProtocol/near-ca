@@ -1,16 +1,15 @@
-import { FeeMarketEIP1559Transaction } from "@ethereumjs/tx";
-import { Address, Hex } from "viem";
 import { MultichainContract } from "./mpcContract";
 import { FunctionCallAction } from "@near-wallet-selector/core";
 import BN from "bn.js";
+import { Hex } from "viem";
 
 export interface BaseTx {
   /// Recipient of the transaction
-  to: Address;
+  to: `0x${string}`;
   /// ETH value of transaction
   value?: bigint;
   /// Call Data of the transaction
-  data?: Hex;
+  data?: `0x${string}`;
 }
 
 export interface NearEthAdapterParams {
@@ -66,7 +65,7 @@ export interface SignArgs {
 
 export interface TxPayload {
   /// Deserialized Ethereum Transaction.
-  transaction: FeeMarketEIP1559Transaction;
+  transaction: Hex;
   /// Arguments required by Near MPC Contract signature request.
   signArgs: SignArgs;
 }
@@ -94,7 +93,7 @@ export interface MPCSignature {
  */
 export interface TransactionWithSignature {
   /// Unsigned Ethereum transaction data.
-  transaction: FeeMarketEIP1559Transaction;
+  transaction: Hex;
   /// Representation of the transaction's signature.
   signature: MPCSignature;
 }
