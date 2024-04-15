@@ -20,7 +20,7 @@ import { queryGasPrice } from "../utils/gasPrice";
 import { buildTxPayload, addSignature } from "../utils/transaction";
 
 export class NearEthAdapter {
-  private ethClient: PublicClient;
+  ethClient: PublicClient;
   private scanUrl: string;
   private gasStationUrl: string;
 
@@ -196,7 +196,6 @@ export class NearEthAdapter {
   private async relaySignedTransaction(
     serializedTransaction: Hex
   ): Promise<Hash> {
-    // const serializedTransaction = serializeTransaction(signedTx);
     const txHash = await this.ethClient.sendRawTransaction({
       serializedTransaction,
     });
