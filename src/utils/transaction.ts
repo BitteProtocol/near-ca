@@ -37,11 +37,7 @@ export function addSignature(
   });
 
   const signedTx = candidates.find((tx) => {
-    const signature = signatureToHex({
-      r: tx.r!,
-      s: tx.s!,
-      v: tx.v!,
-    });
+    const signature = signatureToHex({ r: tx.r!, s: tx.s!, v: tx.v! });
     return (
       extractSender(transaction, signature).toLowerCase() ===
       sender.toLowerCase()
@@ -75,6 +71,7 @@ export function recoverPublicKey(hash: Hex, signature: Hex): Hex {
   // The recoveryId represents the y-coordinate on the secp256k1 elliptic curve and can have a value [0, 1].
   let v = hexToNumber(`0x${signature.slice(130)}`);
   if (v === 0 || v === 1) v += 27;
+
   const publicKey = secp256k1.Signature.fromCompact(signature.substring(2, 130))
     .addRecoveryBit(v - 27)
     .recoverPublicKey(hash.substring(2))
