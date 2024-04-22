@@ -42,15 +42,29 @@ export function addSignature(
       s: tx.s!,
       v: tx.v!,
     });
-    const pk = publicKeyToAddress(
-      recoverPublicKey(keccak256(transaction), signature)
+    return (
+      extractSender(transaction, signature).toLowerCase() ===
+      sender.toLowerCase()
     );
-    return pk.toLowerCase() === sender.toLowerCase();
   });
   if (!signedTx) {
     throw new Error("Signature is not valid");
   }
   return serializeTransaction(signedTx);
+}
+
+export function extractSender(transaction: Hex, signature: Hex): Address {
+  return publicKeyToAddress(
+    recoverPublicKey(keccak256(transaction), signature)
+  );
+}
+
+export function senderFromSignedTx(signedTxHash: Hex): Address {
+  const tx = parseTransaction(signedTxHash);
+  return extractSender(
+    signedTxHash,
+    signatureToHex({ r: tx.r!, s: tx.s!, v: tx.v! })
+  );
 }
 
 // This method is mostly pasted from viem since they use an unnecessary async import.
@@ -61,7 +75,6 @@ export function recoverPublicKey(hash: Hex, signature: Hex): Hex {
   // The recoveryId represents the y-coordinate on the secp256k1 elliptic curve and can have a value [0, 1].
   let v = hexToNumber(`0x${signature.slice(130)}`);
   if (v === 0 || v === 1) v += 27;
-
   const publicKey = secp256k1.Signature.fromCompact(signature.substring(2, 130))
     .addRecoveryBit(v - 27)
     .recoverPublicKey(hash.substring(2))
