@@ -1,4 +1,5 @@
 import { ethers } from "ethers";
+import { Web3 } from "web3";
 import { TransactionWithSignature } from "../src";
 import {
   buildTxPayload,
@@ -38,11 +39,13 @@ describe("Transaction Builder Functions", () => {
       "0x02f872611c847735940085174876e800825208940c0a71335cc50b821570f6f8b302b248d0e56ed4870eebe0b40e800080c080a0d490e3ce4e974cae1f89c4b328bf4dc7ecba7b1cef9838be6282ca92fd5a8127a01c032f8bfa93bd48fb5215813e4f3a21f8e5da015ebd52b4daa945bcc2d4749e";
     // We test that our function agrees with ethers.
     const { hash, signature } = ethers.Transaction.from(signedTx);
-    const viemSender = senderFromSignedTx(signedTx);
     const ethersSender = ethers.recoverAddress(hash!, signature!);
+
+    const viemSender = senderFromSignedTx(signedTx);
     expect(viemSender).toEqual(ethersSender);
     expect(viemSender).toEqual("0x909BaB1A50EBd17c0E771b8B0BF2A95fEB34B205");
-
-    console.log(ethers.recoverAddress(hash!, signature!));
+    // This fails:
+    const web3Sender = new Web3().eth.accounts.recoverTransaction(signedTx);
+    expect(viemSender).toEqual(web3Sender);
   });
 });
