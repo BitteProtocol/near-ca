@@ -33,4 +33,46 @@ describe("End To End", () => {
   it("signMessage", async () => {
     await expect(evm.signMessage("NearEth")).resolves.not.toThrow();
   });
+
+  it("signTypedData", async () => {
+    const message = {
+      from: {
+        name: "Cow",
+        wallet: "0xCD2a3d9F938E13CD947Ec05AbC7FE734Df8DD826",
+      },
+      to: {
+        name: "Bob",
+        wallet: "0xbBbBBBBbbBBBbbbBbbBbbbbBBbBbbbbBbBbbBBbB",
+      },
+      contents: "Hello, Bob!",
+    } as const;
+
+    const domain = {
+      name: "Ether Mail",
+      version: "1",
+      chainId: 1,
+      verifyingContract: "0xCcCCccccCCCCcCCCCCCcCcCccCcCCCcCcccccccC",
+    } as const;
+
+    const types = {
+      Person: [
+        { name: "name", type: "string" },
+        { name: "wallet", type: "address" },
+      ],
+      Mail: [
+        { name: "from", type: "Person" },
+        { name: "to", type: "Person" },
+        { name: "contents", type: "string" },
+      ],
+    } as const;
+
+    await expect(
+      evm.signTypedData({
+        types,
+        primaryType: "Mail",
+        message,
+        domain,
+      })
+    ).resolves.not.toThrow();
+  });
 });

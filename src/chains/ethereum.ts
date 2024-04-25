@@ -11,7 +11,11 @@ import {
   isBytes,
   SignableMessage,
   verifyMessage,
+  verifyTypedData,
   signatureToHex,
+  hashTypedData,
+  TypedData,
+  TypedDataDefinition,
 } from "viem";
 import {
   BaseTx,
@@ -211,19 +215,48 @@ export class NearEthAdapter {
   }
   // Below code is inspired by https://github.com/Connor-ETHSeoul/near-viem
 
+  async signTypedData<
+    const typedData extends TypedData | Record<string, unknown>,
+    primaryType extends keyof typedData | "EIP712Domain" = keyof typedData,
+  >(typedData: TypedDataDefinition<typedData, primaryType>): Promise<Hash> {
+    const sigs = await this.sign(hashTypedData(typedData));
+
+    const common = {
+      address: this.ethPublicKey(),
+      types: typedData.types,
+      /* eslint-disable @typescript-eslint/no-explicit-any */
+      primaryType: typedData.primaryType as any,
+      message: typedData.message as any,
+      domain: typedData.domain as any,
+      /* eslint-enable @typescript-eslint/no-explicit-any */
+    };
+    const validity = await Promise.all([
+      verifyTypedData({
+        signature: sigs[0],
+        ...common,
+      }),
+      verifyTypedData({
+        signature: sigs[1],
+        ...common,
+      }),
+    ]);
+    return this.pickValidSignature(validity, sigs);
+  }
+
   async signMessage(message: SignableMessage): Promise<Hash> {
     const sigs = await this.sign(hashMessage(message));
-    const address = this.ethPublicKey();
+    const common = {
+      address: this.ethPublicKey(),
+      message,
+    };
     const validity = await Promise.all([
       verifyMessage({
-        address,
-        message,
         signature: sigs[0],
+        ...common,
       }),
       verifyMessage({
-        address,
-        message: message,
         signature: sigs[1],
+        ...common,
       }),
     ]);
     return this.pickValidSignature(validity, sigs);
