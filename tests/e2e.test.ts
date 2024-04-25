@@ -6,6 +6,7 @@ describe("End To End", () => {
   let adapter: NearEthAdapter;
   const to = "0xdeADBeeF0000000000000000000000000b00B1e5";
   const ONE_WEI = 1n;
+  const chainId = SEPOLIA_CHAIN_ID;
 
   beforeAll(async () => {
     adapter = await setupNearEthAdapter();
@@ -21,7 +22,7 @@ describe("End To End", () => {
         // Sending 1 WEI to self (so we never run out of funds)
         to: adapter.address,
         value: ONE_WEI,
-        chainId: SEPOLIA_CHAIN_ID,
+        chainId,
       })
     ).resolves.not.toThrow();
   });
@@ -39,7 +40,7 @@ describe("End To End", () => {
   });
 
   it("Fails to sign and send", async () => {
-    const network = Network.fromChainId(SEPOLIA_CHAIN_ID);
+    const network = Network.fromChainId(chainId);
     const senderBalance = await getBalance(network.client, {
       address: adapter.address,
     });
