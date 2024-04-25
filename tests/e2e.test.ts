@@ -1,6 +1,5 @@
-import { createPublicClient, http } from "viem";
 import { SEPOLIA_CHAIN_ID, setupNearEthAdapter } from "../examples/setup";
-import { NETWORK_MAP, NearEthAdapter } from "../src";
+import { NearEthAdapter, Network } from "../src";
 import { getBalance } from "viem/actions";
 
 describe("End To End", () => {
@@ -19,19 +18,29 @@ describe("End To End", () => {
   it("signAndSendTransaction", async () => {
     await expect(
       adapter.signAndSendTransaction({
-        to,
+        // Sending 1 WEI to self (so we never run out of funds)
+        to: adapter.address,
         value: ONE_WEI,
         chainId: SEPOLIA_CHAIN_ID,
       })
     ).resolves.not.toThrow();
   });
 
+  it("signAndSendTransaction - Gnosis Chain", async () => {
+    await expect(
+      adapter.signAndSendTransaction({
+        // Sending 1 WEI to self (so we never run out of funds)
+        to: adapter.address,
+        value: ONE_WEI,
+        // Gnosis Chain!
+        chainId: 100,
+      })
+    ).resolves.not.toThrow();
+  });
+
   it("Fails to sign and send", async () => {
-    const network = NETWORK_MAP[SEPOLIA_CHAIN_ID];
-    const client = createPublicClient({
-      transport: http(network.rpcUrl),
-    });
-    const senderBalance = await getBalance(client, {
+    const network = Network.fromChainId(SEPOLIA_CHAIN_ID);
+    const senderBalance = await getBalance(network.client, {
       address: adapter.address,
     });
     await expect(

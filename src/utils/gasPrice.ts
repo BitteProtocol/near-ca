@@ -14,7 +14,6 @@ interface GasPriceResponse {
 }
 
 export async function queryGasPrice(gasStationUrl: string): Promise<GasPrices> {
-  console.log("Querying gas station:", gasStationUrl);
   const res = await fetch(gasStationUrl);
   const gasPrices = (await res.json()) as GasPriceResponse;
   const maxPriorityFeePerGas = BigInt(getFirstNonZeroGasPrice(gasPrices)!);

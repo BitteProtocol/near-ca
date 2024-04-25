@@ -1,8 +1,6 @@
 import {
   Address,
   Hex,
-  createPublicClient,
-  http,
   Hash,
   serializeTransaction,
   hashMessage,
@@ -23,12 +21,12 @@ import {
   NearContractFunctionPayload,
   TxPayload,
   TransactionWithSignature,
-  NETWORK_MAP,
 } from "../types";
 import { MultichainContract } from "../mpcContract";
 import BN from "bn.js";
 import { queryGasPrice } from "../utils/gasPrice";
 import { buildTxPayload, addSignature } from "../utils/transaction";
+import { Network } from "../network";
 
 export class NearEthAdapter {
   readonly mpcContract: MultichainContract;
@@ -146,15 +144,17 @@ export class NearEthAdapter {
     return { transaction, signArgs };
   }
 
+  /**
+   * Transforms minimal transaction request data into a fully populated EVM transaction.
+   * @param {BaseTx} tx - Minimal transaction request data
+   * @returns {Hex} serialized (aka RLP encoded) transaction.
+   */
   async buildTransaction(tx: BaseTx): Promise<Hex> {
-    const network = NETWORK_MAP[tx.chainId];
-    const client = createPublicClient({
-      transport: http(network.rpcUrl),
-    });
+    const network = Network.fromChainId(tx.chainId);
     const transactionData = {
       nonce:
         tx.nonce ||
-        (await client.getTransactionCount({
+        (await network.client.getTransactionCount({
           address: this.address,
         })),
       account: this.address,
@@ -164,7 +164,7 @@ export class NearEthAdapter {
     };
     const [estimatedGas, { maxFeePerGas, maxPriorityFeePerGas }] =
       await Promise.all([
-        client.estimateGas(transactionData),
+        network.client.estimateGas(transactionData),
         queryGasPrice(network.gasStationUrl),
       ]);
     const transactionDataWithGasLimit = {
@@ -174,7 +174,6 @@ export class NearEthAdapter {
       maxPriorityFeePerGas,
       chainId: network.chainId,
     };
-    console.log("Gas Estimation:", estimatedGas);
     console.log("Transaction Request", transactionDataWithGasLimit);
     return serializeTransaction(transactionDataWithGasLimit);
   }
@@ -192,15 +191,12 @@ export class NearEthAdapter {
     serializedTransaction: Hex
   ): Promise<Hash> {
     const tx = parseTransaction(serializedTransaction);
-    const network = NETWORK_MAP[tx.chainId!];
-    const client = createPublicClient({
-      transport: http(network.rpcUrl),
-    });
-    const txHash = await client.sendRawTransaction({
+    const network = Network.fromChainId(tx.chainId!);
+    const hash = await network.client.sendRawTransaction({
       serializedTransaction,
     });
-    console.log(`Transaction Confirmed: ${network.scanUrl}/tx/${txHash}`);
-    return txHash;
+    console.log(`Transaction Confirmed: ${network.scanUrl}/tx/${hash}`);
+    return hash;
   }
   // Below code is inspired by https://github.com/Connor-ETHSeoul/near-viem
 
@@ -251,6 +247,11 @@ export class NearEthAdapter {
     return this.pickValidSignature(validity, sigs);
   }
 
+  /**
+   * Requests signature from Near MPC Contract.
+   * @param msgHash - Message Hash to be signed.
+   * @returns Two different potential signatures for the hash (one of which is valid).
+   */
   async sign(msgHash: `0x${string}` | Uint8Array): Promise<[Hex, Hex]> {
     const hashToSign = isBytes(msgHash) ? msgHash : toBytes(msgHash);
 
