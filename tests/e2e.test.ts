@@ -1,14 +1,15 @@
-import { setupNearEthAdapter } from "../examples/setup";
-import { NearEthAdapter } from "../src";
+import { SEPOLIA_CHAIN_ID, setupNearEthAdapter } from "../examples/setup";
+import { NearEthAdapter, Network } from "../src";
 import { getBalance } from "viem/actions";
 
 describe("End To End", () => {
-  let evm: NearEthAdapter;
+  let adapter: NearEthAdapter;
   const to = "0xdeADBeeF0000000000000000000000000b00B1e5";
   const ONE_WEI = 1n;
+  const chainId = SEPOLIA_CHAIN_ID;
 
   beforeAll(async () => {
-    evm = await setupNearEthAdapter();
+    adapter = await setupNearEthAdapter();
   });
 
   afterAll(async () => {
@@ -17,21 +18,43 @@ describe("End To End", () => {
 
   it("signAndSendTransaction", async () => {
     await expect(
-      evm.signAndSendTransaction({ to, value: ONE_WEI })
+      adapter.signAndSendTransaction({
+        // Sending 1 WEI to self (so we never run out of funds)
+        to: adapter.address,
+        value: ONE_WEI,
+        chainId,
+      })
+    ).resolves.not.toThrow();
+  });
+
+  it.skip("signAndSendTransaction - Gnosis Chain", async () => {
+    await expect(
+      adapter.signAndSendTransaction({
+        // Sending 1 WEI to self (so we never run out of funds)
+        to: adapter.address,
+        value: ONE_WEI,
+        // Gnosis Chain!
+        chainId: 100,
+      })
     ).resolves.not.toThrow();
   });
 
   it("Fails to sign and send", async () => {
-    const senderBalance = await getBalance(evm.ethClient, {
-      address: evm.ethPublicKey(),
+    const network = Network.fromChainId(chainId);
+    const senderBalance = await getBalance(network.client, {
+      address: adapter.address,
     });
     await expect(
-      evm.signAndSendTransaction({ to, value: senderBalance + ONE_WEI })
+      adapter.signAndSendTransaction({
+        to,
+        value: senderBalance + ONE_WEI,
+        chainId,
+      })
     ).rejects.toThrow();
   });
 
   it("signMessage", async () => {
-    await expect(evm.signMessage("NearEth")).resolves.not.toThrow();
+    await expect(adapter.signMessage("NearEth")).resolves.not.toThrow();
   });
 
   it("signTypedData", async () => {
@@ -67,7 +90,7 @@ describe("End To End", () => {
     } as const;
 
     await expect(
-      evm.signTypedData({
+      adapter.signTypedData({
         types,
         primaryType: "Mail",
         message,

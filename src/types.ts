@@ -10,25 +10,13 @@ export interface BaseTx {
   value?: bigint;
   /// Call Data of the transaction
   data?: `0x${string}`;
+  /// integer ID of the network for the transaction.
+  chainId: number;
+  /// Specified transaction nonce
+  nonce?: number;
 }
 
 export interface NearEthAdapterParams {
-  /// Near configuration.
-  near: NearParams;
-  /// EVM configuration.
-  evm: EvmParams;
-}
-
-export interface EvmParams {
-  /// The URL of the Ethereum JSON RPC provider.
-  providerUrl: string;
-  /// The base URL of the blockchain explorer.
-  scanUrl: string;
-  /// The base URL of the blockchain gas station.
-  gasStationUrl: string;
-}
-
-export interface NearParams {
   /// An instance of the NearMPC contract connected to the associated near account.
   mpcContract: MultichainContract;
   /// path used to generate ETH account from Near account (e.g. "ethereum,1")

@@ -1,5 +1,5 @@
 import erc1155Abi from "../../abis/ERC1155.json";
-import { setupNearEthAdapter } from "../../setup";
+import { SEPOLIA_CHAIN_ID, setupNearEthAdapter } from "../../setup";
 import { encodeFunctionData } from "viem";
 
 const run = async (): Promise<void> => {
@@ -12,12 +12,13 @@ const run = async (): Promise<void> => {
   const callData = encodeFunctionData({
     abi: erc1155Abi,
     functionName: "safeTransferFrom(address,address,uint256,uint256,bytes)",
-    args: [evm.ethPublicKey(), to, tokenId, 1, "0x"],
+    args: [evm.address, to, tokenId, 1, "0x"],
   });
 
   await evm.signAndSendTransaction({
     to: tokenAddress,
     data: callData,
+    chainId: SEPOLIA_CHAIN_ID,
   });
 };
 
