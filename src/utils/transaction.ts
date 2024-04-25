@@ -55,14 +55,6 @@ export function extractSender(transaction: Hex, signature: Hex): Address {
   );
 }
 
-export function senderFromSignedTx(signedTxHash: Hex): Address {
-  const tx = parseTransaction(signedTxHash);
-  return extractSender(
-    signedTxHash,
-    signatureToHex({ r: tx.r!, s: tx.s!, v: tx.v! })
-  );
-}
-
 // This method is mostly pasted from viem since they use an unnecessary async import.
 // import { secp256k1 } from "@noble/curves/secp256k1";
 // TODO - fix their async import!
