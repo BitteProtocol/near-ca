@@ -15,18 +15,22 @@ describe("End To End", () => {
     clearTimeout();
   });
 
-  it("Runs the Send ETH Tx", async () => {
+  it("signAndSendTransaction", async () => {
     await expect(
       evm.signAndSendTransaction({ to, value: ONE_WEI })
     ).resolves.not.toThrow();
   });
 
-  it("Fails Invalid Send ETH Tx", async () => {
+  it("Fails to sign and send", async () => {
     const senderBalance = await getBalance(evm.ethClient, {
       address: evm.ethPublicKey(),
     });
     await expect(
       evm.signAndSendTransaction({ to, value: senderBalance + ONE_WEI })
     ).rejects.toThrow();
+  });
+
+  it("signMessage", async () => {
+    await expect(evm.signMessage("NearEth")).resolves.not.toThrow();
   });
 });
