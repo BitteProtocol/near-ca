@@ -2,6 +2,41 @@ import { MultichainContract } from "./mpcContract";
 import { FunctionCallAction } from "@near-wallet-selector/core";
 import BN from "bn.js";
 import { Hex } from "viem";
+import { sepolia, mainnet, gnosis } from "viem/chains";
+
+interface Network {
+  name: string;
+  rpcUrl: string;
+  chainId: number;
+  scanUrl: string;
+  gasStationUrl: string;
+}
+
+type NetworkMap = { [key: number]: Network };
+
+export const NETWORK_MAP: NetworkMap = {
+  [mainnet.id]: {
+    name: mainnet.name,
+    rpcUrl: mainnet.rpcUrls.default.http[0],
+    chainId: mainnet.id,
+    scanUrl: mainnet.blockExplorers.default.url,
+    gasStationUrl: "https://mainnet.beaconcha.in/api/v1/execution/gasnow",
+  },
+  [gnosis.id]: {
+    name: gnosis.name,
+    rpcUrl: gnosis.rpcUrls.default.http[0],
+    chainId: gnosis.id,
+    scanUrl: gnosis.blockExplorers.default.url,
+    gasStationUrl: "https://gnosis.beaconcha.in/api/v1/execution/gasnow",
+  },
+  [sepolia.id]: {
+    name: sepolia.name,
+    rpcUrl: sepolia.rpcUrls.default.http[0],
+    chainId: sepolia.id,
+    scanUrl: sepolia.blockExplorers.default.url,
+    gasStationUrl: "https://sepolia.beaconcha.in/api/v1/execution/gasnow",
+  },
+};
 
 export interface BaseTx {
   /// Recipient of the transaction
@@ -10,25 +45,13 @@ export interface BaseTx {
   value?: bigint;
   /// Call Data of the transaction
   data?: `0x${string}`;
+  /// integer ID of the network for the transaction.
+  chainId: number;
+  /// Specified transaction nonce
+  nonce?: number;
 }
 
 export interface NearEthAdapterParams {
-  /// Near configuration.
-  near: NearParams;
-  /// EVM configuration.
-  evm: EvmParams;
-}
-
-export interface EvmParams {
-  /// The URL of the Ethereum JSON RPC provider.
-  providerUrl: string;
-  /// The base URL of the blockchain explorer.
-  scanUrl: string;
-  /// The base URL of the blockchain gas station.
-  gasStationUrl: string;
-}
-
-export interface NearParams {
   /// An instance of the NearMPC contract connected to the associated near account.
   mpcContract: MultichainContract;
   /// path used to generate ETH account from Near account (e.g. "ethereum,1")

@@ -1,6 +1,6 @@
 import erc721ABI from "../../abis/ERC721.json";
 import { encodeFunctionData } from "viem";
-import { setupNearEthAdapter } from "../../setup";
+import { SEPOLIA_CHAIN_ID, setupNearEthAdapter } from "../../setup";
 
 const run = async (): Promise<void> => {
   const neareth = await setupNearEthAdapter();
@@ -14,8 +14,9 @@ const run = async (): Promise<void> => {
     data: encodeFunctionData({
       abi: erc721ABI,
       functionName: "safeTransferFrom(address,address,uint256)",
-      args: [neareth.ethPublicKey(), to, tokenId],
+      args: [neareth.address, to, tokenId],
     }),
+    chainId: SEPOLIA_CHAIN_ID,
   });
 };
 

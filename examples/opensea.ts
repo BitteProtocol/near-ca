@@ -1,5 +1,5 @@
 import { OpenSeaSDK, Chain, OrderSide } from "opensea-js";
-import { setupNearEthAdapter, sleep } from "./setup";
+import { SEPOLIA_CHAIN_ID, setupNearEthAdapter, sleep } from "./setup";
 import * as readline from "readline";
 import { ethers } from "ethers";
 import { Address, Hex, encodeFunctionData } from "viem";
@@ -39,7 +39,7 @@ const run = async (slug: string): Promise<void> => {
   // This sleep is due to free-tier testnet rate limiting.
   await sleep(1000);
   const data = await openseaSDK.api.generateFulfillmentData(
-    evm.ethPublicKey(),
+    evm.address,
     cheapestAvailable.order_hash,
     cheapestAvailable.protocol_address,
     OrderSide.ASK
@@ -74,6 +74,7 @@ const run = async (slug: string): Promise<void> => {
     to: tx.to as Address,
     value: BigInt(tx.value),
     data: callData as Hex,
+    chainId: SEPOLIA_CHAIN_ID,
   });
 };
 

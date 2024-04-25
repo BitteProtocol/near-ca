@@ -1,14 +1,15 @@
-import { setupNearEthAdapter } from "../examples/setup";
-import { NearEthAdapter } from "../src";
+import { createPublicClient, http } from "viem";
+import { SEPOLIA_CHAIN_ID, setupNearEthAdapter } from "../examples/setup";
+import { NETWORK_MAP, NearEthAdapter } from "../src";
 import { getBalance } from "viem/actions";
 
 describe("End To End", () => {
-  let evm: NearEthAdapter;
+  let adapter: NearEthAdapter;
   const to = "0xdeADBeeF0000000000000000000000000b00B1e5";
   const ONE_WEI = 1n;
 
   beforeAll(async () => {
-    evm = await setupNearEthAdapter();
+    adapter = await setupNearEthAdapter();
   });
 
   afterAll(async () => {
@@ -17,21 +18,33 @@ describe("End To End", () => {
 
   it("signAndSendTransaction", async () => {
     await expect(
-      evm.signAndSendTransaction({ to, value: ONE_WEI })
+      adapter.signAndSendTransaction({
+        to,
+        value: ONE_WEI,
+        chainId: SEPOLIA_CHAIN_ID,
+      })
     ).resolves.not.toThrow();
   });
 
   it("Fails to sign and send", async () => {
-    const senderBalance = await getBalance(evm.ethClient, {
-      address: evm.ethPublicKey(),
+    const network = NETWORK_MAP[SEPOLIA_CHAIN_ID];
+    const client = createPublicClient({
+      transport: http(network.rpcUrl),
+    });
+    const senderBalance = await getBalance(client, {
+      address: adapter.address,
     });
     await expect(
-      evm.signAndSendTransaction({ to, value: senderBalance + ONE_WEI })
+      adapter.signAndSendTransaction({
+        to,
+        value: senderBalance + ONE_WEI,
+        chainId: SEPOLIA_CHAIN_ID,
+      })
     ).rejects.toThrow();
   });
 
   it("signMessage", async () => {
-    await expect(evm.signMessage("NearEth")).resolves.not.toThrow();
+    await expect(adapter.signMessage("NearEth")).resolves.not.toThrow();
   });
 
   it("signTypedData", async () => {
@@ -67,7 +80,7 @@ describe("End To End", () => {
     } as const;
 
     await expect(
-      evm.signTypedData({
+      adapter.signTypedData({
         types,
         primaryType: "Mail",
         message,

@@ -1,7 +1,6 @@
 import {
   Address,
   Hex,
-  PublicClient,
   createPublicClient,
   http,
   Hash,
@@ -16,6 +15,7 @@ import {
   hashTypedData,
   TypedData,
   TypedDataDefinition,
+  parseTransaction,
 } from "viem";
 import {
   BaseTx,
@@ -23,46 +23,28 @@ import {
   NearContractFunctionPayload,
   TxPayload,
   TransactionWithSignature,
+  NETWORK_MAP,
 } from "../types";
 import { MultichainContract } from "../mpcContract";
 import BN from "bn.js";
 import { queryGasPrice } from "../utils/gasPrice";
 import { buildTxPayload, addSignature } from "../utils/transaction";
-// import { ethers } from "ethers";
 
 export class NearEthAdapter {
-  ethClient: PublicClient;
-  private scanUrl: string;
-  private gasStationUrl: string;
-
-  mpcContract: MultichainContract;
-  private derivationPath: string;
-  private sender: Address;
+  readonly mpcContract: MultichainContract;
+  readonly address: Address;
+  readonly derivationPath: string;
 
   private constructor(config: {
-    providerUrl: string;
-    scanUrl: string;
-    gasStationUrl: string;
     mpcContract: MultichainContract;
     derivationPath: string;
     sender: Address;
   }) {
-    this.ethClient = createPublicClient({
-      transport: http(config.providerUrl),
-    });
-    this.scanUrl = config.scanUrl;
     this.mpcContract = config.mpcContract;
-    this.gasStationUrl = config.gasStationUrl;
     this.derivationPath = config.derivationPath;
-    this.sender = config.sender;
+    this.address = config.sender;
   }
 
-  /**
-   * @returns ETH address derived by Near account via `derivationPath`.
-   */
-  ethPublicKey(): Address {
-    return this.sender;
-  }
   /**
    * @returns Near accountId linked to derived ETH.
    */
@@ -76,13 +58,12 @@ export class NearEthAdapter {
    */
   static async fromConfig(args: NearEthAdapterParams): Promise<NearEthAdapter> {
     // Sender is uniquely determined by the derivation path!
-    const mpcContract = args.near.mpcContract;
-    const derivationPath = args.near.derivationPath || "ethereum,1";
+    const mpcContract = args.mpcContract;
+    const derivationPath = args.derivationPath || "ethereum,1";
     return new NearEthAdapter({
       sender: await mpcContract.deriveEthAddress(derivationPath),
       derivationPath,
       mpcContract,
-      ...args.evm,
     });
   }
 
@@ -96,7 +77,7 @@ export class NearEthAdapter {
    * Note that the signature request is a recursive function.
    */
   async signAndSendTransaction(txData: BaseTx, nearGas?: BN): Promise<Hash> {
-    console.log("Creating Payload for sender:", this.sender);
+    console.log("Creating Payload for sender:", this.address);
     const { transaction, signArgs } = await this.createTxPayload(txData);
     console.log("Requesting signature from Near...");
     const { big_r, big_s } = await this.mpcContract.requestSignature(
@@ -123,7 +104,7 @@ export class NearEthAdapter {
     transaction: Hex;
     requestPayload: NearContractFunctionPayload;
   }> {
-    console.log("Creating Payload for sender:", this.sender);
+    console.log("Creating Payload for sender:", this.address);
     const { transaction, signArgs } = await this.createTxPayload(txData);
     console.log("Requesting signature from Near...");
     return {
@@ -154,8 +135,8 @@ export class NearEthAdapter {
    * @param {number?} nonce - Optional transaction nonce.
    * @returns Transaction and its bytes (the payload to be signed on Near).
    */
-  async createTxPayload(tx: BaseTx, nonce?: number): Promise<TxPayload> {
-    const transaction = await this.buildTransaction(tx, nonce);
+  async createTxPayload(tx: BaseTx): Promise<TxPayload> {
+    const transaction = await this.buildTransaction(tx);
     console.log("Built (unsigned) Transaction", transaction);
     const signArgs = {
       payload: buildTxPayload(transaction),
@@ -165,30 +146,33 @@ export class NearEthAdapter {
     return { transaction, signArgs };
   }
 
-  async buildTransaction(tx: BaseTx, nonce?: number): Promise<Hex> {
+  async buildTransaction(tx: BaseTx): Promise<Hex> {
+    const network = NETWORK_MAP[tx.chainId];
+    const client = createPublicClient({
+      transport: http(network.rpcUrl),
+    });
     const transactionData = {
       nonce:
-        nonce ||
-        (await this.ethClient.getTransactionCount({
-          address: this.sender,
+        tx.nonce ||
+        (await client.getTransactionCount({
+          address: this.address,
         })),
-      account: this.sender,
+      account: this.address,
       to: tx.to,
       value: tx.value ?? 0n,
       data: tx.data ?? "0x",
     };
-    const [estimatedGas, { maxFeePerGas, maxPriorityFeePerGas }, chainId] =
+    const [estimatedGas, { maxFeePerGas, maxPriorityFeePerGas }] =
       await Promise.all([
-        this.ethClient.estimateGas(transactionData),
-        queryGasPrice(this.gasStationUrl),
-        this.ethClient.getChainId(),
+        client.estimateGas(transactionData),
+        queryGasPrice(network.gasStationUrl),
       ]);
     const transactionDataWithGasLimit = {
       ...transactionData,
       gas: BigInt(estimatedGas.toString()),
       maxFeePerGas,
       maxPriorityFeePerGas,
-      chainId,
+      chainId: network.chainId,
     };
     console.log("Gas Estimation:", estimatedGas);
     console.log("Transaction Request", transactionDataWithGasLimit);
@@ -196,7 +180,7 @@ export class NearEthAdapter {
   }
 
   reconstructSignature(tx: TransactionWithSignature): Hex {
-    return addSignature(tx, this.sender);
+    return addSignature(tx, this.address);
   }
 
   /**
@@ -207,10 +191,15 @@ export class NearEthAdapter {
   private async relaySignedTransaction(
     serializedTransaction: Hex
   ): Promise<Hash> {
-    const txHash = await this.ethClient.sendRawTransaction({
+    const tx = parseTransaction(serializedTransaction);
+    const network = NETWORK_MAP[tx.chainId!];
+    const client = createPublicClient({
+      transport: http(network.rpcUrl),
+    });
+    const txHash = await client.sendRawTransaction({
       serializedTransaction,
     });
-    console.log(`Transaction Confirmed: ${this.scanUrl}/tx/${txHash}`);
+    console.log(`Transaction Confirmed: ${network.scanUrl}/tx/${txHash}`);
     return txHash;
   }
   // Below code is inspired by https://github.com/Connor-ETHSeoul/near-viem
@@ -222,7 +211,7 @@ export class NearEthAdapter {
     const sigs = await this.sign(hashTypedData(typedData));
 
     const common = {
-      address: this.ethPublicKey(),
+      address: this.address,
       types: typedData.types,
       /* eslint-disable @typescript-eslint/no-explicit-any */
       primaryType: typedData.primaryType as any,
@@ -246,7 +235,7 @@ export class NearEthAdapter {
   async signMessage(message: SignableMessage): Promise<Hash> {
     const sigs = await this.sign(hashMessage(message));
     const common = {
-      address: this.ethPublicKey(),
+      address: this.address,
       message,
     };
     const validity = await Promise.all([
