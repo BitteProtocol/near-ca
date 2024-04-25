@@ -6,6 +6,12 @@ import {
   http,
   Hash,
   serializeTransaction,
+  hashMessage,
+  toBytes,
+  isBytes,
+  SignableMessage,
+  verifyMessage,
+  signatureToHex,
 } from "viem";
 import {
   BaseTx,
@@ -18,6 +24,7 @@ import { MultichainContract } from "../mpcContract";
 import BN from "bn.js";
 import { queryGasPrice } from "../utils/gasPrice";
 import { buildTxPayload, addSignature } from "../utils/transaction";
+// import { ethers } from "ethers";
 
 export class NearEthAdapter {
   ethClient: PublicClient;
@@ -92,7 +99,7 @@ export class NearEthAdapter {
       signArgs,
       nearGas
     );
-
+    console.log("Signature received");
     return this.relayTransaction({ transaction, signature: { big_r, big_s } });
   }
 
@@ -201,5 +208,54 @@ export class NearEthAdapter {
     });
     console.log(`Transaction Confirmed: ${this.scanUrl}/tx/${txHash}`);
     return txHash;
+  }
+  // Below code is inspired by https://github.com/Connor-ETHSeoul/near-viem
+
+  async signMessage(message: SignableMessage): Promise<Hash> {
+    const sigs = await this.sign(hashMessage(message));
+    const address = this.ethPublicKey();
+    const validity = await Promise.all([
+      verifyMessage({
+        address,
+        message,
+        signature: sigs[0],
+      }),
+      verifyMessage({
+        address,
+        message: message,
+        signature: sigs[1],
+      }),
+    ]);
+    return this.pickValidSignature(validity, sigs);
+  }
+
+  async sign(msgHash: `0x${string}` | Uint8Array): Promise<[Hex, Hex]> {
+    const hashToSign = isBytes(msgHash) ? msgHash : toBytes(msgHash);
+
+    const { big_r, big_s } = await this.mpcContract.requestSignature({
+      path: this.derivationPath,
+      payload: Array.from(hashToSign.reverse()),
+      key_version: 0,
+    });
+    const r = `0x${big_r.substring(2)}` as Hex;
+    const s = `0x${big_s}` as Hex;
+
+    return [
+      signatureToHex({ r, s, yParity: 0 }),
+      signatureToHex({ r, s, yParity: 1 }),
+    ];
+  }
+
+  private pickValidSignature(
+    [valid0, valid1]: [boolean, boolean],
+    [sig0, sig1]: [Hash, Hash]
+  ): Hash {
+    if (!valid0 && !valid1) {
+      throw new Error("Invalid signature");
+    } else if (valid0) {
+      return sig0;
+    } else {
+      return sig1;
+    }
   }
 }
