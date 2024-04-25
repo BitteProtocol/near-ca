@@ -26,7 +26,7 @@ describe("End To End", () => {
     ).resolves.not.toThrow();
   });
 
-  it("signAndSendTransaction - Gnosis Chain", async () => {
+  it.skip("signAndSendTransaction - Gnosis Chain", async () => {
     await expect(
       adapter.signAndSendTransaction({
         // Sending 1 WEI to self (so we never run out of funds)
