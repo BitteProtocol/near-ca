@@ -48,7 +48,7 @@ describe("End To End", () => {
       adapter.signAndSendTransaction({
         to,
         value: senderBalance + ONE_WEI,
-        chainId: SEPOLIA_CHAIN_ID,
+        chainId,
       })
     ).rejects.toThrow();
   });
