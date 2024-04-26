@@ -1,4 +1,4 @@
-import { MultichainContract } from "./mpcContract";
+import { MultichainContract } from "./contracts/mpc";
 import { FunctionCallAction } from "@near-wallet-selector/core";
 import BN from "bn.js";
 import { Hex } from "viem";

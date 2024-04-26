@@ -22,7 +22,7 @@ import {
   TxPayload,
   TransactionWithSignature,
 } from "../types";
-import { MultichainContract } from "../mpcContract";
+import { MultichainContract } from "../contracts/mpc";
 import BN from "bn.js";
 import { queryGasPrice } from "../utils/gasPrice";
 import { buildTxPayload, addSignature } from "../utils/transaction";

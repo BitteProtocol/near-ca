@@ -4,17 +4,17 @@ import {
   deriveChildPublicKey,
   najPublicKeyStrToUncompressedHexPoint,
   uncompressedHexPointToEvmAddress,
-} from "./utils/kdf";
-import { NO_DEPOSIT, nearAccountFromEnv, TGAS } from "./chains/near";
+} from "../utils/kdf";
+import { NO_DEPOSIT, nearAccountFromEnv, TGAS } from "../chains/near";
 import BN from "bn.js";
 import {
   ChangeMethodArgs,
   MPCSignature,
   NearContractFunctionPayload,
   SignArgs,
-} from "./types";
+} from "../types";
 
-interface MultichainContractInterface extends Contract {
+interface MPCInterface extends Contract {
   // Define the signature for the `public_key` view method
   public_key: () => Promise<string>;
 
@@ -27,14 +27,14 @@ interface MultichainContractInterface extends Contract {
  * located in: https://github.com/near/mpc-recovery
  */
 export class MultichainContract {
-  contract: MultichainContractInterface;
+  contract: MPCInterface;
 
   constructor(account: Account, contractId: string) {
     this.contract = new Contract(account, contractId, {
       changeMethods: ["sign"],
       viewMethods: ["public_key"],
       useLocalViewExecution: false,
-    }) as MultichainContractInterface;
+    }) as MPCInterface;
   }
 
   static async fromEnv(): Promise<MultichainContract> {
@@ -65,7 +65,7 @@ export class MultichainContract {
       args: signArgs,
       // Default of 200 TGAS
       gas: gas || TGAS.muln(200),
-      attachedDeposit: new BN(NO_DEPOSIT),
+      attachedDeposit: NO_DEPOSIT,
     });
     return { big_r, big_s };
   };
@@ -84,7 +84,7 @@ export class MultichainContract {
             methodName: "sign",
             args: signArgs,
             gas: (gas || TGAS.muln(200)).toString(),
-            deposit: NO_DEPOSIT,
+            deposit: NO_DEPOSIT.toString(),
           },
         },
       ],
