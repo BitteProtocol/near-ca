@@ -1,7 +1,6 @@
 import { base_decode } from "near-api-js/lib/utils/serialize";
 import { ec as EC } from "elliptic";
 import { Address } from "viem";
-import BN from "bn.js";
 import keccak from "keccak";
 
 export function najPublicKeyStrToUncompressedHexPoint(
@@ -21,7 +20,7 @@ export async function deriveChildPublicKey(
     `near-mpc-recovery v0.1.0 epsilon derivation:${signerId},${path}`
   );
 
-  const scalarBN = sha256StringToScalarLittleEndian(scalar);
+  const scalarHex = sha256StringToScalarLittleEndian(scalar);
 
   const x = parentUncompressedPublicKeyHex.substring(2, 66);
   const y = parentUncompressedPublicKeyHex.substring(66);
@@ -30,7 +29,7 @@ export async function deriveChildPublicKey(
   const oldPublicKeyPoint = ec.curve.point(x, y);
 
   // Multiply the scalar by the generator point G
-  const scalarTimesG = ec.g.mul(scalarBN);
+  const scalarTimesG = ec.g.mul(scalarHex);
 
   // Add the result to the old public key point
   const newPublicKeyPoint = oldPublicKeyPoint.add(scalarTimesG);
@@ -58,7 +57,6 @@ async function sha256Hash(str: string): Promise<string> {
   return hashArray.map((b) => b.toString(16).padStart(2, "0")).join("");
 }
 
-function sha256StringToScalarLittleEndian(hashString: string): BN {
-  const littleEndianString = hashString.match(/../g)!.reverse().join("");
-  return new BN(littleEndianString, 16);
+function sha256StringToScalarLittleEndian(hashString: string): string {
+  return hashString.match(/../g)!.reverse().join("");
 }

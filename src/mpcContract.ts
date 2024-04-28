@@ -72,7 +72,7 @@ export class MultichainContract {
 
   encodeSignatureRequestTx = async (
     signArgs: SignArgs,
-    gas?: BN
+    gas?: bigint
   ): Promise<NearContractFunctionPayload> => {
     return {
       signerId: this.contract.account.accountId,
