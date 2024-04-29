@@ -92,7 +92,7 @@ export class NearEthAdapter {
    * acquires signature from Near MPC Contract and submits transaction to public mempool.
    *
    * @param {BaseTx} txData - Minimal transaction data to be signed by Near MPC and executed on EVM.
-   * @param {biging} nearGas - manually specified gas to be sent with signature request (default 200 TGAS).
+   * @param {bigint} nearGas - manually specified gas to be sent with signature request (default 200 TGAS).
    * Note that the signature request is a recursive function.
    */
   async getSignatureRequestPayload(
