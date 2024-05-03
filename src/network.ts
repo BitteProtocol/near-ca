@@ -11,7 +11,7 @@ import {
 } from "viem/chains";
 
 // All supported networks
-const SUPPORTED_NETWORKS = createNetworkMap([
+export const SUPPORTED_NETWORKS = createNetworkMap([
   mainnet,
   gnosis,
   sepolia,
@@ -58,7 +58,7 @@ export class Network implements NetworkFields {
   }
 }
 
-type NetworkMap = { [key: number]: NetworkFields };
+export type NetworkMap = { [key: number]: NetworkFields };
 
 /// Dynamically generate network map accessible by chainId.
 function createNetworkMap(supportedNetworks: Chain[]): NetworkMap {
