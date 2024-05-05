@@ -8,7 +8,7 @@ import {
   serializeTransaction,
   signatureToHex,
 } from "viem";
-import { TransactionWithSignature } from "../types";
+import { TransactionWithSignature } from "../types/types";
 import { secp256k1 } from "@noble/curves/secp256k1";
 
 import { publicKeyToAddress } from "viem/utils";

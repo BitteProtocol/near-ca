@@ -21,7 +21,7 @@ import {
   NearContractFunctionPayload,
   TxPayload,
   TransactionWithSignature,
-} from "../types";
+} from "../types/types";
 import { MultichainContract } from "../mpcContract";
 import BN from "bn.js";
 import { queryGasPrice } from "../utils/gasPrice";
