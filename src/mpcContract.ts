@@ -12,7 +12,7 @@ import {
   MPCSignature,
   NearContractFunctionPayload,
   SignArgs,
-} from "./types";
+} from "./types/types";
 
 interface MultichainContractInterface extends Contract {
   // Define the signature for the `public_key` view method

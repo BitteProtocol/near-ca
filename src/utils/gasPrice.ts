@@ -1,4 +1,4 @@
-import { GasPrices } from "../types";
+import { GasPrices } from "../types/types";
 
 interface GasPriceResponse {
   code: number;

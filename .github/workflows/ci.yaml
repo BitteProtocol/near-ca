@@ -20,15 +20,13 @@ jobs:
       - name: Install & Build
         run: yarn && yarn build
 
-      - name: Lint & Test
+      - name: Lint & Unit Test
         run: |
           yarn lint
-          yarn test
-        env:
-          NODE_URL: https://rpc2.sepolia.org
-          SCAN_URL: https://sepolia.etherscan.io
-          GAS_STATION_URL: https://sepolia.beaconcha.in/api/v1/execution/gasnow
-
-          NEAR_MULTICHAIN_CONTRACT: multichain-testnet-2.testnet
-          NEAR_ACCOUNT_ID: ${{secrets.NEAR_ACCOUNT_ID}}
-          NEAR_ACCOUNT_PRIVATE_KEY: ${{secrets.NEAR_PK}}
+          yarn test utils
+        # These are only relevant for e2e tests
+        # env:
+        #   NEAR_MULTICHAIN_CONTRACT: multichain-testnet-2.testnet
+        #   NEAR_MULTICHAIN_CONTRACT: v5.multichain-mpc-dev.testnet
+        #   NEAR_ACCOUNT_ID: ${{secrets.NEAR_ACCOUNT_ID}}
+        #   NEAR_ACCOUNT_PRIVATE_KEY: ${{secrets.NEAR_PK}}
