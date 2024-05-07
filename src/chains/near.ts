@@ -4,6 +4,14 @@ import { Wallet } from "@near-wallet-selector/core";
 export const TGAS = 1000000000000n;
 export const NO_DEPOSIT = "0";
 
+// const connectionConfig = {
+//   networkId: "testnet",
+//   keyStore: new keyStores.BrowserLocalStorageKeyStore(),
+//   nodeUrl: "https://rpc.testnet.near.org",
+//   walletUrl: "https://testnet.mynearwallet.com/",
+//   helperUrl: "https://helper.testnet.near.org",
+//   explorerUrl: "https://testnet.nearblocks.io",
+// };
 export interface NearConfig {
   networkId: string;
   nodeUrl: string;

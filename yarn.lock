@@ -984,13 +984,6 @@
   resolved "https://registry.yarnpkg.com/@types/json-schema/-/json-schema-7.0.15.tgz#596a1747233694d50f6ad8a7869fcb6f56cf5841"
   integrity sha512-5+fP8P8MFNC+AyZCDxrB2pkZFPGzqQWUzpSeuuVLvm8VMcorNYavBqoFcxK8bQz4Qsbn4oUEEem4wDLfcysGHA==
 
-"@types/keccak@^3.0.4":
-  version "3.0.4"
-  resolved "https://registry.yarnpkg.com/@types/keccak/-/keccak-3.0.4.tgz#bd4052c5484c55adfd4edb321dce841d8ed4119e"
-  integrity sha512-hdnkmbie7tE0yXnQQvlIOqCyjEsoXDVEZ3ACqO+F305XgUOW4Z9ElWdogCXXRAW/khnZ7GxM0t/BGB5bORKt/g==
-  dependencies:
-    "@types/node" "*"
-
 "@types/node@*", "@types/node@^20.11.30":
   version "20.12.11"
   resolved "https://registry.yarnpkg.com/@types/node/-/node-20.12.11.tgz#c4ef00d3507000d17690643278a60dc55a9dc9be"
