@@ -2,13 +2,17 @@ import { JSONRPCResponse } from "../types/rpc";
 
 export async function signatureFromTxHash(
   nodeUrl: string,
-  txHash: string
+  txHash: string,
+  /// This field doesn't appear to be necessary although (possibly for efficiency),
+  /// the docs mention that it is "used to determine which shard to query for transaction".
+  accountId: string = "non-empty"
 ): Promise<[string, string]> {
   const payload = {
     jsonrpc: "2.0",
     id: "dontcare",
+    // This could be replaced with `tx`.
     method: "EXPERIMENTAL_tx_status",
-    params: [txHash, "useless-parameter"],
+    params: [txHash, accountId],
   };
 
   // Make the POST request with the fetch API

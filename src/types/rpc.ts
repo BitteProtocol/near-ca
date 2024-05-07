@@ -32,8 +32,10 @@ interface ReceiptDetail {
 interface ActionDetail {
   actions: Action[];
   gas_price: string;
-  input_data_ids: any[];
-  output_data_receivers: any[];
+  // TODO - determine types here and find a non-trivial example.
+  //  cf: https://github.com/Mintbase/near-ca/issues/31
+  // input_data_ids: any[];
+  // output_data_receivers: any[];
   signer_id: string;
   signer_public_key: string;
 }
