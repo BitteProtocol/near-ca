@@ -12,7 +12,7 @@ import {
   MPCSignature,
   NearContractFunctionPayload,
   SignArgs,
-} from "./types";
+} from "./types/types";
 
 interface MultichainContractInterface extends Contract {
   // Define the signature for the `public_key` view method
@@ -70,10 +70,10 @@ export class MultichainContract {
     return { big_r, big_s };
   };
 
-  encodeSignatureRequestTx = async (
+  encodeSignatureRequestTx(
     signArgs: SignArgs,
-    gas?: bigint
-  ): Promise<NearContractFunctionPayload> => {
+    gas?: BN
+  ): NearContractFunctionPayload {
     return {
       signerId: this.contract.account.accountId,
       receiverId: this.contract.contractId,
@@ -89,5 +89,5 @@ export class MultichainContract {
         },
       ],
     };
-  };
+  }
 }
