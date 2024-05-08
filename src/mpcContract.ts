@@ -6,7 +6,6 @@ import {
   uncompressedHexPointToEvmAddress,
 } from "./utils/kdf";
 import { NO_DEPOSIT, nearAccountFromEnv, TGAS } from "./chains/near";
-import BN from "bn.js";
 import {
   MPCSignature,
   NearContractFunctionPayload,
@@ -18,9 +17,9 @@ export interface ChangeMethodArgs<T> {
   /// Change method function agruments.
   args: T;
   /// GasLimit on transaction execution.
-  gas: BN;
+  gas: string;
   /// Deposit (i.e. payable amount) to attach to transaction.
-  attachedDeposit: BN;
+  attachedDeposit: string;
 }
 
 interface MultichainContractInterface extends Contract {
@@ -72,8 +71,8 @@ export class MultichainContract {
   ): Promise<MPCSignature> => {
     const [big_r, big_s] = await this.contract.sign({
       args: signArgs,
-      gas: gasBNOrDefault(gas),
-      attachedDeposit: new BN(NO_DEPOSIT),
+      gas: gasOrDefault(gas),
+      attachedDeposit: NO_DEPOSIT,
     });
     return { big_r, big_s };
   };
@@ -91,7 +90,7 @@ export class MultichainContract {
           params: {
             methodName: "sign",
             args: signArgs,
-            gas: gasBNOrDefault(gas).toString(),
+            gas: gasOrDefault(gas),
             deposit: NO_DEPOSIT,
           },
         },
@@ -100,10 +99,10 @@ export class MultichainContract {
   }
 }
 
-function gasBNOrDefault(gas?: bigint): BN {
+function gasOrDefault(gas?: bigint): string {
   if (gas !== undefined) {
-    return new BN(gas.toString());
+    return gas.toString();
   }
   // Default of 200 TGAS
-  return new BN(TGAS).muln(200);
+  return (TGAS * 200n).toString();
 }
