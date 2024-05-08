@@ -28,9 +28,6 @@
     "typescript": "^5.4.2"
   },
   "dependencies": {
-    "@near-js/accounts": "^1.0.4",
-    "@near-js/crypto": "^1.2.1",
-    "@near-js/keystores": "^0.0.9",
     "@near-wallet-selector/core": "^8.9.5",
     "elliptic": "^6.5.5",
     "keccak": "^3.0.4",
