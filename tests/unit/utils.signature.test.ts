@@ -1,4 +1,4 @@
-import { signatureFromTxHash } from "../src/utils/getSignature";
+import { signatureFromTxHash } from "../../src/utils/signature";
 
 describe("utility: get Signature", () => {
   const url: string = "https://archival-rpc.testnet.near.org";

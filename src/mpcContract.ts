@@ -70,10 +70,10 @@ export class MultichainContract {
     return { big_r, big_s };
   };
 
-  encodeSignatureRequestTx = async (
+  encodeSignatureRequestTx(
     signArgs: SignArgs,
     gas?: BN
-  ): Promise<NearContractFunctionPayload> => {
+  ): NearContractFunctionPayload {
     return {
       signerId: this.contract.account.accountId,
       receiverId: this.contract.contractId,
@@ -89,5 +89,5 @@ export class MultichainContract {
         },
       ],
     };
-  };
+  }
 }

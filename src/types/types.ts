@@ -14,6 +14,8 @@ export interface BaseTx {
   chainId: number;
   /// Specified transaction nonce
   nonce?: number;
+  /// optional gasLimit
+  gas?: bigint;
 }
 
 export interface NearEthAdapterParams {
@@ -52,7 +54,7 @@ export interface SignArgs {
 }
 
 export interface TxPayload {
-  /// Deserialized Ethereum Transaction.
+  /// Serialized Ethereum Transaction.
   transaction: Hex;
   /// Arguments required by Near MPC Contract signature request.
   signArgs: SignArgs;
