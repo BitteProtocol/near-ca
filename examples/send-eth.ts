@@ -1,15 +1,20 @@
 import dotenv from "dotenv";
 import { SEPOLIA_CHAIN_ID, setupNearEthAdapter } from "./setup";
+import { TGAS } from "../src";
 dotenv.config();
 
 const run = async (): Promise<void> => {
   const evm = await setupNearEthAdapter();
-  await evm.signAndSendTransaction({
-    to: "0xdeADBeeF0000000000000000000000000b00B1e5",
-    // THIS IS ONE WEI!
-    value: 1n,
-    chainId: SEPOLIA_CHAIN_ID,
-  });
+  await evm.signAndSendTransaction(
+    {
+      // Sending to self.
+      to: evm.address,
+      // THIS IS ONE WEI!
+      value: 1n,
+      chainId: SEPOLIA_CHAIN_ID,
+    },
+    TGAS.muln(300)
+  );
 };
 
 run();
