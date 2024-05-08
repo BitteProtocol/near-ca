@@ -1,3 +1,4 @@
+import { Hash } from "viem";
 import { JSONRPCResponse } from "../types/rpc";
 
 export async function signatureFromTxHash(
@@ -33,5 +34,18 @@ export async function signatureFromTxHash(
     return JSON.parse(decodedValue);
   } else {
     throw new Error("No valid values found in the array.");
+  }
+}
+
+export function pickValidSignature(
+  [valid0, valid1]: [boolean, boolean],
+  [sig0, sig1]: [Hash, Hash]
+): Hash {
+  if (!valid0 && !valid1) {
+    throw new Error("Invalid signature");
+  } else if (valid0) {
+    return sig0;
+  } else {
+    return sig1;
   }
 }

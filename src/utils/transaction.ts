@@ -1,22 +1,60 @@
 import {
   Address,
   Hex,
-  hexToBytes,
+  TransactionSerializable,
   hexToNumber,
   keccak256,
   parseTransaction,
   serializeTransaction,
   signatureToHex,
+  toBytes,
 } from "viem";
-import { TransactionWithSignature } from "../types/types";
+import { BaseTx, TransactionWithSignature } from "../types/types";
 import { secp256k1 } from "@noble/curves/secp256k1";
-
 import { publicKeyToAddress } from "viem/utils";
+import { queryGasPrice } from "./gasPrice";
+import { Network } from "../network";
+
+export function toPayload(hexString: Hex): number[] {
+  if (hexString.slice(2).length !== 32 * 2) {
+    throw new Error(`Payload Hex must have 32 bytes: ${hexString}`);
+  }
+  return Array.from(toBytes(hexString).reverse());
+}
 
 export function buildTxPayload(unsignedTxHash: `0x${string}`): number[] {
-  // Compute the Transaction Message Hash.
-  const messageHash = keccak256(unsignedTxHash);
-  return Array.from(hexToBytes(messageHash).slice().reverse());
+  return toPayload(keccak256(unsignedTxHash));
+}
+
+export async function populateTx(
+  tx: BaseTx,
+  from: Hex
+): Promise<TransactionSerializable> {
+  const network = Network.fromChainId(tx.chainId);
+  const transactionData = {
+    nonce:
+      tx.nonce ||
+      (await network.client.getTransactionCount({
+        address: from,
+      })),
+    account: from,
+    to: tx.to,
+    value: tx.value ?? 0n,
+    data: tx.data ?? "0x",
+  };
+  const [estimatedGas, { maxFeePerGas, maxPriorityFeePerGas }] =
+    await Promise.all([
+      // Only estimate gas if not provided.
+      tx.gas || network.client.estimateGas(transactionData),
+      queryGasPrice(network.gasStationUrl),
+    ]);
+  return {
+    ...transactionData,
+    gas: estimatedGas,
+    maxFeePerGas,
+    maxPriorityFeePerGas,
+    chainId: network.chainId,
+  };
 }
 
 export function addSignature(

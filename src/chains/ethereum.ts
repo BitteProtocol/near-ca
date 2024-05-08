@@ -24,9 +24,9 @@ import {
 } from "../types/types";
 import { MultichainContract } from "../mpcContract";
 import BN from "bn.js";
-import { queryGasPrice } from "../utils/gasPrice";
-import { buildTxPayload, addSignature } from "../utils/transaction";
+import { buildTxPayload, addSignature, populateTx } from "../utils/transaction";
 import { Network } from "../network";
+import { pickValidSignature } from "../utils/getSignature";
 
 export class NearEthAdapter {
   readonly mpcContract: MultichainContract;
@@ -150,32 +150,9 @@ export class NearEthAdapter {
    * @returns {Hex} serialized (aka RLP encoded) transaction.
    */
   async buildTransaction(tx: BaseTx): Promise<Hex> {
-    const network = Network.fromChainId(tx.chainId);
-    const transactionData = {
-      nonce:
-        tx.nonce ||
-        (await network.client.getTransactionCount({
-          address: this.address,
-        })),
-      account: this.address,
-      to: tx.to,
-      value: tx.value ?? 0n,
-      data: tx.data ?? "0x",
-    };
-    const [estimatedGas, { maxFeePerGas, maxPriorityFeePerGas }] =
-      await Promise.all([
-        network.client.estimateGas(transactionData),
-        queryGasPrice(network.gasStationUrl),
-      ]);
-    const transactionDataWithGasLimit = {
-      ...transactionData,
-      gas: BigInt(estimatedGas.toString()),
-      maxFeePerGas,
-      maxPriorityFeePerGas,
-      chainId: network.chainId,
-    };
-    console.log("Transaction Request", transactionDataWithGasLimit);
-    return serializeTransaction(transactionDataWithGasLimit);
+    const transaction = await populateTx(tx, this.address);
+    console.log("Transaction Request", transaction);
+    return serializeTransaction(transaction);
   }
 
   reconstructSignature(tx: TransactionWithSignature): Hex {
@@ -225,7 +202,7 @@ export class NearEthAdapter {
         ...common,
       }),
     ]);
-    return this.pickValidSignature(validity, sigs);
+    return pickValidSignature(validity, sigs);
   }
 
   async signMessage(message: SignableMessage): Promise<Hash> {
@@ -244,7 +221,7 @@ export class NearEthAdapter {
         ...common,
       }),
     ]);
-    return this.pickValidSignature(validity, sigs);
+    return pickValidSignature(validity, sigs);
   }
 
   /**
@@ -267,18 +244,5 @@ export class NearEthAdapter {
       signatureToHex({ r, s, yParity: 0 }),
       signatureToHex({ r, s, yParity: 1 }),
     ];
-  }
-
-  private pickValidSignature(
-    [valid0, valid1]: [boolean, boolean],
-    [sig0, sig1]: [Hash, Hash]
-  ): Hash {
-    if (!valid0 && !valid1) {
-      throw new Error("Invalid signature");
-    } else if (valid0) {
-      return sig0;
-    } else {
-      return sig1;
-    }
   }
 }
