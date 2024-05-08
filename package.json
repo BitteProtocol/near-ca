@@ -34,6 +34,7 @@
     "@near-js/crypto": "^1.2.1",
     "@near-js/keystores": "^0.0.9",
     "@near-wallet-selector/core": "^8.9.5",
+    "@walletconnect/web3wallet": "^1.11.2",
     "bn.js": "^5.2.1",
     "bs58check": "^3.0.1",
     "elliptic": "^6.5.5",
