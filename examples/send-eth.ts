@@ -5,7 +5,8 @@ dotenv.config();
 const run = async (): Promise<void> => {
   const evm = await setupNearEthAdapter();
   await evm.signAndSendTransaction({
-    to: "0xdeADBeeF0000000000000000000000000b00B1e5",
+    // Sending to self.
+    to: evm.address,
     // THIS IS ONE WEI!
     value: 1n,
     chainId: SEPOLIA_CHAIN_ID,
