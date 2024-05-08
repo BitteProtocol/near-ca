@@ -6,7 +6,7 @@ import {
   keccak256,
   parseTransaction,
   serializeTransaction,
-  signatureToHex,
+  serializeSignature,
   toBytes,
 } from "viem";
 import { BaseTx, TransactionWithSignature } from "../types/types";
@@ -75,7 +75,7 @@ export function addSignature(
   });
 
   const signedTx = candidates.find((tx) => {
-    const signature = signatureToHex({
+    const signature = serializeSignature({
       r: tx.r!,
       s: tx.s!,
       v: tx.v!,

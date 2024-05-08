@@ -9,7 +9,7 @@ import {
   SignableMessage,
   verifyMessage,
   verifyTypedData,
-  signatureToHex,
+  serializeSignature,
   hashTypedData,
   TypedData,
   TypedDataDefinition,
@@ -243,8 +243,8 @@ export class NearEthAdapter {
     const s = `0x${big_s}` as Hex;
 
     return [
-      signatureToHex({ r, s, yParity: 0 }),
-      signatureToHex({ r, s, yParity: 1 }),
+      serializeSignature({ r, s, yParity: 0 }),
+      serializeSignature({ r, s, yParity: 1 }),
     ];
   }
 }
