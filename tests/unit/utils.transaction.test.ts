@@ -1,5 +1,5 @@
-import { TransactionWithSignature } from "../src";
-import { buildTxPayload, addSignature } from "../src/utils/transaction";
+import { TransactionWithSignature } from "../../src";
+import { buildTxPayload, addSignature } from "../../src/utils/transaction";
 
 describe("Transaction Builder Functions", () => {
   it("buildTxPayload", async () => {

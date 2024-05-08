@@ -26,7 +26,7 @@ import { MultichainContract } from "../mpcContract";
 import BN from "bn.js";
 import { buildTxPayload, addSignature, populateTx } from "../utils/transaction";
 import { Network } from "../network";
-import { pickValidSignature } from "../utils/getSignature";
+import { pickValidSignature } from "../utils/signature";
 
 export class NearEthAdapter {
   readonly mpcContract: MultichainContract;

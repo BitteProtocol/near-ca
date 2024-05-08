@@ -2,7 +2,7 @@ import {
   najPublicKeyStrToUncompressedHexPoint,
   deriveChildPublicKey,
   uncompressedHexPointToEvmAddress,
-} from "../src/utils/kdf";
+} from "../../src/utils/kdf";
 
 const ROOT_PK =
   "ecp256k1:4HFcTSodRLVCGNVcGc4Mf2fwBBBxv9jxkGdiW2S2CA1y6UpVVRWKj6RX7d7TDt65k2Bj3w9FU4BGtt43ZvuhCnNt";
