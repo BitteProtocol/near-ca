@@ -1,8 +1,7 @@
-import BN from "bn.js";
 import { keyStores, KeyPair, connect, Account } from "near-api-js";
 import { Wallet } from "@near-wallet-selector/core";
 
-export const TGAS = new BN(1000000000000);
+export const TGAS = 1000000000000n;
 export const NO_DEPOSIT = "0";
 
 export interface NearConfig {

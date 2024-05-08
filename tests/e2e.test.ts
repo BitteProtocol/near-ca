@@ -13,7 +13,7 @@ describe("End To End", () => {
   });
 
   afterAll(async () => {
-    clearTimeout();
+    clearTimeout(undefined);
   });
 
   it("signAndSendTransaction", async () => {

@@ -1,6 +1,5 @@
 import { MultichainContract } from "../mpcContract";
 import { FunctionCallAction } from "@near-wallet-selector/core";
-import BN from "bn.js";
 import { Hex } from "viem";
 
 export interface BaseTx {
@@ -28,16 +27,6 @@ export interface NearEthAdapterParams {
 export interface GasPrices {
   maxFeePerGas: bigint;
   maxPriorityFeePerGas: bigint;
-}
-
-/// Near Contract Type for change methods
-export interface ChangeMethodArgs<T> {
-  /// Change method function agruments.
-  args: T;
-  /// GasLimit on transaction execution.
-  gas: BN;
-  /// Deposit (i.e. payable amount) to attach to transaction.
-  attachedDeposit: BN;
 }
 
 /**

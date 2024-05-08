@@ -6,13 +6,21 @@ import {
   uncompressedHexPointToEvmAddress,
 } from "./utils/kdf";
 import { NO_DEPOSIT, nearAccountFromEnv, TGAS } from "./chains/near";
-import BN from "bn.js";
 import {
-  ChangeMethodArgs,
   MPCSignature,
   NearContractFunctionPayload,
   SignArgs,
 } from "./types/types";
+
+/// Near Contract Type for change methods
+export interface ChangeMethodArgs<T> {
+  /// Change method function agruments.
+  args: T;
+  /// GasLimit on transaction execution.
+  gas: string;
+  /// Deposit (i.e. payable amount) to attach to transaction.
+  attachedDeposit: string;
+}
 
 interface MultichainContractInterface extends Contract {
   // Define the signature for the `public_key` view method
@@ -59,20 +67,19 @@ export class MultichainContract {
 
   requestSignature = async (
     signArgs: SignArgs,
-    gas?: BN
+    gas?: bigint
   ): Promise<MPCSignature> => {
     const [big_r, big_s] = await this.contract.sign({
       args: signArgs,
-      // Default of 200 TGAS
-      gas: gas || TGAS.muln(200),
-      attachedDeposit: new BN(NO_DEPOSIT),
+      gas: gasOrDefault(gas),
+      attachedDeposit: NO_DEPOSIT,
     });
     return { big_r, big_s };
   };
 
   encodeSignatureRequestTx(
     signArgs: SignArgs,
-    gas?: BN
+    gas?: bigint
   ): NearContractFunctionPayload {
     return {
       signerId: this.contract.account.accountId,
@@ -83,11 +90,19 @@ export class MultichainContract {
           params: {
             methodName: "sign",
             args: signArgs,
-            gas: (gas || TGAS.muln(200)).toString(),
+            gas: gasOrDefault(gas),
             deposit: NO_DEPOSIT,
           },
         },
       ],
     };
   }
+}
+
+function gasOrDefault(gas?: bigint): string {
+  if (gas !== undefined) {
+    return gas.toString();
+  }
+  // Default of 200 TGAS
+  return (TGAS * 200n).toString();
 }
