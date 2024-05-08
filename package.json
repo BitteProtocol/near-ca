@@ -30,6 +30,6 @@
     "@near-wallet-selector/core": "^8.9.5",
     "elliptic": "^6.5.5",
     "near-api-js": "^3.0.3",
-    "viem": "^2.8.14"
+    "viem": "^2.10.2"
   }
 }
