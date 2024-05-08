@@ -2907,7 +2907,7 @@ onetime@^5.1.2:
   dependencies:
     mimic-fn "^2.1.0"
 
-opensea-js@^7.0.9:
+opensea-js@^7.1.8:
   version "7.1.8"
   resolved "https://registry.yarnpkg.com/opensea-js/-/opensea-js-7.1.8.tgz#d43434d47a1bb5c3e643ece80cc9dc8f2118a152"
   integrity sha512-DBlfMuBoNfMvVO7siQQE72wCdgQqG0qgJWi9H8CNkaBrU2IMl2kAjZE//cbqZyWEb9Kie/CEpbT6ICy0wjh4dg==
@@ -3459,7 +3459,7 @@ v8-to-istanbul@^9.0.1:
     "@types/istanbul-lib-coverage" "^2.0.1"
     convert-source-map "^2.0.0"
 
-viem@^2.8.14:
+viem@^2.10.2:
   version "2.10.2"
   resolved "https://registry.yarnpkg.com/viem/-/viem-2.10.2.tgz#65c2ca82b64e6fb9ee84c02b95dcf2c270ffe651"
   integrity sha512-gcOL+XxA0UWDarli856OEgumaBz4df/qNMpgno4NTSSZtJSC1XixIb3gWjVBei6Vx085ivw/U9ZE8gdniIo7fA==
