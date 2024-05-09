@@ -2898,10 +2898,10 @@ onetime@^5.1.2:
   dependencies:
     mimic-fn "^2.1.0"
 
-opensea-js@^7.1.8:
-  version "7.1.8"
-  resolved "https://registry.yarnpkg.com/opensea-js/-/opensea-js-7.1.8.tgz#d43434d47a1bb5c3e643ece80cc9dc8f2118a152"
-  integrity sha512-DBlfMuBoNfMvVO7siQQE72wCdgQqG0qgJWi9H8CNkaBrU2IMl2kAjZE//cbqZyWEb9Kie/CEpbT6ICy0wjh4dg==
+opensea-js@^7.1.9:
+  version "7.1.9"
+  resolved "https://registry.yarnpkg.com/opensea-js/-/opensea-js-7.1.9.tgz#8807b969a4155fcca30e08f2a46e0db57dea1b9d"
+  integrity sha512-Ku3PAZXqgkLaR/3/h+PSpC7IPPbdKn+hD0zNlOSlGjQ1i6epxCZzFGJ1nZKDsX9aMybZR5J2JcrcYzvGV7pc4g==
   dependencies:
     "@opensea/seaport-js" "^4.0.0"
     ethers "^6.9.0"
@@ -3443,10 +3443,10 @@ v8-to-istanbul@^9.0.1:
     "@types/istanbul-lib-coverage" "^2.0.1"
     convert-source-map "^2.0.0"
 
-viem@^2.10.2:
-  version "2.10.2"
-  resolved "https://registry.yarnpkg.com/viem/-/viem-2.10.2.tgz#65c2ca82b64e6fb9ee84c02b95dcf2c270ffe651"
-  integrity sha512-gcOL+XxA0UWDarli856OEgumaBz4df/qNMpgno4NTSSZtJSC1XixIb3gWjVBei6Vx085ivw/U9ZE8gdniIo7fA==
+viem@^2.10.3:
+  version "2.10.3"
+  resolved "https://registry.yarnpkg.com/viem/-/viem-2.10.3.tgz#7ddbbd6dd7ae356546b7afc1b878b8b054833c3b"
+  integrity sha512-GmPMH+D/SDSXpVSjLM0GN1H1/h4NUPHaIqnFLwAit8nkfCiDuajKflGFiMPCIs1h7QZlBICuKvON/rc09H+w6Q==
   dependencies:
     "@adraffy/ens-normalize" "1.10.0"
     "@noble/curves" "1.2.0"
