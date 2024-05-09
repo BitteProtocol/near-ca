@@ -16,7 +16,7 @@ module.exports = Object.assign({}, js.configs.recommended, {
   plugins: {
     "@typescript-eslint": tsPlugin,
   },
-  ignores: ["**/dist/**", "node_modules/*", "**/*.js"],
+  ignores: ["dist/*", "node_modules/*"],
   rules: {
     indent: ["error", 2, { SwitchCase: 1 }],
     "linebreak-style": ["error", "unix"],
