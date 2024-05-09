@@ -1,11 +1,11 @@
-import { Contract, Account } from "near-api-js";
+import { Account, Contract, Connection } from "near-api-js";
 import { Address } from "viem";
 import {
   deriveChildPublicKey,
   najPublicKeyStrToUncompressedHexPoint,
   uncompressedHexPointToEvmAddress,
 } from "./utils/kdf";
-import { NO_DEPOSIT, nearAccountFromEnv, TGAS } from "./chains/near";
+import { NO_DEPOSIT, TGAS, nearAccountFromEnv } from "./chains/near";
 import {
   MPCSignature,
   NearContractFunctionPayload,
@@ -14,6 +14,7 @@ import {
 
 /// Near Contract Type for change methods
 export interface ChangeMethodArgs<T> {
+  signerAccount: Account;
   /// Change method function agruments.
   args: T;
   /// GasLimit on transaction execution.
@@ -35,12 +36,12 @@ interface MultichainContractInterface extends Contract {
  * located in: https://github.com/near/mpc-recovery
  */
 export class MultichainContract {
-  connectedAccountId: string;
+  connectedAccount: Account;
   contract: MultichainContractInterface;
 
-  constructor(account: Account, contractId: string) {
-    this.connectedAccountId = account.accountId;
-    this.contract = new Contract(account, contractId, {
+  constructor(account: Account, connection: Connection, contractId: string) {
+    this.connectedAccount = account;
+    this.contract = new Contract(connection, contractId, {
       changeMethods: ["sign"],
       viewMethods: ["public_key"],
       useLocalViewExecution: false,
@@ -48,9 +49,10 @@ export class MultichainContract {
   }
 
   static async fromEnv(): Promise<MultichainContract> {
-    const account = await nearAccountFromEnv();
+    const { near, account } = await nearAccountFromEnv();
     return new MultichainContract(
       account,
+      near.connection,
       process.env.NEAR_MULTICHAIN_CONTRACT!
     );
   }
@@ -60,7 +62,7 @@ export class MultichainContract {
 
     const publicKey = await deriveChildPublicKey(
       najPublicKeyStrToUncompressedHexPoint(rootPublicKey),
-      this.connectedAccountId,
+      this.connectedAccount.accountId,
       derivationPath
     );
 
@@ -72,6 +74,7 @@ export class MultichainContract {
     gas?: bigint
   ): Promise<MPCSignature> => {
     const [big_r, big_s] = await this.contract.sign({
+      signerAccount: this.connectedAccount,
       args: signArgs,
       gas: gasOrDefault(gas),
       attachedDeposit: NO_DEPOSIT,
@@ -84,7 +87,7 @@ export class MultichainContract {
     gas?: bigint
   ): NearContractFunctionPayload {
     return {
-      signerId: this.connectedAccountId,
+      signerId: this.connectedAccount.accountId,
       receiverId: this.contract.contractId,
       actions: [
         {

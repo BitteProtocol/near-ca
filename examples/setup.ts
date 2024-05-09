@@ -1,17 +1,13 @@
 import dotenv from "dotenv";
-import { MultichainContract, NearEthAdapter, nearAccountFromEnv } from "../src";
+import { MultichainContract, NearEthAdapter } from "../src";
 
 // This is Sepolia, but can be replaced with nearly any EVM network.
 export const SEPOLIA_CHAIN_ID = 11_155_111;
 
 export async function setupNearEthAdapter(): Promise<NearEthAdapter> {
   dotenv.config();
-  const account = await nearAccountFromEnv();
   return NearEthAdapter.fromConfig({
-    mpcContract: new MultichainContract(
-      account,
-      process.env.NEAR_MULTICHAIN_CONTRACT!
-    ),
+    mpcContract: await MultichainContract.fromEnv(),
     derivationPath: "ethereum,1",
   });
 }

@@ -1,17 +1,25 @@
-import { keyStores, KeyPair, connect, Account } from "near-api-js";
+import {
+  keyStores,
+  KeyPair,
+  connect,
+  Account,
+  ConnectConfig,
+  Near,
+} from "near-api-js";
 import { Wallet } from "@near-wallet-selector/core";
 
 export const TGAS = 1000000000000n;
 export const NO_DEPOSIT = "0";
 
-export interface NearConfig {
-  networkId: string;
-  nodeUrl: string;
-}
-
-const TESTNET_CONFIG = {
+export const TESTNET_CONFIG: ConnectConfig = {
   networkId: "testnet",
+  keyStore: new keyStores.InMemoryKeyStore(),
   nodeUrl: "https://rpc.testnet.near.org",
+  walletUrl: "https://testnet.mynearwallet.com/",
+  helperUrl: "https://helper.testnet.near.org",
+  // This field does not exist on this type, even though its here:
+  // https://docs.near.org/tools/near-api-js/wallet
+  // explorerUrl: "https://testnet.nearblocks.io",
 };
 
 /**
@@ -21,8 +29,8 @@ const TESTNET_CONFIG = {
  * @returns {Account}
  */
 export const nearAccountFromEnv = async (
-  network?: NearConfig
-): Promise<Account> => {
+  network?: ConnectConfig
+): Promise<{ near: Near; account: Account }> => {
   const keyPair = KeyPair.fromString(process.env.NEAR_ACCOUNT_PRIVATE_KEY!);
   return nearAccountFromKeyPair({
     keyPair,
@@ -42,8 +50,8 @@ export const nearAccountFromEnv = async (
 export const nearAccountFromKeyPair = async (config: {
   keyPair: KeyPair;
   accountId: string;
-  network?: NearConfig;
-}): Promise<Account> => {
+  network?: ConnectConfig;
+}): Promise<{ near: Near; account: Account }> => {
   const keyStore = new keyStores.InMemoryKeyStore();
   await keyStore.setKey("testnet", config.accountId, config.keyPair);
   const near = await connect({
@@ -51,7 +59,7 @@ export const nearAccountFromKeyPair = async (config: {
     keyStore,
   });
   const account = await near.account(config.accountId);
-  return account;
+  return { near, account };
 };
 
 /** Minimally sufficient Account instance to construct the signing contract instance.
@@ -59,7 +67,7 @@ export const nearAccountFromKeyPair = async (config: {
  */
 export const nearAccountFromWallet = async (
   wallet: Wallet,
-  network?: NearConfig
+  network?: ConnectConfig
 ): Promise<Account> => {
   const keyStore = new keyStores.InMemoryKeyStore();
   const near = await connect({
