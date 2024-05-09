@@ -39,7 +39,7 @@
     "@near-wallet-selector/core": "^8.9.8",
     "@walletconnect/web3wallet": "^1.12.2",
     "elliptic": "^6.5.5",
-    "near-api-js": "^3.0.3",
+    "near-api-js": "^4.0.1",
     "viem": "^2.13.8"
   }
 }

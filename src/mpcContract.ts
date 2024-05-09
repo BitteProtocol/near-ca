@@ -35,9 +35,11 @@ interface MultichainContractInterface extends Contract {
  * located in: https://github.com/near/mpc-recovery
  */
 export class MultichainContract {
+  connectedAccountId: string;
   contract: MultichainContractInterface;
 
   constructor(account: Account, contractId: string) {
+    this.connectedAccountId = account.accountId;
     this.contract = new Contract(account, contractId, {
       changeMethods: ["sign"],
       viewMethods: ["public_key"],
@@ -58,7 +60,7 @@ export class MultichainContract {
 
     const publicKey = await deriveChildPublicKey(
       najPublicKeyStrToUncompressedHexPoint(rootPublicKey),
-      this.contract.account.accountId,
+      this.connectedAccountId,
       derivationPath
     );
 
@@ -82,7 +84,7 @@ export class MultichainContract {
     gas?: bigint
   ): NearContractFunctionPayload {
     return {
-      signerId: this.contract.account.accountId,
+      signerId: this.connectedAccountId,
       receiverId: this.contract.contractId,
       actions: [
         {

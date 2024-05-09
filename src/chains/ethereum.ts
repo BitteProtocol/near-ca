@@ -52,7 +52,7 @@ export class NearEthAdapter {
    * @returns Near accountId linked to derived ETH.
    */
   nearAccountId(): string {
-    return this.mpcContract.contract.account.accountId;
+    return this.mpcContract.connectedAccountId;
   }
 
   /**
