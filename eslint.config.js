@@ -16,8 +16,8 @@ module.exports = Object.assign({}, js.configs.recommended, {
   plugins: {
     "@typescript-eslint": tsPlugin,
   },
-  ignores: ["dist/*", "node_modules/*"],
-  rules: {
+  ignores: ["node_modules/*"],
+  rules: Object.assign({}, tsPlugin.configs.rules, {
     indent: ["error", 2, { SwitchCase: 1 }],
     "linebreak-style": ["error", "unix"],
     quotes: ["error", "double"],
@@ -30,5 +30,5 @@ module.exports = Object.assign({}, js.configs.recommended, {
         allowTypedFunctionExpressions: true,
       },
     ],
-  },
+  }),
 });
