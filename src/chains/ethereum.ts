@@ -9,7 +9,7 @@ import {
   SignableMessage,
   verifyMessage,
   verifyTypedData,
-  signatureToHex,
+  serializeSignature,
   hashTypedData,
   TypedData,
   TypedDataDefinition,
@@ -24,7 +24,6 @@ import {
   TransactionWithSignature,
 } from "../types/types";
 import { MultichainContract } from "../mpcContract";
-import BN from "bn.js";
 import { buildTxPayload, addSignature, populateTx } from "../utils/transaction";
 import { Network } from "../network";
 import { pickValidSignature } from "../utils/signature";
@@ -74,10 +73,13 @@ export class NearEthAdapter {
    * acquires signature from Near MPC Contract and submits transaction to public mempool.
    *
    * @param {BaseTx} txData - Minimal transaction data to be signed by Near MPC and executed on EVM.
-   * @param {BN} nearGas - manually specified gas to be sent with signature request (default 200 TGAS).
+   * @param {bigint} nearGas - manually specified gas to be sent with signature request (default 300 TGAS).
    * Note that the signature request is a recursive function.
    */
-  async signAndSendTransaction(txData: BaseTx, nearGas?: BN): Promise<Hash> {
+  async signAndSendTransaction(
+    txData: BaseTx,
+    nearGas?: bigint
+  ): Promise<Hash> {
     console.log("Creating Payload for sender:", this.address);
     const { transaction, signArgs } = await this.createTxPayload(txData);
     console.log("Requesting signature from Near...");
@@ -95,12 +97,12 @@ export class NearEthAdapter {
    * acquires signature from Near MPC Contract and submits transaction to public mempool.
    *
    * @param {BaseTx} txData - Minimal transaction data to be signed by Near MPC and executed on EVM.
-   * @param {BN} nearGas - manually specified gas to be sent with signature request (default 200 TGAS).
+   * @param {bigint} nearGas - manually specified gas to be sent with signature request (default 300 TGAS).
    * Note that the signature request is a recursive function.
    */
   async getSignatureRequestPayload(
     txData: BaseTx,
-    nearGas?: BN
+    nearGas?: bigint
   ): Promise<{
     transaction: Hex;
     requestPayload: NearContractFunctionPayload;
@@ -244,8 +246,8 @@ export class NearEthAdapter {
     const s = `0x${big_s}` as Hex;
 
     return [
-      signatureToHex({ r, s, yParity: 0 }),
-      signatureToHex({ r, s, yParity: 1 }),
+      serializeSignature({ r, s, yParity: 0 }),
+      serializeSignature({ r, s, yParity: 1 }),
     ];
   }
 

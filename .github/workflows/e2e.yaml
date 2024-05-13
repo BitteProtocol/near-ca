@@ -1,0 +1,23 @@
+name: End to End Tests
+
+on:
+  push:
+    branches: [main]
+
+jobs:
+  types:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+
+      - name: E2E Test
+        run: yarn && yarn test e2e
+        env:
+          NEAR_MULTICHAIN_CONTRACT: v2.multichain-mpc.testnet
+          NEAR_ACCOUNT_ID: ${{secrets.NEAR_ACCOUNT_ID}}
+          NEAR_ACCOUNT_PRIVATE_KEY: ${{secrets.NEAR_PK}}

@@ -6,41 +6,31 @@
   "types": "dist/index.d.ts",
   "scripts": {
     "build": "rm -rf ./dist && tsc",
-    "lint": "eslint . --ext .ts,.tsx",
+    "lint": "eslint . --ignore-pattern dist/",
     "test": "jest --testTimeout 30000",
     "fmt": "prettier --write '{src,examples,tests}/**/*.{js,jsx,ts,tsx}'"
   },
   "devDependencies": {
-    "@types/bn.js": "^5.1.5",
-    "@types/bun": "latest",
     "@types/elliptic": "^6.4.18",
     "@types/jest": "^29.5.12",
-    "@types/keccak": "^3.0.4",
     "@types/node": "^20.11.30",
-    "@typescript-eslint/eslint-plugin": "^7.2.0",
-    "@typescript-eslint/parser": "^7.2.0",
+    "@typescript-eslint/eslint-plugin": "^7.8.0",
+    "@typescript-eslint/parser": "^7.8.0",
     "dotenv": "^16.4.5",
-    "eslint": "^8.57.0",
+    "eslint": "^9.2.0",
     "ethers": "^6.12.0",
     "jest": "^29.7.0",
-    "opensea-js": "^7.0.9",
+    "opensea-js": "^7.1.9",
     "prettier": "^3.2.5",
     "ts-jest": "^29.1.2",
     "ts-node": "^10.9.2",
     "typescript": "^5.4.2"
   },
   "dependencies": {
-    "@near-js/accounts": "^1.0.4",
-    "@near-js/crypto": "^1.2.1",
-    "@near-js/keystores": "^0.0.9",
     "@near-wallet-selector/core": "^8.9.5",
     "@walletconnect/web3wallet": "^1.11.2",
-    "bn.js": "^5.2.1",
-    "bs58check": "^3.0.1",
     "elliptic": "^6.5.5",
-    "hash.js": "^1.1.7",
-    "keccak": "^3.0.4",
     "near-api-js": "^3.0.3",
-    "viem": "^2.8.14"
+    "viem": "^2.10.3"
   }
 }

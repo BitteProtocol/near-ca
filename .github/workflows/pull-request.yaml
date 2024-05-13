@@ -24,9 +24,3 @@ jobs:
         run: |
           yarn lint
           yarn test unit
-        # These are only relevant for e2e tests
-        # env:
-        #   NEAR_MULTICHAIN_CONTRACT: multichain-testnet-2.testnet
-        #   NEAR_MULTICHAIN_CONTRACT: v5.multichain-mpc-dev.testnet
-        #   NEAR_ACCOUNT_ID: ${{secrets.NEAR_ACCOUNT_ID}}
-        #   NEAR_ACCOUNT_PRIVATE_KEY: ${{secrets.NEAR_PK}}
