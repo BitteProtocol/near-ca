@@ -22,6 +22,10 @@ import {
   NearContractFunctionPayload,
   TxPayload,
   TransactionWithSignature,
+  MPCSignature,
+  RecoveryData,
+  MessageData,
+  TypedMessageData,
 } from "../types/types";
 import { MultichainContract } from "../mpcContract";
 import { buildTxPayload, addSignature, populateTx } from "../utils/transaction";
@@ -249,6 +253,52 @@ export class NearEthAdapter {
       serializeSignature({ r, s, yParity: 0 }),
       serializeSignature({ r, s, yParity: 1 }),
     ];
+  }
+
+  async recoverSignature(
+    recoveryData: RecoveryData,
+    signatureData: MPCSignature
+  ): Promise<Hex> {
+    const { big_r, big_s } = signatureData;
+    if (recoveryData.type === "eth_sendTransaction") {
+      return addSignature(
+        { transaction: recoveryData.data as Hex, signature: signatureData },
+        this.address
+      );
+    }
+    const r = `0x${big_r.substring(2)}` as Hex;
+    const s = `0x${big_s}` as Hex;
+    const sigs: [Hex, Hex] = [
+      serializeSignature({ r, s, yParity: 0 }),
+      serializeSignature({ r, s, yParity: 1 }),
+    ];
+    let validity: [boolean, boolean];
+    if (recoveryData.type === "personal_sign") {
+      validity = await Promise.all([
+        verifyMessage({
+          signature: sigs[0],
+          ...(recoveryData.data as MessageData),
+        }),
+        verifyMessage({
+          signature: sigs[1],
+          ...(recoveryData.data as MessageData),
+        }),
+      ]);
+    } else if (recoveryData.type === "eth_signTypedData") {
+      validity = await Promise.all([
+        verifyTypedData({
+          signature: sigs[0],
+          ...(recoveryData.data as TypedMessageData),
+        }),
+        verifyTypedData({
+          signature: sigs[1],
+          ...(recoveryData.data as TypedMessageData),
+        }),
+      ]);
+    } else {
+      throw new Error("Invalid Path");
+    }
+    return pickValidSignature(validity, sigs);
   }
 
   /// Mintbase Wallet
