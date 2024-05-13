@@ -14,6 +14,7 @@ import {
   TypedData,
   TypedDataDefinition,
   parseTransaction,
+  TransactionSerializable,
 } from "viem";
 import {
   BaseTx,
@@ -26,6 +27,8 @@ import { MultichainContract } from "../mpcContract";
 import { buildTxPayload, addSignature, populateTx } from "../utils/transaction";
 import { Network } from "../network";
 import { pickValidSignature } from "../utils/signature";
+import { Web3WalletTypes } from "@walletconnect/web3wallet";
+import { wcRouter } from "../wallet-connect/handlers";
 
 export class NearEthAdapter {
   readonly mpcContract: MultichainContract;
@@ -246,5 +249,26 @@ export class NearEthAdapter {
       serializeSignature({ r, s, yParity: 0 }),
       serializeSignature({ r, s, yParity: 1 }),
     ];
+  }
+
+  /// Mintbase Wallet
+  async handleSessionRequest(request: Web3WalletTypes.SessionRequest): Promise<{
+    evmMessage: string | TransactionSerializable;
+    nearPayload: NearContractFunctionPayload;
+  }> {
+    const {
+      chainId,
+      request: { method, params },
+    } = request.params;
+    console.log(`Session Request of type ${method} for chainId ${chainId}`);
+    const { evmMessage, payload } = await wcRouter(method, chainId, params);
+    return {
+      nearPayload: this.mpcContract.encodeSignatureRequestTx({
+        path: this.derivationPath,
+        payload,
+        key_version: 0,
+      }),
+      evmMessage,
+    };
   }
 }
