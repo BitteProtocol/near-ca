@@ -8,6 +8,7 @@ import {
   serializeTransaction,
 } from "viem";
 import { populateTx, toPayload } from "../utils/transaction";
+import { RecoveryData } from "../types/types";
 
 // Interface for Ethereum transaction parameters
 export interface EthTransactionParams {
@@ -36,6 +37,7 @@ export async function wcRouter(
 ): Promise<{
   evmMessage: TransactionSerializable | string;
   payload: number[];
+  signatureRecoveryData: RecoveryData;
 }> {
   switch (method) {
     // I believe {personal,eth}_sign both get routed to the same place.
@@ -47,6 +49,13 @@ export async function wcRouter(
       return {
         evmMessage: fromHex(messageHash, "string"),
         payload: toPayload(hashMessage(messageHash)),
+        signatureRecoveryData: {
+          type: "personal_sign",
+          data: {
+            address: sender,
+            message: messageHash,
+          },
+        },
       };
     }
     case "eth_sendTransaction": {
@@ -64,6 +73,10 @@ export async function wcRouter(
       return {
         payload: toPayload(keccak256(serializeTransaction(transaction))),
         evmMessage: transaction,
+        signatureRecoveryData: {
+          type: "eth_sendTransaction",
+          data: serializeTransaction(transaction),
+        },
       };
     }
     case "eth_signTypedData":
@@ -76,6 +89,16 @@ export async function wcRouter(
       return {
         evmMessage: dataString,
         payload: toPayload(hashTypedData(typedData)),
+        signatureRecoveryData: {
+          type: "eth_signTypedData",
+          data: {
+            address: sender,
+            types: typedData.types,
+            primaryType: typedData.primaryType,
+            message: typedData.message,
+            domain: typedData.domain,
+          },
+        },
       };
     }
   }
