@@ -15,6 +15,7 @@ import {
   TypedDataDefinition,
   parseTransaction,
   TransactionSerializable,
+  keccak256,
 } from "viem";
 import {
   BaseTx,
@@ -173,16 +174,24 @@ export class NearEthAdapter {
    * @param serializedTransaction - Signed Ethereum transaction.
    * @returns Transaction Hash of relayed transaction.
    */
-  private async relaySignedTransaction(
-    serializedTransaction: Hex
+  async relaySignedTransaction(
+    serializedTransaction: Hex,
+    wait: boolean = true
   ): Promise<Hash> {
     const tx = parseTransaction(serializedTransaction);
     const network = Network.fromChainId(tx.chainId!);
-    const hash = await network.client.sendRawTransaction({
-      serializedTransaction,
-    });
-    console.log(`Transaction Confirmed: ${network.scanUrl}/tx/${hash}`);
-    return hash;
+    if (wait) {
+      const hash = await network.client.sendRawTransaction({
+        serializedTransaction,
+      });
+      console.log(`Transaction Confirmed: ${network.scanUrl}/tx/${hash}`);
+      return hash;
+    } else {
+      network.client.sendRawTransaction({
+        serializedTransaction,
+      });
+      return keccak256(serializedTransaction);
+    }
   }
   // Below code is inspired by https://github.com/Connor-ETHSeoul/near-viem
 
@@ -261,10 +270,12 @@ export class NearEthAdapter {
   ): Promise<Hex> {
     const { big_r, big_s } = signatureData;
     if (recoveryData.type === "eth_sendTransaction") {
-      return addSignature(
+      const signature = addSignature(
         { transaction: recoveryData.data as Hex, signature: signatureData },
         this.address
       );
+      // Returns relayed transaction hash (without waiting for confirmation).
+      return this.relaySignedTransaction(signature, false);
     }
     const r = `0x${big_r.substring(2)}` as Hex;
     const s = `0x${big_s}` as Hex;
