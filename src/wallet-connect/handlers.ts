@@ -44,8 +44,6 @@ export async function wcRouter(
     case "eth_sign":
     case "personal_sign": {
       const [messageHash, sender] = params as PersonalSignParams;
-      const message = fromHex(messageHash, "string");
-      console.log(`Message to be signed by ${sender}: ${message}`);
       return {
         evmMessage: fromHex(messageHash, "string"),
         payload: toPayload(hashMessage(messageHash)),
@@ -83,9 +81,6 @@ export async function wcRouter(
     case "eth_signTypedData_v4": {
       const [sender, dataString] = params as TypedDataParams;
       const typedData = JSON.parse(dataString);
-      console.log(
-        `Received Typed Data signature request from ${sender}: ${JSON.stringify(typedData)}`
-      );
       return {
         evmMessage: dataString,
         payload: toPayload(hashTypedData(typedData)),

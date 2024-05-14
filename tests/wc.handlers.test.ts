@@ -7,100 +7,174 @@ import {
 
 describe("Wallet Connect", () => {
   const chainId = "eip155:11155111";
+  const from = "0xa61d98854f7ab25402e3d12548a2e93a080c1f97";
+  const to = "0xfff9976782d46cc05630d1f6ebab18b2324d6b14";
 
-  it("wcRouter: personal_sign", async () => {
-    const messageString = "Hello!";
-    const request = {
-      method: "personal_sign",
-      params: [
-        toHex(messageString),
-        "0xa61d98854f7ab25402e3d12548a2e93a080c1f97",
-      ],
-    };
+  describe("wcRouter: personal_sign", () => {
+    it("hello message", async () => {
+      const messageString = "Hello!";
+      const request = {
+        method: "personal_sign",
+        params: [toHex(messageString), from],
+      };
 
-    const { evmMessage, payload } = await wcRouter(
-      request.method,
-      chainId,
-      request.params as PersonalSignParams
-    );
-    expect(evmMessage).toEqual(messageString);
-    expect(payload).toEqual([
-      129, 83, 250, 146, 102, 140, 185, 9, 243, 111, 112, 21, 11, 157, 12, 23,
-      202, 85, 99, 164, 77, 162, 209, 137, 199, 133, 194, 59, 178, 150, 153, 78,
-    ]);
-  });
-  it("wcRouter: sendTransaction (with value)", async () => {
-    const request = {
-      method: "eth_sendTransaction",
-      params: [
-        {
-          gas: "0xd31d",
-          value: "0x16345785d8a0000",
-          from: "0xa61d98854f7ab25402e3d12548a2e93a080c1f97",
-          to: "0xfff9976782d46cc05630d1f6ebab18b2324d6b14",
-          data: "0xd0e30db0",
-        },
-      ],
-    };
-
-    const { evmMessage } = await wcRouter(
-      request.method,
-      chainId,
-      request.params as EthTransactionParams[]
-    );
-    const tx = evmMessage as TransactionSerializable;
-
-    delete tx.maxFeePerGas;
-    delete tx.maxPriorityFeePerGas;
-    delete tx.nonce;
-
-    expect(tx).toEqual({
-      account: "0xa61d98854f7ab25402e3d12548a2e93a080c1f97",
-      chainId: 11155111,
-      data: "0xd0e30db0",
-      gas: 54045n,
-      to: "0xfff9976782d46cc05630d1f6ebab18b2324d6b14",
-      value: 100000000000000000n,
+      const { evmMessage, payload } = await wcRouter(
+        request.method,
+        chainId,
+        request.params as PersonalSignParams
+      );
+      expect(evmMessage).toEqual(messageString);
+      expect(payload).toEqual([
+        129, 83, 250, 146, 102, 140, 185, 9, 243, 111, 112, 21, 11, 157, 12, 23,
+        202, 85, 99, 164, 77, 162, 209, 137, 199, 133, 194, 59, 178, 150, 153,
+        78,
+      ]);
     });
-    /// can't test payload: its non-deterministic because of gas values!
-  });
 
-  it("wcRouter: sendTransaction (null value)", async () => {
-    const request = {
-      method: "eth_sendTransaction",
-      params: [
-        {
-          gas: "0xa8c3",
-          from: "0xa61d98854f7ab25402e3d12548a2e93a080c1f97",
-          to: "0xfff9976782d46cc05630d1f6ebab18b2324d6b14",
-          data: "0x2e1a7d4d000000000000000000000000000000000000000000000000002386f26fc10000",
-        },
-      ],
-    };
+    it("opensea login", async () => {
+      const request = {
+        method: "personal_sign",
+        params: [
+          "0x57656c636f6d6520746f204f70656e536561210a0a436c69636b20746f207369676e20696e20616e642061636365707420746865204f70656e536561205465726d73206f662053657276696365202868747470733a2f2f6f70656e7365612e696f2f746f732920616e64205072697661637920506f6c696379202868747470733a2f2f6f70656e7365612e696f2f70726976616379292e0a0a5468697320726571756573742077696c6c206e6f742074726967676572206120626c6f636b636861696e207472616e73616374696f6e206f7220636f737420616e792067617320666565732e0a0a57616c6c657420616464726573733a0a3078663131633232643631656364376231616463623662343335343266653861393662393332386463370a0a4e6f6e63653a0a32393731633731312d623739382d343433342d613633312d316333663133656665353365",
+          "0xf11c22d61ecd7b1adcb6b43542fe8a96b9328dc7",
+        ],
+      };
 
-    const { evmMessage } = await wcRouter(
-      request.method,
-      chainId,
-      request.params as EthTransactionParams[]
-    );
-    const tx = evmMessage as TransactionSerializable;
+      const { evmMessage, payload } = await wcRouter(
+        request.method,
+        chainId,
+        request.params as PersonalSignParams
+      );
+      expect(evmMessage).toEqual(
+        `Welcome to OpenSea!
 
-    delete tx.maxFeePerGas;
-    delete tx.maxPriorityFeePerGas;
-    delete tx.nonce;
+Click to sign in and accept the OpenSea Terms of Service (https://opensea.io/tos) and Privacy Policy (https://opensea.io/privacy).
 
-    expect(tx).toEqual({
-      account: "0xa61d98854f7ab25402e3d12548a2e93a080c1f97",
-      chainId: 11155111,
-      data: "0x2e1a7d4d000000000000000000000000000000000000000000000000002386f26fc10000",
-      gas: 43203n,
-      to: "0xfff9976782d46cc05630d1f6ebab18b2324d6b14",
-      value: 0n,
+This request will not trigger a blockchain transaction or cost any gas fees.
+
+Wallet address:
+0xf11c22d61ecd7b1adcb6b43542fe8a96b9328dc7
+
+Nonce:
+2971c711-b798-4434-a631-1c3f13efe53e`
+      );
+      expect(payload).toEqual([
+        30, 105, 28, 59, 10, 108, 122, 116, 215, 189, 166, 75, 130, 50, 63, 84,
+        176, 123, 26, 1, 133, 66, 59, 249, 163, 18, 239, 95, 65, 129, 43, 249,
+      ]);
     });
-    /// can't test payload: its non-deterministic because of gas values!
   });
-  it("wcRouter: eth_signTypedData", async () => {
-    const jsonStr = `{
+  describe("wcRouter: eth_sendTransaction", () => {
+    it("with value", async () => {
+      const request = {
+        method: "eth_sendTransaction",
+        params: [
+          {
+            gas: "0xd31d",
+            value: "0x16345785d8a0000",
+            from,
+            to,
+            data: "0xd0e30db0",
+          },
+        ],
+      };
+
+      const { evmMessage } = await wcRouter(
+        request.method,
+        chainId,
+        request.params as EthTransactionParams[]
+      );
+      const tx = evmMessage as TransactionSerializable;
+
+      delete tx.maxFeePerGas;
+      delete tx.maxPriorityFeePerGas;
+      delete tx.nonce;
+
+      expect(tx).toEqual({
+        account: from,
+        chainId: 11155111,
+        data: "0xd0e30db0",
+        gas: 54045n,
+        to,
+        value: 100000000000000000n,
+      });
+      /// can't test payload: its non-deterministic because of gas values!
+    });
+
+    it("null value", async () => {
+      const request = {
+        method: "eth_sendTransaction",
+        params: [
+          {
+            gas: "0xa8c3",
+            from,
+            to,
+            data: "0x2e1a7d4d000000000000000000000000000000000000000000000000002386f26fc10000",
+          },
+        ],
+      };
+
+      const { evmMessage } = await wcRouter(
+        request.method,
+        chainId,
+        request.params as EthTransactionParams[]
+      );
+      const tx = evmMessage as TransactionSerializable;
+
+      delete tx.maxFeePerGas;
+      delete tx.maxPriorityFeePerGas;
+      delete tx.nonce;
+
+      expect(tx).toEqual({
+        account: from,
+        chainId: 11155111,
+        data: "0x2e1a7d4d000000000000000000000000000000000000000000000000002386f26fc10000",
+        gas: 43203n,
+        to,
+        value: 0n,
+      });
+      /// can't test payload: its non-deterministic because of gas values!
+    });
+
+    it("null data", async () => {
+      const request = {
+        method: "eth_sendTransaction",
+        params: [
+          {
+            gas: "0xa8c3",
+            from,
+            to,
+            value: "0x01",
+          },
+        ],
+      };
+
+      const { evmMessage } = await wcRouter(
+        request.method,
+        chainId,
+        request.params as EthTransactionParams[]
+      );
+      const tx = evmMessage as TransactionSerializable;
+
+      delete tx.maxFeePerGas;
+      delete tx.maxPriorityFeePerGas;
+      delete tx.nonce;
+
+      expect(tx).toEqual({
+        account: from,
+        chainId: 11155111,
+        data: "0x",
+        gas: 43203n,
+        to,
+        value: 1n,
+      });
+      /// can't test payload: its non-deterministic because of gas values!
+    });
+  });
+
+  describe("wcRouter: eth_signTypedData", () => {
+    it("Cowswap Order", async () => {
+      const jsonStr = `{
       "types": {
         "Permit": [
           {"name": "owner", "type": "address"},
@@ -131,20 +205,22 @@ describe("Wallet Connect", () => {
         "deadline": "1872873982"
       }
     }`;
-    const request = {
-      method: "eth_signTypedData_v4",
-      params: ["0xa61d98854f7ab25402e3d12548a2e93a080c1f97", jsonStr],
-    };
+      const request = {
+        method: "eth_signTypedData_v4",
+        params: [from, jsonStr],
+      };
 
-    const { evmMessage, payload } = await wcRouter(
-      request.method,
-      chainId,
-      request.params as PersonalSignParams
-    );
-    expect(evmMessage).toEqual(request.params[1]);
-    expect(payload).toEqual([
-      154, 201, 197, 176, 122, 212, 161, 42, 56, 12, 218, 93, 39, 197, 249, 144,
-      53, 126, 250, 19, 85, 168, 82, 131, 104, 184, 46, 112, 237, 228, 48, 12,
-    ]);
+      const { evmMessage, payload } = await wcRouter(
+        request.method,
+        chainId,
+        request.params as PersonalSignParams
+      );
+      expect(evmMessage).toEqual(request.params[1]);
+      expect(payload).toEqual([
+        154, 201, 197, 176, 122, 212, 161, 42, 56, 12, 218, 93, 39, 197, 249,
+        144, 53, 126, 250, 19, 85, 168, 82, 131, 104, 184, 46, 112, 237, 228,
+        48, 12,
+      ]);
+    });
   });
 });
