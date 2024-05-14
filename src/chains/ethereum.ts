@@ -328,6 +328,7 @@ export class NearEthAdapter {
       chainId,
       params
     );
+    console.log("Parsed Request:", payload, signatureRecoveryData);
     return {
       nearPayload: this.mpcContract.encodeSignatureRequestTx({
         path: this.derivationPath,
