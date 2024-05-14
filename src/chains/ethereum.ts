@@ -305,13 +305,18 @@ export class NearEthAdapter {
   async handleSessionRequest(request: Web3WalletTypes.SessionRequest): Promise<{
     evmMessage: string | TransactionSerializable;
     nearPayload: NearContractFunctionPayload;
+    recoveryData: RecoveryData;
   }> {
     const {
       chainId,
       request: { method, params },
     } = request.params;
     console.log(`Session Request of type ${method} for chainId ${chainId}`);
-    const { evmMessage, payload } = await wcRouter(method, chainId, params);
+    const { evmMessage, payload, signatureRecoveryData } = await wcRouter(
+      method,
+      chainId,
+      params
+    );
     return {
       nearPayload: this.mpcContract.encodeSignatureRequestTx({
         path: this.derivationPath,
@@ -319,6 +324,7 @@ export class NearEthAdapter {
         key_version: 0,
       }),
       evmMessage,
+      recoveryData: signatureRecoveryData,
     };
   }
 }
