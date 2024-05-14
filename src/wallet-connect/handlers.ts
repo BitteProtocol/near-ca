@@ -123,7 +123,7 @@ export async function wcRouter(
 export async function offChainRecovery(
   recoveryData: RecoveryData,
   sigs: [Hex, Hex]
-) {
+): Promise<Hex> {
   let validity: [boolean, boolean];
   if (recoveryData.type === "personal_sign") {
     validity = await Promise.all([
