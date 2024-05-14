@@ -25,15 +25,13 @@ import {
   TransactionWithSignature,
   MPCSignature,
   RecoveryData,
-  MessageData,
-  TypedMessageData,
 } from "../types/types";
 import { MultichainContract } from "../mpcContract";
 import { buildTxPayload, addSignature, populateTx } from "../utils/transaction";
 import { Network } from "../network";
 import { pickValidSignature } from "../utils/signature";
 import { Web3WalletTypes } from "@walletconnect/web3wallet";
-import { wcRouter } from "../wallet-connect/handlers";
+import { offChainRecovery, wcRouter } from "../wallet-connect/handlers";
 
 export class NearEthAdapter {
   readonly mpcContract: MultichainContract;
@@ -283,33 +281,7 @@ export class NearEthAdapter {
       serializeSignature({ r, s, yParity: 0 }),
       serializeSignature({ r, s, yParity: 1 }),
     ];
-    let validity: [boolean, boolean];
-    if (recoveryData.type === "personal_sign") {
-      validity = await Promise.all([
-        verifyMessage({
-          signature: sigs[0],
-          ...(recoveryData.data as MessageData),
-        }),
-        verifyMessage({
-          signature: sigs[1],
-          ...(recoveryData.data as MessageData),
-        }),
-      ]);
-    } else if (recoveryData.type === "eth_signTypedData") {
-      validity = await Promise.all([
-        verifyTypedData({
-          signature: sigs[0],
-          ...(recoveryData.data as TypedMessageData),
-        }),
-        verifyTypedData({
-          signature: sigs[1],
-          ...(recoveryData.data as TypedMessageData),
-        }),
-      ]);
-    } else {
-      throw new Error("Invalid Path");
-    }
-    return pickValidSignature(validity, sigs);
+    return offChainRecovery(recoveryData, sigs);
   }
 
   /// Mintbase Wallet
