@@ -10,7 +10,7 @@ describe("Wallet Connect", () => {
   const from = "0xa61d98854f7ab25402e3d12548a2e93a080c1f97";
   const to = "0xfff9976782d46cc05630d1f6ebab18b2324d6b14";
 
-  describe("wcRouter: personal_sign", () => {
+  describe("wcRouter: eth_sign & personal_sign", () => {
     it("hello message", async () => {
       const messageString = "Hello!";
       const request = {
@@ -62,6 +62,32 @@ Nonce:
         117, 169, 250, 179, 96, 160, 12, 192, 110, 159, 56, 250, 26, 0, 94, 149,
         231, 16, 139, 84, 211, 16, 67, 147, 12, 120, 184, 111, 151, 108, 56,
         123,
+      ]);
+    });
+
+    it("manifold login", async () => {
+      const request = {
+        method: "personal_sign",
+        params: [
+          "0x506c65617365207369676e2074686973206d65737361676520746f20616363657373204d616e69666f6c642053747564696f0a0a4368616c6c656e67653a2034313133666333616232636336306635643539356232653535333439663165656335366664306337306434323837303831666537313536383438323633363236",
+          "0xf11c22d61ecd7b1adcb6b43542fe8a96b9328dc7",
+        ],
+      };
+
+      const { evmMessage, payload, signatureRecoveryData } = await wcRouter(
+        request.method,
+        chainId,
+        request.params as PersonalSignParams
+      );
+      expect(evmMessage).toEqual(
+        `Please sign this message to access Manifold Studio
+
+Challenge: 4113fc3ab2cc60f5d595b2e55349f1eec56fd0c70d4287081fe7156848263626`
+      );
+      expect(payload).toEqual([
+        153, 230, 103, 196, 242, 237, 147, 61, 191, 134, 79, 128, 177, 191, 227,
+        204, 26, 136, 128, 212, 232, 68, 35, 238, 202, 135, 98, 233, 175, 146,
+        5, 84,
       ]);
     });
   });

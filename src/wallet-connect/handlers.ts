@@ -7,9 +7,12 @@ import {
   keccak256,
   serializeTransaction,
   toHex,
+  verifyMessage,
+  verifyTypedData,
 } from "viem";
 import { populateTx, toPayload } from "../utils/transaction";
-import { RecoveryData } from "../types/types";
+import { MessageData, RecoveryData, TypedMessageData } from "../types/types";
+import { pickValidSignature } from "../utils/signature";
 
 // Interface for Ethereum transaction parameters
 export interface EthTransactionParams {
@@ -47,7 +50,7 @@ export async function wcRouter(
         evmMessage: fromHex(messageHash, "string"),
         payload: toPayload(hashMessage(messageHash)),
         signatureRecoveryData: {
-          type: "personal_sign",
+          type: "eth_sign",
           data: {
             address: sender,
             message: messageHash,
@@ -60,15 +63,15 @@ export async function wcRouter(
       const message = fromHex(messageHash, "string");
       const prefixedMessage =
         "\x19Ethereum Signed Message:\n" + message.length + message;
-
+      const hexMessage = toHex(prefixedMessage);
       return {
         evmMessage: message,
-        payload: toPayload(hashMessage(toHex(prefixedMessage))),
+        payload: toPayload(hashMessage(hexMessage)),
         signatureRecoveryData: {
           type: "personal_sign",
           data: {
             address: sender,
-            message: prefixedMessage,
+            message: hexMessage,
           },
         },
       };
@@ -98,9 +101,6 @@ export async function wcRouter(
     case "eth_signTypedData_v4": {
       const [sender, dataString] = params as TypedDataParams;
       const typedData = JSON.parse(dataString);
-      console.log(
-        `Received Typed Data signature request from ${sender}: ${JSON.stringify(typedData)}`
-      );
       return {
         evmMessage: dataString,
         payload: toPayload(hashTypedData(typedData)),
@@ -118,6 +118,39 @@ export async function wcRouter(
     }
   }
   throw new Error(`Unhandled session_request method: ${method}`);
+}
+
+export async function offChainRecovery(
+  recoveryData: RecoveryData,
+  sigs: [Hex, Hex]
+) {
+  let validity: [boolean, boolean];
+  if (recoveryData.type === "personal_sign") {
+    validity = await Promise.all([
+      verifyMessage({
+        signature: sigs[0],
+        ...(recoveryData.data as MessageData),
+      }),
+      verifyMessage({
+        signature: sigs[1],
+        ...(recoveryData.data as MessageData),
+      }),
+    ]);
+  } else if (recoveryData.type === "eth_signTypedData") {
+    validity = await Promise.all([
+      verifyTypedData({
+        signature: sigs[0],
+        ...(recoveryData.data as TypedMessageData),
+      }),
+      verifyTypedData({
+        signature: sigs[1],
+        ...(recoveryData.data as TypedMessageData),
+      }),
+    ]);
+  } else {
+    throw new Error("Invalid Path");
+  }
+  return pickValidSignature(validity, sigs);
 }
 
 function stripEip155Prefix(eip155Address: string): string {
