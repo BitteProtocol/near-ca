@@ -74,7 +74,7 @@ Nonce:
         ],
       };
 
-      const { evmMessage, payload, signatureRecoveryData } = await wcRouter(
+      const { evmMessage, payload } = await wcRouter(
         request.method,
         chainId,
         request.params as PersonalSignParams
