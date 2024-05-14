@@ -6,6 +6,7 @@ import {
   hashTypedData,
   keccak256,
   serializeTransaction,
+  toHex,
 } from "viem";
 import { populateTx, toPayload } from "../utils/transaction";
 import { RecoveryData } from "../types/types";
@@ -40,9 +41,7 @@ export async function wcRouter(
   signatureRecoveryData: RecoveryData;
 }> {
   switch (method) {
-    // I believe {personal,eth}_sign both get routed to the same place.
-    case "eth_sign":
-    case "personal_sign": {
+    case "eth_sign": {
       const [messageHash, sender] = params as PersonalSignParams;
       return {
         evmMessage: fromHex(messageHash, "string"),
@@ -52,6 +51,24 @@ export async function wcRouter(
           data: {
             address: sender,
             message: messageHash,
+          },
+        },
+      };
+    }
+    case "personal_sign": {
+      const [messageHash, sender] = params as PersonalSignParams;
+      const message = fromHex(messageHash, "string");
+      const prefixedMessage =
+        "\x19Ethereum Signed Message:\n" + message.length + message;
+
+      return {
+        evmMessage: message,
+        payload: toPayload(hashMessage(toHex(prefixedMessage))),
+        signatureRecoveryData: {
+          type: "personal_sign",
+          data: {
+            address: sender,
+            message: prefixedMessage,
           },
         },
       };
@@ -81,6 +98,9 @@ export async function wcRouter(
     case "eth_signTypedData_v4": {
       const [sender, dataString] = params as TypedDataParams;
       const typedData = JSON.parse(dataString);
+      console.log(
+        `Received Typed Data signature request from ${sender}: ${JSON.stringify(typedData)}`
+      );
       return {
         evmMessage: dataString,
         payload: toPayload(hashTypedData(typedData)),

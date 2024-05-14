@@ -14,7 +14,7 @@ describe("Wallet Connect", () => {
     it("hello message", async () => {
       const messageString = "Hello!";
       const request = {
-        method: "personal_sign",
+        method: "eth_sign",
         params: [toHex(messageString), from],
       };
 
@@ -59,8 +59,9 @@ Nonce:
 2971c711-b798-4434-a631-1c3f13efe53e`
       );
       expect(payload).toEqual([
-        30, 105, 28, 59, 10, 108, 122, 116, 215, 189, 166, 75, 130, 50, 63, 84,
-        176, 123, 26, 1, 133, 66, 59, 249, 163, 18, 239, 95, 65, 129, 43, 249,
+        117, 169, 250, 179, 96, 160, 12, 192, 110, 159, 56, 250, 26, 0, 94, 149,
+        231, 16, 139, 84, 211, 16, 67, 147, 12, 120, 184, 111, 151, 108, 56,
+        123,
       ]);
     });
   });
@@ -223,4 +224,6 @@ Nonce:
       ]);
     });
   });
+
+  // 0xccf42336792d9c4a7d11c61db813be13707ff354e7d62f82c76c2db0238c53fd490aa752f3e83624165d645bf6e3bee03094ea77a501e860fb1d0d2fd2150fc51b
 });
