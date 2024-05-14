@@ -64,7 +64,7 @@ export async function wcRouter(
         {
           to: tx.to,
           chainId: parseInt(stripEip155Prefix(chainId)),
-          value: fromHex(tx.value || "0x", "bigint"),
+          value: fromHex(tx.value || "0x0", "bigint"),
           data: tx.data,
           gas: tx.gas ? fromHex(tx.gas, "bigint") : undefined,
         },

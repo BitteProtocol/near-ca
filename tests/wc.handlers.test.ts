@@ -29,7 +29,7 @@ describe("Wallet Connect", () => {
       202, 85, 99, 164, 77, 162, 209, 137, 199, 133, 194, 59, 178, 150, 153, 78,
     ]);
   });
-  it("wcRouter: sendTransaction", async () => {
+  it("wcRouter: sendTransaction (with value)", async () => {
     const request = {
       method: "eth_sendTransaction",
       params: [
@@ -61,6 +61,41 @@ describe("Wallet Connect", () => {
       gas: 54045n,
       to: "0xfff9976782d46cc05630d1f6ebab18b2324d6b14",
       value: 100000000000000000n,
+    });
+    /// can't test payload: its non-deterministic because of gas values!
+  });
+
+  it("wcRouter: sendTransaction (null value)", async () => {
+    const request = {
+      method: "eth_sendTransaction",
+      params: [
+        {
+          gas: "0xa8c3",
+          from: "0xa61d98854f7ab25402e3d12548a2e93a080c1f97",
+          to: "0xfff9976782d46cc05630d1f6ebab18b2324d6b14",
+          data: "0x2e1a7d4d000000000000000000000000000000000000000000000000002386f26fc10000",
+        },
+      ],
+    };
+
+    const { evmMessage } = await wcRouter(
+      request.method,
+      chainId,
+      request.params as EthTransactionParams[]
+    );
+    const tx = evmMessage as TransactionSerializable;
+
+    delete tx.maxFeePerGas;
+    delete tx.maxPriorityFeePerGas;
+    delete tx.nonce;
+
+    expect(tx).toEqual({
+      account: "0xa61d98854f7ab25402e3d12548a2e93a080c1f97",
+      chainId: 11155111,
+      data: "0x2e1a7d4d000000000000000000000000000000000000000000000000002386f26fc10000",
+      gas: 43203n,
+      to: "0xfff9976782d46cc05630d1f6ebab18b2324d6b14",
+      value: 0n,
     });
     /// can't test payload: its non-deterministic because of gas values!
   });
