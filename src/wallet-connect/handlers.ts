@@ -56,7 +56,7 @@ export async function wcRouter(
           type: method,
           data: {
             address: sender,
-            message: messageHash,
+            message: { raw: messageHash },
           },
         },
       };
@@ -70,7 +70,7 @@ export async function wcRouter(
           type: method,
           data: {
             address: sender,
-            message: messageHash,
+            message: { raw: messageHash },
           },
         },
       };
