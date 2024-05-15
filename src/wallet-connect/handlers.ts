@@ -6,7 +6,6 @@ import {
   hashTypedData,
   keccak256,
   serializeTransaction,
-  toHex,
   verifyMessage,
   verifyTypedData,
 } from "viem";
@@ -23,8 +22,11 @@ export interface EthTransactionParams {
   data?: Hex;
 }
 
-// Interface for personal sign parameters (message and address)
+/// Interface for personal sign parameters (message and address)
 export type PersonalSignParams = [Hex, Hex];
+
+/// Interface for eth_sign parameters (address and message)
+export type EthSignParams = [Hex, Hex];
 
 // Interface for complex structured parameters like EIP-712
 export type TypedDataParams = [Hex, string];
@@ -32,6 +34,7 @@ export type TypedDataParams = [Hex, string];
 type SessionRequestParams =
   | EthTransactionParams[]
   | PersonalSignParams
+  | EthSignParams
   | TypedDataParams;
 
 export async function wcRouter(
@@ -45,12 +48,12 @@ export async function wcRouter(
 }> {
   switch (method) {
     case "eth_sign": {
-      const [messageHash, sender] = params as PersonalSignParams;
+      const [sender, messageHash] = params as EthSignParams;
       return {
         evmMessage: fromHex(messageHash, "string"),
-        payload: toPayload(hashMessage(messageHash)),
+        payload: toPayload(hashMessage({ raw: messageHash })),
         signatureRecoveryData: {
-          type: "eth_sign",
+          type: method,
           data: {
             address: sender,
             message: messageHash,
@@ -60,18 +63,14 @@ export async function wcRouter(
     }
     case "personal_sign": {
       const [messageHash, sender] = params as PersonalSignParams;
-      const message = fromHex(messageHash, "string");
-      const prefixedMessage =
-        "\x19Ethereum Signed Message:\n" + message.length + message;
-      const hexMessage = toHex(prefixedMessage);
       return {
-        evmMessage: message,
-        payload: toPayload(hashMessage(hexMessage)),
+        evmMessage: fromHex(messageHash, "string"),
+        payload: toPayload(hashMessage({ raw: messageHash })),
         signatureRecoveryData: {
-          type: "personal_sign",
+          type: method,
           data: {
             address: sender,
-            message: hexMessage,
+            message: messageHash,
           },
         },
       };
