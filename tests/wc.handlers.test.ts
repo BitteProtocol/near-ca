@@ -1,9 +1,10 @@
-import { TransactionSerializable, toHex } from "viem";
+import { TransactionSerializable, fromHex, toHex } from "viem";
 import {
   EthTransactionParams,
   PersonalSignParams,
   wcRouter,
 } from "../src/wallet-connect/handlers";
+import { ethers } from "ethers";
 
 describe("Wallet Connect", () => {
   const chainId = "eip155:11155111";
@@ -15,7 +16,7 @@ describe("Wallet Connect", () => {
       const messageString = "Hello!";
       const request = {
         method: "eth_sign",
-        params: [toHex(messageString), from],
+        params: [from, toHex(messageString)],
       };
 
       const { evmMessage, payload } = await wcRouter(
@@ -24,10 +25,11 @@ describe("Wallet Connect", () => {
         request.params as PersonalSignParams
       );
       expect(evmMessage).toEqual(messageString);
+      console.log(payload);
       expect(payload).toEqual([
-        129, 83, 250, 146, 102, 140, 185, 9, 243, 111, 112, 21, 11, 157, 12, 23,
-        202, 85, 99, 164, 77, 162, 209, 137, 199, 133, 194, 59, 178, 150, 153,
-        78,
+        140, 57, 188, 66, 128, 51, 12, 191, 241, 190, 96, 50, 8, 251, 249, 208,
+        157, 27, 241, 60, 23, 124, 29, 153, 245, 135, 109, 181, 125, 67, 182,
+        82,
       ]);
     });
 
@@ -59,9 +61,9 @@ Nonce:
 2971c711-b798-4434-a631-1c3f13efe53e`
       );
       expect(payload).toEqual([
-        117, 169, 250, 179, 96, 160, 12, 192, 110, 159, 56, 250, 26, 0, 94, 149,
-        231, 16, 139, 84, 211, 16, 67, 147, 12, 120, 184, 111, 151, 108, 56,
-        123,
+        219, 231, 195, 249, 2, 161, 186, 203, 13, 63, 169, 203, 233, 111, 203,
+        91, 4, 166, 92, 92, 217, 141, 180, 168, 176, 123, 102, 85, 38, 115, 1,
+        71,
       ]);
     });
 
@@ -85,9 +87,9 @@ Nonce:
 Challenge: 4113fc3ab2cc60f5d595b2e55349f1eec56fd0c70d4287081fe7156848263626`
       );
       expect(payload).toEqual([
-        153, 230, 103, 196, 242, 237, 147, 61, 191, 134, 79, 128, 177, 191, 227,
-        204, 26, 136, 128, 212, 232, 68, 35, 238, 202, 135, 98, 233, 175, 146,
-        5, 84,
+        211, 164, 197, 156, 45, 221, 33, 214, 110, 59, 107, 27, 229, 254, 102,
+        73, 86, 215, 129, 196, 48, 209, 241, 41, 108, 165, 177, 200, 81, 31, 1,
+        104,
       ]);
     });
   });
@@ -250,6 +252,4 @@ Challenge: 4113fc3ab2cc60f5d595b2e55349f1eec56fd0c70d4287081fe7156848263626`
       ]);
     });
   });
-
-  // 0xccf42336792d9c4a7d11c61db813be13707ff354e7d62f82c76c2db0238c53fd490aa752f3e83624165d645bf6e3bee03094ea77a501e860fb1d0d2fd2150fc51b
 });
