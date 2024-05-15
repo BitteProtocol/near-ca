@@ -1,6 +1,6 @@
 import { MultichainContract } from "../mpcContract";
 import { FunctionCallAction } from "@near-wallet-selector/core";
-import { Hex } from "viem";
+import { Hex, SignableMessage } from "viem";
 
 export interface BaseTx {
   /// Recipient of the transaction
@@ -65,6 +65,27 @@ export interface NearContractFunctionPayload {
 export interface MPCSignature {
   big_r: string;
   big_s: string;
+}
+
+export interface MessageData {
+  address: Hex;
+  message: SignableMessage;
+}
+
+export interface TypedMessageData {
+  address: Hex;
+  /* eslint-disable @typescript-eslint/no-explicit-any */
+  types: any;
+  primaryType: any;
+  message: any;
+  domain: any;
+  /* eslint-enable @typescript-eslint/no-explicit-any */
+}
+
+export interface RecoveryData {
+  // TODO use enum!
+  type: string;
+  data: MessageData | TypedMessageData | Hex;
 }
 
 /**

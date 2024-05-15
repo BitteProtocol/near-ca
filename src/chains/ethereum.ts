@@ -15,6 +15,7 @@ import {
   TypedDataDefinition,
   parseTransaction,
   TransactionSerializable,
+  keccak256,
 } from "viem";
 import {
   BaseTx,
@@ -22,13 +23,15 @@ import {
   NearContractFunctionPayload,
   TxPayload,
   TransactionWithSignature,
+  MPCSignature,
+  RecoveryData,
 } from "../types/types";
 import { MultichainContract } from "../mpcContract";
 import { buildTxPayload, addSignature, populateTx } from "../utils/transaction";
 import { Network } from "../network";
 import { pickValidSignature } from "../utils/signature";
 import { Web3WalletTypes } from "@walletconnect/web3wallet";
-import { wcRouter } from "../wallet-connect/handlers";
+import { offChainRecovery, wcRouter } from "../wallet-connect/handlers";
 
 export class NearEthAdapter {
   readonly mpcContract: MultichainContract;
@@ -169,16 +172,24 @@ export class NearEthAdapter {
    * @param serializedTransaction - Signed Ethereum transaction.
    * @returns Transaction Hash of relayed transaction.
    */
-  private async relaySignedTransaction(
-    serializedTransaction: Hex
+  async relaySignedTransaction(
+    serializedTransaction: Hex,
+    wait: boolean = true
   ): Promise<Hash> {
     const tx = parseTransaction(serializedTransaction);
     const network = Network.fromChainId(tx.chainId!);
-    const hash = await network.client.sendRawTransaction({
-      serializedTransaction,
-    });
-    console.log(`Transaction Confirmed: ${network.scanUrl}/tx/${hash}`);
-    return hash;
+    if (wait) {
+      const hash = await network.client.sendRawTransaction({
+        serializedTransaction,
+      });
+      console.log(`Transaction Confirmed: ${network.scanUrl}/tx/${hash}`);
+      return hash;
+    } else {
+      network.client.sendRawTransaction({
+        serializedTransaction,
+      });
+      return keccak256(serializedTransaction);
+    }
   }
   // Below code is inspired by https://github.com/Connor-ETHSeoul/near-viem
 
@@ -251,17 +262,45 @@ export class NearEthAdapter {
     ];
   }
 
+  async recoverSignature(
+    recoveryData: RecoveryData,
+    signatureData: MPCSignature
+  ): Promise<Hex> {
+    const { big_r, big_s } = signatureData;
+    if (recoveryData.type === "eth_sendTransaction") {
+      const signature = addSignature(
+        { transaction: recoveryData.data as Hex, signature: signatureData },
+        this.address
+      );
+      // Returns relayed transaction hash (without waiting for confirmation).
+      return this.relaySignedTransaction(signature, false);
+    }
+    const r = `0x${big_r.substring(2)}` as Hex;
+    const s = `0x${big_s}` as Hex;
+    const sigs: [Hex, Hex] = [
+      serializeSignature({ r, s, yParity: 0 }),
+      serializeSignature({ r, s, yParity: 1 }),
+    ];
+    return offChainRecovery(recoveryData, sigs);
+  }
+
   /// Mintbase Wallet
   async handleSessionRequest(request: Web3WalletTypes.SessionRequest): Promise<{
     evmMessage: string | TransactionSerializable;
     nearPayload: NearContractFunctionPayload;
+    recoveryData: RecoveryData;
   }> {
     const {
       chainId,
       request: { method, params },
     } = request.params;
     console.log(`Session Request of type ${method} for chainId ${chainId}`);
-    const { evmMessage, payload } = await wcRouter(method, chainId, params);
+    const { evmMessage, payload, signatureRecoveryData } = await wcRouter(
+      method,
+      chainId,
+      params
+    );
+    console.log("Parsed Request:", payload, signatureRecoveryData);
     return {
       nearPayload: this.mpcContract.encodeSignatureRequestTx({
         path: this.derivationPath,
@@ -269,6 +308,7 @@ export class NearEthAdapter {
         key_version: 0,
       }),
       evmMessage,
+      recoveryData: signatureRecoveryData,
     };
   }
 }
