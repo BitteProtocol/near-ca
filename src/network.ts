@@ -25,7 +25,6 @@ interface NetworkFields {
   rpcUrl: string;
   chainId: number;
   scanUrl: string;
-  // gasStationUrl: string;
 }
 /**
  * Leveraging Network Data provided from through viem
@@ -36,23 +35,15 @@ export class Network implements NetworkFields {
   rpcUrl: string;
   chainId: number;
   scanUrl: string;
-  // gasStationUrl: string;
   client: PublicClient;
 
-  constructor({
-    name,
-    rpcUrl,
-    chainId,
-    scanUrl,
-    // gasStationUrl,
-  }: NetworkFields) {
+  constructor({ name, rpcUrl, chainId, scanUrl }: NetworkFields) {
     const network = SUPPORTED_NETWORKS[chainId];
 
     this.name = name;
     this.rpcUrl = rpcUrl;
     this.chainId = chainId;
     this.scanUrl = scanUrl;
-    // this.gasStationUrl = gasStationUrl;
     this.client = createPublicClient({
       transport: http(network.rpcUrl),
     });
@@ -67,17 +58,6 @@ export class Network implements NetworkFields {
 
 type NetworkMap = { [key: number]: NetworkFields };
 
-// /**
-//  * This function is currently limited to networks supported by:
-//  * https://status.beaconcha.in/
-//  */
-// function gasStationUrl(network: Chain): string {
-//   if (network.id === 1) {
-//     return "https://beaconcha.in/api/v1/execution/gasnow";
-//   }
-//   return `https://${network.name.toLowerCase()}.beaconcha.in/api/v1/execution/gasnow`;
-// }
-
 /// Dynamically generate network map accessible by chainId.
 function createNetworkMap(supportedNetworks: Chain[]): NetworkMap {
   const networkMap: NetworkMap = {};
@@ -87,7 +67,6 @@ function createNetworkMap(supportedNetworks: Chain[]): NetworkMap {
       rpcUrl: network.rpcUrls.default.http[0],
       chainId: network.id,
       scanUrl: network.blockExplorers?.default.url || "",
-      // gasStationUrl: gasStationUrl(network),
     };
   });
 
