@@ -12,7 +12,6 @@ import {
 import { BaseTx, TransactionWithSignature } from "../types/types";
 import { secp256k1 } from "@noble/curves/secp256k1";
 import { publicKeyToAddress } from "viem/utils";
-import { queryGasPrice } from "./gasPrice";
 import { Network } from "../network";
 
 export function toPayload(hexString: Hex): number[] {
@@ -46,7 +45,7 @@ export async function populateTx(
     await Promise.all([
       // Only estimate gas if not provided.
       tx.gas || network.client.estimateGas(transactionData),
-      queryGasPrice(network.gasStationUrl),
+      network.client.estimateFeesPerGas(),
     ]);
   return {
     ...transactionData,
