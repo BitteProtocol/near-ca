@@ -4,8 +4,8 @@ import {
   PersonalSignParams,
   offChainRecovery,
   wcRouter,
-} from "../src/wallet-connect/handlers";
-import { MessageData } from "../src/types/types";
+} from "../../src/wallet-connect/handlers";
+import { MessageData } from "../../src/types/types";
 
 describe("Wallet Connect", () => {
   const chainId = "eip155:11155111";
@@ -26,7 +26,6 @@ describe("Wallet Connect", () => {
         request.params as PersonalSignParams
       );
       expect(evmMessage).toEqual(messageString);
-      console.log(payload);
       expect(payload).toEqual([
         140, 57, 188, 66, 128, 51, 12, 191, 241, 190, 96, 50, 8, 251, 249, 208,
         157, 27, 241, 60, 23, 124, 29, 153, 245, 135, 109, 181, 125, 67, 182,
@@ -254,7 +253,7 @@ Challenge: 4113fc3ab2cc60f5d595b2e55349f1eec56fd0c70d4287081fe7156848263626`
   });
 
   describe("offChainRecovery: personal_sign", () => {
-    it.only("recovering signature", async () => {
+    it("recovering signature", async () => {
       const recoveryData = {
         type: "personal_sign",
         data: {
@@ -274,7 +273,9 @@ Challenge: 4113fc3ab2cc60f5d595b2e55349f1eec56fd0c70d4287081fe7156848263626`
       ];
 
       const signature = await offChainRecovery(recoveryData, sigs);
-      console.log(signature);
+      expect(signature).toEqual(
+        "0x491e245db3914b85807f3807f2125b9ed9722d0e9f3fa0fe325b31893fa5e693387178ae4a51f304556c1b2e9dd24f1120d073f93017af006ad801a639214ea61b"
+      );
     });
   });
 });
