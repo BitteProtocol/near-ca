@@ -1,5 +1,5 @@
 import { Hash } from "viem";
-import { JsonRpcResponse } from "../types/rpc";
+import { JSONRPCResponse } from "../types/rpc";
 
 export async function signatureFromTxHash(
   nodeUrl: string,
@@ -25,7 +25,7 @@ export async function signatureFromTxHash(
     body: JSON.stringify(payload),
   });
 
-  const jsonResponse = (await response.json()) as JsonRpcResponse;
+  const jsonResponse = (await response.json()) as JSONRPCResponse;
   const base64Sig = jsonResponse.result.status.SuccessValue;
 
   if (base64Sig) {

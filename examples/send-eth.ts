@@ -9,7 +9,7 @@ const run = async (): Promise<void> => {
     to: evm.address,
     // THIS IS ONE WEI!
     value: 1n,
-    chainId: 11155420,
+    chainId: SEPOLIA_CHAIN_ID,
   });
 };
 

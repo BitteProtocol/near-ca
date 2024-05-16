@@ -1,5 +1,5 @@
 // Basic structure of the JSON-RPC response
-export interface JsonRpcResponse {
+export interface JSONRPCResponse {
   jsonrpc: string;
   result: Result;
   id: string;
