@@ -1,5 +1,5 @@
 import { encodeFunctionData } from "viem";
-import { CHAIN_ID, setupNearEthAdapter } from "../../setup";
+import { SEPOLIA_CHAIN_ID, setupNearEthAdapter } from "../../setup";
 
 const run = async (): Promise<void> => {
   const adapter = await setupNearEthAdapter();
@@ -11,7 +11,7 @@ const run = async (): Promise<void> => {
       functionName: "safeMint",
       args: ["0xAA5FcF171dDf9FE59c985A28747e650C2e9069cA"],
     }),
-    chainId: CHAIN_ID,
+    chainId: SEPOLIA_CHAIN_ID,
   });
 };
 

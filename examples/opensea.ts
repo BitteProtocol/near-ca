@@ -1,5 +1,5 @@
 import { OpenSeaSDK, Chain, OrderSide } from "opensea-js";
-import { CHAIN_ID, setupNearEthAdapter, sleep } from "./setup";
+import { SEPOLIA_CHAIN_ID, setupNearEthAdapter, sleep } from "./setup";
 import * as readline from "readline";
 import { ethers } from "ethers";
 import { Address, Hex, encodeFunctionData } from "viem";
@@ -74,7 +74,7 @@ const run = async (slug: string): Promise<void> => {
     to: tx.to as Address,
     value: BigInt(tx.value),
     data: callData as Hex,
-    chainId: CHAIN_ID,
+    chainId: SEPOLIA_CHAIN_ID,
   });
 };
 

@@ -1,5 +1,5 @@
 import dotenv from "dotenv";
-import { CHAIN_ID, setupNearEthAdapter } from "./setup";
+import { SEPOLIA_CHAIN_ID, setupNearEthAdapter } from "./setup";
 dotenv.config();
 
 const run = async (): Promise<void> => {

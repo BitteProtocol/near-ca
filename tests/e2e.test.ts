@@ -1,4 +1,4 @@
-import { CHAIN_ID, setupNearEthAdapter } from "../examples/setup";
+import { SEPOLIA_CHAIN_ID, setupNearEthAdapter } from "../examples/setup";
 import { NearEthAdapter, Network } from "../src";
 import { getBalance } from "viem/actions";
 
@@ -6,7 +6,7 @@ describe("End To End", () => {
   let adapter: NearEthAdapter;
   const to = "0xdeADBeeF0000000000000000000000000b00B1e5";
   const ONE_WEI = 1n;
-  const chainId = CHAIN_ID;
+  const chainId = SEPOLIA_CHAIN_ID;
 
   beforeAll(async () => {
     adapter = await setupNearEthAdapter();

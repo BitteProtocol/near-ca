@@ -1,5 +1,5 @@
 import erc1155Abi from "../../abis/ERC1155.json";
-import { CHAIN_ID, setupNearEthAdapter } from "../../setup";
+import { SEPOLIA_CHAIN_ID, setupNearEthAdapter } from "../../setup";
 import { encodeFunctionData } from "viem";
 
 const run = async (): Promise<void> => {
@@ -18,7 +18,7 @@ const run = async (): Promise<void> => {
   await evm.signAndSendTransaction({
     to: tokenAddress,
     data: callData,
-    chainId: CHAIN_ID,
+    chainId: SEPOLIA_CHAIN_ID,
   });
 };
 

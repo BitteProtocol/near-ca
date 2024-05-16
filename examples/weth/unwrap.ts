@@ -1,6 +1,6 @@
 import wethABI from "../abis/WETH.json";
 import { encodeFunctionData, parseEther } from "viem";
-import { CHAIN_ID, setupNearEthAdapter } from "../setup";
+import { SEPOLIA_CHAIN_ID, setupNearEthAdapter } from "../setup";
 
 const run = async (): Promise<void> => {
   const neareth = await setupNearEthAdapter();
@@ -15,7 +15,7 @@ const run = async (): Promise<void> => {
       functionName: "withdraw",
       args: [parseEther(withdrawAmount.toString())],
     }),
-    chainId: CHAIN_ID,
+    chainId: SEPOLIA_CHAIN_ID,
   });
 };
 
