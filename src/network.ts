@@ -1,5 +1,13 @@
 import { Chain, createPublicClient, http, PublicClient } from "viem";
-import { sepolia, mainnet, gnosis, holesky } from "viem/chains";
+import {
+  sepolia,
+  mainnet,
+  gnosis,
+  holesky,
+  arbitrum,
+  optimism,
+  optimismSepolia,
+} from "viem/chains";
 
 // All supported networks
 const SUPPORTED_NETWORKS = createNetworkMap([
@@ -7,6 +15,9 @@ const SUPPORTED_NETWORKS = createNetworkMap([
   gnosis,
   sepolia,
   holesky,
+  arbitrum,
+  optimism,
+  optimismSepolia,
 ]);
 
 interface NetworkFields {
@@ -14,7 +25,7 @@ interface NetworkFields {
   rpcUrl: string;
   chainId: number;
   scanUrl: string;
-  gasStationUrl: string;
+  // gasStationUrl: string;
 }
 /**
  * Leveraging Network Data provided from through viem
@@ -25,7 +36,7 @@ export class Network implements NetworkFields {
   rpcUrl: string;
   chainId: number;
   scanUrl: string;
-  gasStationUrl: string;
+  // gasStationUrl: string;
   client: PublicClient;
 
   constructor({
@@ -33,7 +44,7 @@ export class Network implements NetworkFields {
     rpcUrl,
     chainId,
     scanUrl,
-    gasStationUrl,
+    // gasStationUrl,
   }: NetworkFields) {
     const network = SUPPORTED_NETWORKS[chainId];
 
@@ -41,7 +52,7 @@ export class Network implements NetworkFields {
     this.rpcUrl = rpcUrl;
     this.chainId = chainId;
     this.scanUrl = scanUrl;
-    this.gasStationUrl = gasStationUrl;
+    // this.gasStationUrl = gasStationUrl;
     this.client = createPublicClient({
       transport: http(network.rpcUrl),
     });
@@ -56,16 +67,16 @@ export class Network implements NetworkFields {
 
 type NetworkMap = { [key: number]: NetworkFields };
 
-/**
- * This function is currently limited to networks supported by:
- * https://status.beaconcha.in/
- */
-function gasStationUrl(network: Chain): string {
-  if (network.id === 1) {
-    return "https://beaconcha.in/api/v1/execution/gasnow";
-  }
-  return `https://${network.name.toLowerCase()}.beaconcha.in/api/v1/execution/gasnow`;
-}
+// /**
+//  * This function is currently limited to networks supported by:
+//  * https://status.beaconcha.in/
+//  */
+// function gasStationUrl(network: Chain): string {
+//   if (network.id === 1) {
+//     return "https://beaconcha.in/api/v1/execution/gasnow";
+//   }
+//   return `https://${network.name.toLowerCase()}.beaconcha.in/api/v1/execution/gasnow`;
+// }
 
 /// Dynamically generate network map accessible by chainId.
 function createNetworkMap(supportedNetworks: Chain[]): NetworkMap {
@@ -76,7 +87,7 @@ function createNetworkMap(supportedNetworks: Chain[]): NetworkMap {
       rpcUrl: network.rpcUrls.default.http[0],
       chainId: network.id,
       scanUrl: network.blockExplorers?.default.url || "",
-      gasStationUrl: gasStationUrl(network),
+      // gasStationUrl: gasStationUrl(network),
     };
   });
 

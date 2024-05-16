@@ -1,5 +1,5 @@
 import dotenv from "dotenv";
-import { SEPOLIA_CHAIN_ID, setupNearEthAdapter } from "./setup";
+import { CHAIN_ID, setupNearEthAdapter } from "./setup";
 dotenv.config();
 
 const run = async (): Promise<void> => {
@@ -9,7 +9,7 @@ const run = async (): Promise<void> => {
     to: evm.address,
     // THIS IS ONE WEI!
     value: 1n,
-    chainId: SEPOLIA_CHAIN_ID,
+    chainId: 11155420,
   });
 };
 
