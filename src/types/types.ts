@@ -2,6 +2,15 @@ import { MultichainContract } from "../mpcContract";
 import { FunctionCallAction } from "@near-wallet-selector/core";
 import { Hex, SignableMessage } from "viem";
 
+export interface SignatureRequest {
+  request: {
+    method: string;
+    params: any;
+  };
+  /// format is usually eip155:<chainId: number>
+  chainId: string;
+}
+
 export interface BaseTx {
   /// Recipient of the transaction
   to: `0x${string}`;

@@ -25,13 +25,17 @@ import {
   TransactionWithSignature,
   MPCSignature,
   RecoveryData,
+  SignatureRequest,
 } from "../types/types";
 import { MultichainContract } from "../mpcContract";
 import { buildTxPayload, addSignature, populateTx } from "../utils/transaction";
 import { Network } from "../network";
 import { pickValidSignature } from "../utils/signature";
 import { Web3WalletTypes } from "@walletconnect/web3wallet";
-import { offChainRecovery, wcRouter } from "../wallet-connect/handlers";
+import {
+  offChainRecovery,
+  wcRouter as requestRouter,
+} from "../wallet-connect/handlers";
 
 export class NearEthAdapter {
   readonly mpcContract: MultichainContract;
@@ -284,6 +288,31 @@ export class NearEthAdapter {
     return offChainRecovery(recoveryData, sigs);
   }
 
+  async handleSignatureRequest(request: SignatureRequest): Promise<{
+    evmMessage: string | TransactionSerializable;
+    nearPayload: NearContractFunctionPayload;
+    recoveryData: RecoveryData;
+  }> {
+    const {
+      chainId,
+      request: { method, params },
+    } = request;
+    const { evmMessage, payload, signatureRecoveryData } = await requestRouter(
+      method,
+      chainId,
+      params
+    );
+    return {
+      nearPayload: this.mpcContract.encodeSignatureRequestTx({
+        path: this.derivationPath,
+        payload,
+        key_version: 0,
+      }),
+      evmMessage,
+      recoveryData: signatureRecoveryData,
+    };
+  }
+
   /// Mintbase Wallet
   async handleSessionRequest(request: Web3WalletTypes.SessionRequest): Promise<{
     evmMessage: string | TransactionSerializable;
@@ -295,12 +324,11 @@ export class NearEthAdapter {
       request: { method, params },
     } = request.params;
     console.log(`Session Request of type ${method} for chainId ${chainId}`);
-    const { evmMessage, payload, signatureRecoveryData } = await wcRouter(
+    const { evmMessage, payload, signatureRecoveryData } = await requestRouter(
       method,
       chainId,
       params
     );
-    console.log("Parsed Request:", payload, signatureRecoveryData);
     return {
       nearPayload: this.mpcContract.encodeSignatureRequestTx({
         path: this.derivationPath,

@@ -28,7 +28,7 @@ export type PersonalSignParams = [Hex, Hex];
 /// Interface for eth_sign parameters (address and message)
 export type EthSignParams = [Hex, Hex];
 
-// Interface for complex structured parameters like EIP-712
+/// Interface for complex structured parameters like EIP-712
 export type TypedDataParams = [Hex, string];
 
 type SessionRequestParams =
