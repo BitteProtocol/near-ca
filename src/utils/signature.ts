@@ -1,5 +1,6 @@
 import { Hash } from "viem";
 import { JSONRPCResponse } from "../types/rpc";
+import { MPCSignature } from "../types/types";
 
 export async function signatureFromTxHash(
   nodeUrl: string,
@@ -7,7 +8,7 @@ export async function signatureFromTxHash(
   /// This field doesn't appear to be necessary although (possibly for efficiency),
   /// the docs mention that it is "used to determine which shard to query for transaction".
   accountId: string = "non-empty"
-): Promise<[string, string]> {
+): Promise<MPCSignature> {
   const payload = {
     jsonrpc: "2.0",
     id: "dontcare",
@@ -31,7 +32,8 @@ export async function signatureFromTxHash(
   if (base64Sig) {
     // Decode from base64
     const decodedValue = Buffer.from(base64Sig, "base64").toString("utf-8");
-    return JSON.parse(decodedValue);
+    const [big_r, big_s] = JSON.parse(decodedValue);
+    return { big_r, big_s };
   } else {
     throw new Error("No valid values found in the array.");
   }
