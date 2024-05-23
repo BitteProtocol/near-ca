@@ -14,7 +14,6 @@ import {
   TypedData,
   TypedDataDefinition,
   parseTransaction,
-  TransactionSerializable,
   keccak256,
 } from "viem";
 import {

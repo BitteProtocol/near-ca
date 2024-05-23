@@ -10,12 +10,7 @@ import {
   verifyTypedData,
 } from "viem";
 import { populateTx, toPayload } from "../utils/transaction";
-import {
-  MessageData,
-  NearEthTxData,
-  RecoveryData,
-  TypedMessageData,
-} from "../types/types";
+import { MessageData, RecoveryData, TypedMessageData } from "../types/types";
 import { pickValidSignature } from "../utils/signature";
 
 // Interface for Ethereum transaction parameters
