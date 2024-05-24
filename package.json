@@ -12,6 +12,8 @@
     "build": "rm -rf ./dist && tsc",
     "lint": "eslint . --ignore-pattern dist/",
     "test": "jest --testTimeout 30000",
+    "coverage": "yarn test --coverage",
+    "verify": "yarn build && yarn lint && yarn coverage unit",
     "fmt": "prettier --write '{src,examples,tests}/**/*.{js,jsx,ts,tsx}'"
   },
   "devDependencies": {
