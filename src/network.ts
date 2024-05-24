@@ -7,6 +7,7 @@ import {
   arbitrum,
   optimism,
   optimismSepolia,
+  localhost,
 } from "viem/chains";
 
 // All supported networks
@@ -18,6 +19,7 @@ const SUPPORTED_NETWORKS = createNetworkMap([
   arbitrum,
   optimism,
   optimismSepolia,
+  localhost,
 ]);
 
 interface NetworkFields {
