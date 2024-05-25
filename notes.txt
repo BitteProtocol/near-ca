@@ -1,0 +1,28 @@
+attempted to run 'yarn' to get started
+
+command line output:
+
+near-ca % yarn
+yarn install v1.22.21
+[1/4] 🔍  Resolving packages...
+[2/4] 🚚  Fetching packages...
+error @typescript-eslint/eslint-plugin@7.9.0: The engine "node" is incompatible with this module. Expected version "^18.18.0 || >=20.0.0". Got "18.17.0"
+error Found incompatible module.
+info Visit https://yarnpkg.com/en/docs/cli/install for documentation about this command.
+
+debug:
+near-ca % npm install n -g
+near-ca % sudo n 18
+near-ca % yarn
+
+
+error 2:
+error opensea-js@7.1.9: The engine "node" is incompatible with this module. Expected version ">=20.0.0". Got "18.20.3"
+error Found incompatible module.
+info Visit https://yarnpkg.com/en/docs/cli/install for documentation about this command.
+
+solution:
+near-ca % sudo n 20
+near-ca % yarn 
+
+working

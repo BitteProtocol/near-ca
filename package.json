@@ -15,7 +15,7 @@
     "fmt": "prettier --write '{src,examples,tests}/**/*.{js,jsx,ts,tsx}'"
   },
   "devDependencies": {
-    "@types/elliptic": "^6.4.18",
+    "@types/elliptic": "^6.4.18.",
     "@types/jest": "^29.5.12",
     "@types/node": "^20.12.12",
     "@typescript-eslint/eslint-plugin": "^7.9.0",
@@ -36,5 +36,6 @@
     "elliptic": "^6.5.5",
     "near-api-js": "^3.0.3",
     "viem": "^2.10.8"
-  }
+  },
+  "packageManager": "yarn@1.22.21+sha1.1959a18351b811cdeedbd484a8f86c3cc3bbaf72"
 }
