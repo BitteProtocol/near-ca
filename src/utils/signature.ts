@@ -13,6 +13,7 @@ export async function signatureFromTxHash(
     jsonrpc: "2.0",
     id: "dontcare",
     // This could be replaced with `tx`.
+    // method: "tx",
     method: "EXPERIMENTAL_tx_status",
     params: [txHash, accountId],
   };
@@ -27,14 +28,23 @@ export async function signatureFromTxHash(
   });
 
   const jsonResponse = (await response.json()) as JSONRPCResponse;
-  const base64Sig = jsonResponse.result.status.SuccessValue;
-
-  if (base64Sig) {
-    // Decode from base64
+  let base64Sig = jsonResponse.result.status?.SuccessValue;
+  if (base64Sig === "") {
+    // Extract receipts_outcome
+    const receiptsOutcome = jsonResponse.result.receipts_outcome;
+    // Map to get SuccessValue
+    const successValues = receiptsOutcome.map(
+      // eslint-disable-next-line
+      (outcome: any) => outcome.outcome.status.SuccessValue
+    );
+    // Find the first non-empty value
+    base64Sig = successValues.find((value) => value && value.trim().length > 0);
+  }
+  try {
     const decodedValue = Buffer.from(base64Sig, "base64").toString("utf-8");
     const [big_r, big_s] = JSON.parse(decodedValue);
     return { big_r, big_s };
-  } else {
+  } catch (error: any) {
     throw new Error("No valid values found in the array.");
   }
 }
