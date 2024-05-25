@@ -35,6 +35,15 @@ yarn add near-ca
 
 ## Usage
 
+Create a .env file. Make sure the environment variables are defined in the .env file. You can view the required variables in the .env.example
+
+Fund your address with some sepolia ETH
+
+Run 
+```bash
+npx ts-node examples/send-eth.ts
+```
+
 For Ethereum, you can derive addresses, create payloads for transactions, and send signed transactions.
 
 ### Example: Setup NearEthAdapter and Send ETH
