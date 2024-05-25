@@ -293,6 +293,7 @@ Challenge: 4113fc3ab2cc60f5d595b2e55349f1eec56fd0c70d4287081fe7156848263626`
     });
 
     it("recovering eth_signTypedData", async () => {
+      // TODO: Find a real examples of Ethereum apps and simulate them on the test
       const recoveryData = {
         type: "eth_signTypedData",
         data: {
