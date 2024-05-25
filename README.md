@@ -25,6 +25,8 @@ npx ts-node examples/opensea.ts
 # You will be prompted to provide a collectionSlug
 ```
 
+A collection slug identifies the collection at OpenSea. To get it you have to go to [testnet.opensea](https://testnets.opensea.io/). An example slug you can use is: [the-monkey-chainz](https://testnets.opensea.io/collection/the-monkey-chainz).
+
 ## Installation
 
 To install NEAR-CA, run the following command:
@@ -91,3 +93,5 @@ Before using NEAR-CA, ensure you have the following environment variables set:
 - `NEAR_MULTICHAIN_CONTRACT`: The NEAR contract that handles multichain operations.
 
 Copy the `.env.example` file and place these values in `.env`
+
+For setting up a wallet use NEAR testnet wallet. The testnet wallet is different from the main wallet. For example you can use the following wallet: [https://testnet.mynearwallet.com/](https://testnet.mynearwallet.com/).
