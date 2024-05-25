@@ -40,11 +40,11 @@ export async function signatureFromTxHash(
     // Find the first non-empty value
     base64Sig = successValues.find((value) => value && value.trim().length > 0);
   }
-  try {
+  if (base64Sig) {
     const decodedValue = Buffer.from(base64Sig, "base64").toString("utf-8");
     const [big_r, big_s] = JSON.parse(decodedValue);
     return { big_r, big_s };
-  } catch (error: any) {
+  } else {
     throw new Error("No valid values found in the array.");
   }
 }
