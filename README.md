@@ -25,6 +25,8 @@ npx ts-node examples/opensea.ts
 # You will be prompted to provide a collectionSlug
 ```
 
+Using `npm` could potentially cause peer dependency mismatches. If the installation fails, run `npm i --force` to continue.
+
 ## Installation
 
 To install NEAR-CA, run the following command:
