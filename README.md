@@ -94,4 +94,4 @@ Before using NEAR-CA, ensure you have the following environment variables set:
 
 Copy the `.env.example` file and place these values in `.env`
 
-For setting up a wallet use NEAR testnet wallet. The testnet wallet is different from the main wallet. For example you can use the following wallet: [https://testnet.mynearwallet.com/](https://testnet.mynearwallet.com/).
+For setting up a wallet use NEAR testnet wallet. The testnet wallet is different from the main wallet. For example you can use [Mintbase Wallet](https://testnet.wallet.mintbase.xyz/).
