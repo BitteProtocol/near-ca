@@ -14,6 +14,9 @@
     "test": "jest --testTimeout 30000",
     "fmt": "prettier --write '{src,examples,tests}/**/*.{js,jsx,ts,tsx}'"
   },
+  "engines": {
+    "node": ">=20.0.0"
+  },
   "devDependencies": {
     "@types/elliptic": "^6.4.18",
     "@types/jest": "^29.5.12",
