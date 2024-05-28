@@ -15,6 +15,9 @@ Intended to be used on server-side applications only.
 
 ## Local Testing
 
+This project requires the Node.js version 20.0.0+.
+If you are using nvm, you can run `nvm use` and use the node version in `.nvmrc`.
+
 ```sh
 # Install
 yarn
