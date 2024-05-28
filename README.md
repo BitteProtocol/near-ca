@@ -20,9 +20,8 @@ Intended to be used on server-side applications only.
 yarn
 # Credentials
 cp .env.example .env  <---- paste your Near credentials
-# Buy NFT by collection slug:
-npx ts-node examples/opensea.ts
-# You will be prompted to provide a collectionSlug
+# Send Eth. You need to fund your account first. More details in the 'Fund your account' part of this document 
+npx ts-node examples/send-eth.ts
 ```
 
 ## Installation
@@ -33,16 +32,16 @@ To install NEAR-CA, run the following command:
 yarn add near-ca
 ```
 
-## Usage
+## Fund your account
 
-Create a .env file. Make sure the environment variables are defined in the .env file. You can view the required variables in the .env.example
+Get your address
 
-Fund your address with some sepolia ETH
-
-Run 
-```bash
-npx ts-node examples/send-eth.ts
+```typescript
+ ts-node examples/getEthAddress.ts
 ```
+After getting your address fund it from one of your own wallets.
+
+# Examples
 
 For Ethereum, you can derive addresses, create payloads for transactions, and send signed transactions.
 
