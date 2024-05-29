@@ -6,16 +6,17 @@ NEAR-CA is a TypeScript library designed to provide an abstraction layer for int
 
 ## Features
 
-- Account management for the NEAR blockchain.
+- EVM Account Derivation from NEAR blockchain.
 - Transaction signing and sending on the Ethereum blockchain.
 - Key derivation functions for cryptographic operations.
 - Support for EIP-1559 transactions on Ethereum.
+- Wallet Connect intergration tools.
 
 ## Contracts
 
 ### Get Started
 
-This project requires Node.js version 20.0.0 or higher. 
+This project requires Node.js version 20.0.0 or higher.
 If you are using nvm, you can run `nvm use` to use the node version specified in `.nvmrc`.
 
 To install dependencies and set up the project:
@@ -25,8 +26,8 @@ To install dependencies and set up the project:
 yarn
 # Credentials
 cp .env.example .env  <---- paste your Near credentials
-# Send Eth. You'll need to fund your account first. 
-# More details in the 'Fund your account' part of this document 
+# Send Eth. You'll need to fund your account first.
+# More details in the 'Fund your account' part of this document
 npx ts-node examples/send-eth.ts
 ```
 
@@ -40,17 +41,18 @@ Before using NEAR-CA, ensure you have the following environment variables set:
 
 Copy the `.env.example` file and add these values to the `.env` file.
 
-For setting up a wallet, use the NEAR testnet wallet. 
-The testnet wallet is different from the main wallet. 
+For setting up a wallet, use the NEAR testnet wallet.
+The testnet wallet is different from the main wallet.
 For example, you can use the [Mintbase Wallet](https://testnet.wallet.mintbase.xyz/).
 
 ## Fund your account
 
 Get your address
 
-```typescript
- ts-node examples/getEthAddress.ts
+```sh
+npx ts-node examples/getEthAddress.ts
 ```
+
 After getting your address fund it from one of your own wallets.
 
 # Examples
