@@ -15,19 +15,19 @@ NEAR-CA is a TypeScript library designed to provide an abstraction layer for int
 
 ### Get Started
 
-This project requires Node.js version 20.0.0 or higher. If you are using nvm, you can run `nvm use` to use the node version specified in `.nvmrc`.
+This project requires Node.js version 20.0.0 or higher. 
+If you are using nvm, you can run `nvm use` to use the node version specified in `.nvmrc`.
 
 To install dependencies and set up the project:
 
 ```sh
 # Install dependencies
 yarn
-
-# Set up credentials
-cp .env.example .env  # Paste your NEAR credentials into the .env file
-
-# Run example scripts
-npx ts-node examples/*.ts
+# Credentials
+cp .env.example .env  <---- paste your Near credentials
+# Send Eth. You'll need to fund your account first. 
+# More details in the 'Fund your account' part of this document 
+npx ts-node examples/send-eth.ts
 ```
 
 ### NEAR Credentials
@@ -40,17 +40,28 @@ Before using NEAR-CA, ensure you have the following environment variables set:
 
 Copy the `.env.example` file and add these values to the `.env` file.
 
-For setting up a wallet, use the NEAR testnet wallet. The testnet wallet is different from the main wallet. For example, you can use the [Mintbase Wallet](https://testnet.wallet.mintbase.xyz/).
+For setting up a wallet, use the NEAR testnet wallet. 
+The testnet wallet is different from the main wallet. 
+For example, you can use the [Mintbase Wallet](https://testnet.wallet.mintbase.xyz/).
 
-### Usage
+## Fund your account
+
+Get your address
+
+```typescript
+ ts-node examples/getEthAddress.ts
+```
+After getting your address fund it from one of your own wallets.
+
+# Examples
+
+## CLI
 
 For Ethereum, you can derive addresses, create payloads for transactions, and send signed transactions.
 
 For more detailed examples, see the [Examples README](./examples/README.md).
 
 ## Frontend
-
-### Get Started
 
 To install NEAR-CA in your project, run the following command:
 
@@ -84,7 +95,7 @@ const adapter = await NearEthAdapter.fromConfig({
 
 await adapter.signAndSendTransaction({
   receiver: "0xdeADBeeF0000000000000000000000000b00B1e5",
-  amount: 0.00000001,
+  amount: 1n,
   chainId: 11_155_111,
   // Optional: Set nearGas (default is 300 TGAS, which sometimes might not be sufficient)
 });
