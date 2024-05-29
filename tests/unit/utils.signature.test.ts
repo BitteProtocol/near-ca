@@ -1,4 +1,7 @@
-import { signatureFromTxHash } from "../../src/utils/signature";
+import {
+  signatureFromTxHash,
+  pickValidSignature,
+} from "../../src/utils/signature";
 
 describe("utility: get Signature", () => {
   const url: string = "https://archival-rpc.testnet.near.org";
@@ -31,5 +34,30 @@ describe("utility: get Signature", () => {
     await expect(signatureFromTxHash(url, failedHash)).rejects.toThrow(
       "No valid values found in the array."
     );
+  });
+});
+
+describe("utility: pickValidSignature", () => {
+  const sig0 = "0x88LS5pkj99pd6B6noZU6sagQ1QDwHHoSy3qpHr5xLNsR";
+  const sig1 = "0xHaG9L4HnP69v6wSnAmKfzsCUhDaVMRZWNGhGqnepsMTD";
+
+  it("No signature is valid, should throw error", async () => {
+    expect(() => pickValidSignature([false, false], [sig0, sig1]))
+      .toThrow("Invalid signature");
+  });
+
+  it("both sig0 and sig1 are valid, should return sig0", async () => {
+    const sig = pickValidSignature([true, true], [sig0, sig1]);
+    expect(sig).toEqual(sig0);
+  });
+
+  it("sig0 is valid, should return sig0", async () => {
+    const sig = pickValidSignature([true, false], [sig0, sig1]);
+    expect(sig).toEqual(sig0);
+  });
+
+  it("sig1 is valid, should return sig1", async () => {
+    const sig = pickValidSignature([false, true], [sig0, sig1]);
+    expect(sig).toEqual(sig1);
   });
 });
