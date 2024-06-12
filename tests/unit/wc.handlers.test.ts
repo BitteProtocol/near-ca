@@ -40,11 +40,9 @@ describe("Wallet Connect", () => {
         params: [from, toHex(messageString)],
       };
 
-      await expect(wcRouter(
-        request.method,
-        chainId,
-        request.params as PersonalSignParams
-      )).rejects.toThrow("Unhandled session_request method: eth_fail");
+      await expect(
+        wcRouter(request.method, chainId, request.params as PersonalSignParams)
+      ).rejects.toThrow("Unhandled session_request method: eth_fail");
     });
 
     it("opensea login", async () => {
@@ -326,7 +324,7 @@ Challenge: 4113fc3ab2cc60f5d595b2e55349f1eec56fd0c70d4287081fe7156848263626`
             version: "1",
             chainId: 1,
             verifyingContract: "0xCcCCccccCCCCcCCCCCCcCcCccCcCCCcCcccccccC",
-          }
+          },
         } as TypedMessageData,
       };
       const r =

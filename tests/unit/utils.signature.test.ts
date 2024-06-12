@@ -42,8 +42,9 @@ describe("utility: pickValidSignature", () => {
   const sig1 = "0xHaG9L4HnP69v6wSnAmKfzsCUhDaVMRZWNGhGqnepsMTD";
 
   it("No signature is valid, should throw error", async () => {
-    expect(() => pickValidSignature([false, false], [sig0, sig1]))
-      .toThrow("Invalid signature");
+    expect(() => pickValidSignature([false, false], [sig0, sig1])).toThrow(
+      "Invalid signature"
+    );
   });
 
   it("both sig0 and sig1 are valid, should return sig0", async () => {
