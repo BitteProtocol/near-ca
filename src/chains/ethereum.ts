@@ -14,7 +14,6 @@ import {
   TypedData,
   TypedDataDefinition,
   parseTransaction,
-  TransactionSerializable,
   keccak256,
 } from "viem";
 import {
@@ -25,6 +24,7 @@ import {
   TransactionWithSignature,
   MPCSignature,
   RecoveryData,
+  NearEthTxData,
 } from "../types/types";
 import { MultichainContract } from "../mpcContract";
 import { buildTxPayload, addSignature, populateTx } from "../utils/transaction";
@@ -285,11 +285,9 @@ export class NearEthAdapter {
   }
 
   /// Mintbase Wallet
-  async handleSessionRequest(request: Web3WalletTypes.SessionRequest): Promise<{
-    evmMessage: string | TransactionSerializable;
-    nearPayload: NearContractFunctionPayload;
-    recoveryData: RecoveryData;
-  }> {
+  async handleSessionRequest(
+    request: Web3WalletTypes.SessionRequest
+  ): Promise<NearEthTxData> {
     const {
       chainId,
       request: { method, params },
