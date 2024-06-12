@@ -1,5 +1,9 @@
 import { TransactionWithSignature } from "../../src";
-import { buildTxPayload, addSignature, toPayload } from "../../src/utils/transaction";
+import {
+  buildTxPayload,
+  addSignature,
+  toPayload,
+} from "../../src/utils/transaction";
 
 describe("Transaction Builder Functions", () => {
   it("buildTxPayload", async () => {
@@ -42,8 +46,10 @@ describe("Transaction Builder Functions", () => {
       transaction:
         "0x02e883aa36a780845974e6f084d0aa7af08094deadbeef0000000000000000000000000b00b1e50180c0",
       signature: {
-        big_r: "02EF532579E267C932B959A1ADB9E455AC3C5397D0473471C4C3DD5D62FD4D7EDE",
-        big_s: "7C195E658C713D601D245311A259115BB91EC87C86ACB07C03BD9C1936A6A9E8",
+        big_r:
+          "02EF532579E267C932B959A1ADB9E455AC3C5397D0473471C4C3DD5D62FD4D7EDE",
+        big_s:
+          "7C195E658C713D601D245311A259115BB91EC87C86ACB07C03BD9C1936A6A9E8",
       },
     };
     const sender = "0xInvalidSenderAddress";

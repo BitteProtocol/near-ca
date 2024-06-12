@@ -1,13 +1,8 @@
 {
   "compilerOptions": {
-    // Enable latest features
-    "lib": ["ESNext"],
-    "target": "ESNext",
+    "module": "CommonJS",
+    "target": "ES2020",
     "jsx": "react-jsx",
-    "allowJs": true,
-    "moduleResolution": "Node",
-    "resolveJsonModule": true,
-
     "declaration": true,
     "outDir": "dist",
     "esModuleInterop": true,
@@ -22,5 +17,6 @@
     "noUnusedParameters": true,
     "noPropertyAccessFromIndexSignature": false
   },
+  "include": ["src/**/*.ts"],
   "exclude": ["node_modules", "dist", "examples", "tests", "eslint.config.js"]
 }
