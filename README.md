@@ -93,7 +93,7 @@ Before using NEAR-CA, ensure you have the following environment variables set:
 Copy the `.env.example` file and place these values in `.env`
 
 
-Steps to get your NEAR_ACCOUNT_ID and NEAR_ACCOUNT_PRIVATE_KEY:
+Steps to get your `NEAR_ACCOUNT_ID` and `NEAR_ACCOUNT_PRIVATE_KEY`:
 
 1. Create a mintbase wallet, super easy, here: https://wallet.mintbase.xyz/
 2. Your `XYZ.near` is your `NEAR_ACCOUNT_ID`.
