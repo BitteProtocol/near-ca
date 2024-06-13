@@ -96,7 +96,7 @@ Copy the `.env.example` file and place these values in `.env`
 Steps to get your `NEAR_ACCOUNT_ID` and `NEAR_ACCOUNT_PRIVATE_KEY`:
 
 1. Create a mintbase wallet, super easy, here: https://wallet.mintbase.xyz/
-2. Your `XYZ.near` is your `NEAR_ACCOUNT_ID`.
+2. Your `XYZ.testnet` is your `NEAR_ACCOUNT_ID`.
 3. In mintbase, on the top right corner click on the gear (settings) icon.
 4. Go to "Security & Recovery" -> "Export Account".
 5. After the exporting is complete click on "Private Key" and copy it.
