@@ -1,6 +1,6 @@
 import { MultichainContract } from "../mpcContract";
 import { FunctionCallAction } from "@near-wallet-selector/core";
-import { Hex, SignableMessage } from "viem";
+import { Hex, SignableMessage, TransactionSerializable } from "viem";
 
 export interface BaseTx {
   /// Recipient of the transaction
@@ -22,6 +22,12 @@ export interface NearEthAdapterParams {
   mpcContract: MultichainContract;
   /// path used to generate ETH account from Near account (e.g. "ethereum,1")
   derivationPath?: string;
+}
+
+export interface NearEthTxData {
+  evmMessage: string | TransactionSerializable;
+  nearPayload: NearContractFunctionPayload;
+  recoveryData: RecoveryData;
 }
 
 export interface GasPrices {

@@ -12,7 +12,7 @@ export function najPublicKeyStrToUncompressedHexPoint(
 export async function deriveChildPublicKey(
   parentUncompressedPublicKeyHex: string,
   signerId: string,
-  path = ""
+  path: string = ""
 ): Promise<string> {
   const ec = new EC("secp256k1");
   const scalar = await sha256Hash(
