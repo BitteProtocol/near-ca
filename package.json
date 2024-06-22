@@ -38,7 +38,7 @@
   "dependencies": {
     "@walletconnect/web3wallet": "^1.12.3",
     "elliptic": "^6.5.5",
-    "near-api-js": "^3.0.3",
+    "near-api-js": "^4.0.2",
     "viem": "^2.16.1"
   }
 }
