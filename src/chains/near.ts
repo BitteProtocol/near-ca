@@ -1,5 +1,4 @@
 import { keyStores, KeyPair, connect, Account } from "near-api-js";
-import { Wallet } from "@near-wallet-selector/core";
 
 export const TGAS = 1000000000000n;
 export const NO_DEPOSIT = "0";
@@ -57,8 +56,8 @@ export const nearAccountFromKeyPair = async (config: {
 /** Minimally sufficient Account instance to construct the signing contract instance.
  *  Can't be used to change methods.
  */
-export const nearAccountFromWallet = async (
-  wallet: Wallet,
+export const nearAccountFromAccountId = async (
+  accountId: string,
   network?: NearConfig
 ): Promise<Account> => {
   const keyStore = new keyStores.InMemoryKeyStore();
@@ -66,7 +65,6 @@ export const nearAccountFromWallet = async (
     ...(network || TESTNET_CONFIG),
     keyStore,
   });
-  const accountId = (await wallet.getAccounts())[0].accountId;
   const account = await near.account(accountId);
   return account;
 };

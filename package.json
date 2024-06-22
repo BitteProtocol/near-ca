@@ -36,7 +36,6 @@
     "typescript": "^5.5.2"
   },
   "dependencies": {
-    "@near-wallet-selector/core": "^8.9.10",
     "@walletconnect/web3wallet": "^1.12.3",
     "elliptic": "^6.5.5",
     "near-api-js": "^3.0.3",
