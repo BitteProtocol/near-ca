@@ -1,8 +1,8 @@
 {
   "compilerOptions": {
-    "module": "CommonJS",
-    "target": "ES2020",
-    "jsx": "react-jsx",
+    "module": "ESNext",
+    "target": "ESNext",
+    "moduleResolution": "Node",
     "declaration": true,
     "outDir": "dist",
     "esModuleInterop": true,
