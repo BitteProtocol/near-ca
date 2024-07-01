@@ -5,7 +5,7 @@ import { Address, keccak256 } from "viem";
 export function najPublicKeyStrToUncompressedHexPoint(
   najPublicKeyStr: string
 ): string {
-  const decodedKey = base_decode(najPublicKeyStr.split(":")[1]);
+  const decodedKey = base_decode(najPublicKeyStr.split(":")[1]!);
   return "04" + Buffer.from(decodedKey).toString("hex");
 }
 

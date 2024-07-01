@@ -40,7 +40,7 @@ export class Network implements NetworkFields {
   client: PublicClient;
 
   constructor({ name, rpcUrl, chainId, scanUrl }: NetworkFields) {
-    const network = SUPPORTED_NETWORKS[chainId];
+    const network = SUPPORTED_NETWORKS[chainId]!;
 
     this.name = name;
     this.rpcUrl = rpcUrl;
@@ -53,7 +53,7 @@ export class Network implements NetworkFields {
 
   /// Returns Network by ChainId
   static fromChainId(chainId: number): Network {
-    const networkFields = SUPPORTED_NETWORKS[chainId];
+    const networkFields = SUPPORTED_NETWORKS[chainId]!;
     return new Network(networkFields);
   }
 }
@@ -66,7 +66,7 @@ function createNetworkMap(supportedNetworks: Chain[]): NetworkMap {
   supportedNetworks.forEach((network) => {
     networkMap[network.id] = {
       name: network.name,
-      rpcUrl: network.rpcUrls.default.http[0],
+      rpcUrl: network.rpcUrls.default.http[0]!,
       chainId: network.id,
       scanUrl: network.blockExplorers?.default.url || "",
     };

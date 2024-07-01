@@ -27,7 +27,7 @@ export const nearAccountFromEnv = async (
   return nearAccountFromKeyPair({
     keyPair,
     accountId: process.env.NEAR_ACCOUNT_ID!,
-    network,
+    network: network || TESTNET_CONFIG,
   });
 };
 
@@ -66,7 +66,7 @@ export const nearAccountFromWallet = async (
     ...(network || TESTNET_CONFIG),
     keyStore,
   });
-  const accountId = (await wallet.getAccounts())[0].accountId;
+  const accountId = (await wallet.getAccounts())[0]!.accountId;
   const account = await near.account(accountId);
   return account;
 };
