@@ -36,8 +36,10 @@ interface MultichainContractInterface extends Contract {
  */
 export class MultichainContract {
   contract: MultichainContractInterface;
+  connectedAccount: Account;
 
   constructor(account: Account, contractId: string) {
+    this.connectedAccount = account;
     this.contract = new Contract(account, contractId, {
       changeMethods: ["sign"],
       viewMethods: ["public_key"],
@@ -58,7 +60,7 @@ export class MultichainContract {
 
     const publicKey = await deriveChildPublicKey(
       najPublicKeyStrToUncompressedHexPoint(rootPublicKey),
-      this.contract.account.accountId,
+      this.connectedAccount.accountId,
       derivationPath
     );
 
@@ -82,7 +84,7 @@ export class MultichainContract {
     gas?: bigint
   ): NearContractFunctionPayload {
     return {
-      signerId: this.contract.account.accountId,
+      signerId: this.connectedAccount.accountId,
       receiverId: this.contract.contractId,
       actions: [
         {

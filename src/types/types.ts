@@ -1,6 +1,20 @@
 import { MultichainContract } from "../mpcContract";
-import { FunctionCallAction } from "@near-wallet-selector/core";
-import { Hex, SignableMessage } from "viem";
+// import { FunctionCallAction } from "@near-wallet-selector/core";
+import { Hex, SignableMessage, TransactionSerializable } from "viem";
+
+/**
+ * Borrowed from @near-wallet-selector/core
+ * https://github.com/near/wallet-selector/blob/01081aefaa3c96ded9f83a23ecf0d210a4b64590/packages/core/src/lib/wallet/transactions.types.ts#L12
+ */
+export interface FunctionCallAction {
+  type: "FunctionCall";
+  params: {
+    methodName: string;
+    args: object;
+    gas: string;
+    deposit: string;
+  };
+}
 
 export interface BaseTx {
   /// Recipient of the transaction
@@ -22,6 +36,12 @@ export interface NearEthAdapterParams {
   mpcContract: MultichainContract;
   /// path used to generate ETH account from Near account (e.g. "ethereum,1")
   derivationPath?: string;
+}
+
+export interface NearEthTxData {
+  evmMessage: string | TransactionSerializable;
+  nearPayload: NearContractFunctionPayload;
+  recoveryData: RecoveryData;
 }
 
 export interface GasPrices {
