@@ -26,7 +26,7 @@ export const nearAccountFromEnv = async (
   return nearAccountFromKeyPair({
     keyPair,
     accountId: process.env.NEAR_ACCOUNT_ID!,
-    network,
+    network: network || TESTNET_CONFIG,
   });
 };
 
