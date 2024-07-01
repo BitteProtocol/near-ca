@@ -3,7 +3,7 @@
 You can run any of the following example scripts using the command:
 
 ```bash
-npx ts-node examples/*.ts
+npx tsx examples/*.ts
 ```
 
 Here are some of the available examples:
@@ -30,7 +30,7 @@ yarn
 cp .env.example .env  # Paste your NEAR credentials into the .env file
 
 # Run the OpenSea example script
-npx ts-node examples/opensea.ts
+npx tsx examples/opensea.ts
 ```
 
 You will be prompted to provide a `collectionSlug`.

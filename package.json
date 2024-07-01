@@ -1,6 +1,6 @@
 {
   "name": "near-ca",
-  "version": "0.0.0-alpha.1",
+  "version": "0.0.0",
   "license": "MIT",
   "main": "dist/cjs/index.js",
   "module": "dist/mjs/index.js",
@@ -9,7 +9,7 @@
     "dist/**/*"
   ],
   "scripts": {
-    "build": "rm -fr dist/* && tsc -p tsconfig.json && tsc -p tsconfig-cjs.json && ./fixup",
+    "build": "rm -fr dist/* && tsc -p tsconfig.json && tsc -p tsconfig-cjs.json",
     "lint": "eslint . --ignore-pattern dist/",
     "test": "jest --testTimeout 30000",
     "coverage": "yarn test --coverage",
@@ -32,7 +32,6 @@
     "opensea-js": "^7.1.9",
     "prettier": "^3.3.2",
     "ts-jest": "^29.1.5",
-    "ts-node": "^10.9.2",
     "tsx": "^4.16.0",
     "typescript": "^5.5.2"
   },

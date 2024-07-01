@@ -28,7 +28,7 @@ yarn
 cp .env.example .env  <---- paste your Near credentials
 # Send Eth. You'll need to fund your account first.
 # More details in the 'Fund your account' part of this document
-npx ts-node examples/send-eth.ts
+npx tsx examples/send-eth.ts
 ```
 
 ### NEAR Credentials
@@ -50,7 +50,7 @@ For example, you can use the [Mintbase Wallet](https://testnet.wallet.mintbase.x
 Get your address
 
 ```sh
-npx ts-node examples/getEthAddress.ts
+npx tsx examples/getEthAddress.ts
 ```
 
 After getting your address fund it from one of your own wallets.
@@ -108,7 +108,7 @@ await adapter.signAndSendTransaction({
 Each of the following scripts can be run with
 
 ```bash
-npx ts-node examples/*.ts
+npx tsx examples/*.ts
 ```
 
 1. [(Basic) Send ETH](./examples/send-eth.ts)
