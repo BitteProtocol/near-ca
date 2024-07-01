@@ -5,12 +5,14 @@ import {
   najPublicKeyStrToUncompressedHexPoint,
   uncompressedHexPointToEvmAddress,
 } from "./utils/kdf";
-import { NO_DEPOSIT, nearAccountFromEnv, TGAS } from "./chains/near";
+import { NO_DEPOSIT, TGAS } from "./chains/near";
 import {
   MPCSignature,
   NearContractFunctionPayload,
   SignArgs,
 } from "./types/types";
+
+const DEFAULT_MPC_CONTRACT = "v2.multichain-mpc.testnet";
 
 /// Near Contract Type for change methods
 export interface ChangeMethodArgs<T> {
@@ -38,21 +40,14 @@ export class MultichainContract {
   contract: MultichainContractInterface;
   connectedAccount: Account;
 
-  constructor(account: Account, contractId: string) {
+  constructor(account: Account, contractId: string = DEFAULT_MPC_CONTRACT) {
     this.connectedAccount = account;
+
     this.contract = new Contract(account, contractId, {
       changeMethods: ["sign"],
       viewMethods: ["public_key"],
       useLocalViewExecution: false,
     }) as MultichainContractInterface;
-  }
-
-  static async fromEnv(): Promise<MultichainContract> {
-    const account = await nearAccountFromEnv();
-    return new MultichainContract(
-      account,
-      process.env.NEAR_MULTICHAIN_CONTRACT!
-    );
   }
 
   deriveEthAddress = async (derivationPath: string): Promise<Address> => {

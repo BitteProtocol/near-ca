@@ -80,19 +80,28 @@ import dotenv from "dotenv";
 import {
   MultichainContract,
   NearEthAdapter,
-  nearAccountFromEnv,
+  nearAccountFromKeyPair,
 } from "near-ca";
+import { KeyPair } from "near-api-js";
 
 dotenv.config();
+const { NEAR_ACCOUNT_ID, NEAR_ACCOUNT_PRIVATE_KEY } = process.env;
 
-const account = await nearAccountFromEnv();
+const account = await nearAccountFromKeyPair({
+    accountId: NEAR_ACCOUNT_ID!,
+    keyPair: KeyPair.fromString(NEAR_ACCOUNT_PRIVATE_KEY!),
+    network: {
+      networkId: "testnet",
+      nodeUrl: "https://rpc.testnet.near.org",
+    },
+  });
 
 const adapter = await NearEthAdapter.fromConfig({
   mpcContract: new MultichainContract(
     account,
     process.env.NEAR_MULTICHAIN_CONTRACT!
   ),
-  derivationPath: "ethereum,1",
+  // derivationPath: "ethereum,1",
 });
 
 await adapter.signAndSendTransaction({
