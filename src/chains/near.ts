@@ -8,28 +8,6 @@ export interface NearConfig {
   nodeUrl: string;
 }
 
-const TESTNET_CONFIG = {
-  networkId: "testnet",
-  nodeUrl: "https://rpc.testnet.near.org",
-};
-
-/**
- * Loads Near Account from process.env.
- * Defaults to TESTNET_CONFIG if no network configuration is provided
- * @param network {NearConfig} network settings
- * @returns {Account}
- */
-export const nearAccountFromEnv = async (
-  network?: NearConfig
-): Promise<Account> => {
-  const keyPair = KeyPair.fromString(process.env.NEAR_ACCOUNT_PRIVATE_KEY!);
-  return nearAccountFromKeyPair({
-    keyPair,
-    accountId: process.env.NEAR_ACCOUNT_ID!,
-    network: network || TESTNET_CONFIG,
-  });
-};
-
 /**
  * Loads Near Account from provided keyPair and accountId
  * Defaults to TESTNET_CONFIG
@@ -41,16 +19,9 @@ export const nearAccountFromEnv = async (
 export const nearAccountFromKeyPair = async (config: {
   keyPair: KeyPair;
   accountId: string;
-  network?: NearConfig;
+  network: NearConfig;
 }): Promise<Account> => {
-  const keyStore = new keyStores.InMemoryKeyStore();
-  await keyStore.setKey("testnet", config.accountId, config.keyPair);
-  const near = await connect({
-    ...(config.network || TESTNET_CONFIG),
-    keyStore,
-  });
-  const account = await near.account(config.accountId);
-  return account;
+  return createNearAccount(config.accountId, config.network, config.keyPair);
 };
 
 /** Minimally sufficient Account instance to construct the signing contract instance.
@@ -58,13 +29,21 @@ export const nearAccountFromKeyPair = async (config: {
  */
 export const nearAccountFromAccountId = async (
   accountId: string,
-  network?: NearConfig
+  network: NearConfig
+): Promise<Account> => {
+  return createNearAccount(accountId, network);
+};
+
+const createNearAccount = async (
+  accountId: string,
+  network: NearConfig,
+  keyPair?: KeyPair
 ): Promise<Account> => {
   const keyStore = new keyStores.InMemoryKeyStore();
-  const near = await connect({
-    ...(network || TESTNET_CONFIG),
-    keyStore,
-  });
+  if (keyPair) {
+    await keyStore.setKey(network.networkId, accountId, keyPair);
+  }
+  const near = await connect({ ...network, keyStore });
   const account = await near.account(accountId);
   return account;
 };
