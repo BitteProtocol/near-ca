@@ -1,7 +1,7 @@
 {
     "extends": "./tsconfig.json",
     "compilerOptions": {
-        "target": "ES2020",  
+        "target": "ESNext",  
         "module": "ESNext",
         "outDir": "dist/esm",
     }
