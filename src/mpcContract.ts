@@ -22,6 +22,8 @@ export interface ChangeMethodArgs<T> {
   gas: string;
   /// Deposit (i.e. payable amount) to attach to transaction.
   attachedDeposit: string;
+  /// Account Signing the call
+  signerAccount: Account;
 }
 
 interface MultichainContractInterface extends Contract {
@@ -43,7 +45,7 @@ export class MultichainContract {
   constructor(account: Account, contractId: string = DEFAULT_MPC_CONTRACT) {
     this.connectedAccount = account;
 
-    this.contract = new Contract(account, contractId, {
+    this.contract = new Contract(account.connection, contractId, {
       changeMethods: ["sign"],
       viewMethods: ["public_key"],
       useLocalViewExecution: false,
@@ -68,6 +70,7 @@ export class MultichainContract {
   ): Promise<MPCSignature> => {
     const [big_r, big_s] = await this.contract.sign({
       args: signArgs,
+      signerAccount: this.connectedAccount,
       gas: gasOrDefault(gas),
       attachedDeposit: NO_DEPOSIT,
     });

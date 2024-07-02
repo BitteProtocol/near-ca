@@ -44,6 +44,5 @@ const createNearAccount = async (
     await keyStore.setKey(network.networkId, accountId, keyPair);
   }
   const near = await connect({ ...network, keyStore });
-  const account = await near.account(accountId);
-  return account;
+  return near.account(accountId);
 };
