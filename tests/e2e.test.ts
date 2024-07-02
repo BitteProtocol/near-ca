@@ -16,6 +16,11 @@ describe("End To End", () => {
     clearTimeout(undefined);
   });
 
+  it.only("Adapter.getBalance", async () => {
+    await expect(adapter.getBalance(chainId)).resolves.not.toThrow();
+  });
+
+
   it("signAndSendTransaction", async () => {
     await expect(
       adapter.signAndSendTransaction({

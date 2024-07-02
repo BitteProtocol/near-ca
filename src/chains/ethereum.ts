@@ -15,7 +15,6 @@ import {
   TypedDataDefinition,
   parseTransaction,
   keccak256,
-  Client,
 } from "viem";
 import {
   BaseTx,
@@ -38,7 +37,6 @@ export class NearEthAdapter {
   readonly mpcContract: MultichainContract;
   readonly address: Address;
   readonly derivationPath: string;
-  readonly provider: Client;
 
   private constructor(config: {
     mpcContract: MultichainContract;
