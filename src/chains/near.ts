@@ -1,4 +1,4 @@
-import { keyStores, KeyPair, connect, Account } from "near-api-js";
+import { keyStores, KeyPair, connect, Account, Near } from "near-api-js";
 
 export const TGAS = 1000000000000n;
 export const NO_DEPOSIT = "0";
@@ -6,6 +6,11 @@ export const NO_DEPOSIT = "0";
 export interface NearConfig {
   networkId: string;
   nodeUrl: string;
+}
+
+export interface NearAccount {
+  near: Near;
+  account: Account;
 }
 
 /**
@@ -44,6 +49,5 @@ const createNearAccount = async (
     await keyStore.setKey(network.networkId, accountId, keyPair);
   }
   const near = await connect({ ...network, keyStore });
-  const account = await near.account(accountId);
-  return account;
+  return near.account(accountId);
 };
