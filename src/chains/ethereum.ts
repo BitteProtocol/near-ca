@@ -56,6 +56,17 @@ export class NearEthAdapter {
   }
 
   /**
+   * Retrieves the balance of the Ethereum address associated with this adapter.
+   *
+   * @param {number} chainId - The chain ID of the Ethereum network to query.
+   * @returns {Promise<bigint>} - A promise that resolves to the balance of the address in wei.
+   */
+  async getBalance(chainId: number): Promise<bigint> {
+    const network = Network.fromChainId(chainId);
+    return network.client.getBalance({ address: this.address });
+  }
+
+  /**
    * Constructs an EVM instance with the provided configuration.
    * @param {NearEthAdapterParams} args - The configuration object for the Adapter instance.
    */
