@@ -15,6 +15,7 @@ import {
   TypedDataDefinition,
   parseTransaction,
   keccak256,
+  Client,
 } from "viem";
 import {
   BaseTx,
@@ -37,6 +38,7 @@ export class NearEthAdapter {
   readonly mpcContract: MultichainContract;
   readonly address: Address;
   readonly derivationPath: string;
+  readonly provider: Client;
 
   private constructor(config: {
     mpcContract: MultichainContract;
@@ -53,6 +55,17 @@ export class NearEthAdapter {
    */
   nearAccountId(): string {
     return this.mpcContract.connectedAccount.accountId;
+  }
+
+  /**
+   * Retrieves the balance of the Ethereum address associated with this adapter.
+   *
+   * @param {number} chainId - The chain ID of the Ethereum network to query.
+   * @returns {Promise<bigint>} - A promise that resolves to the balance of the address in wei.
+   */
+  async getBalance(chainId: number): Promise<bigint> {
+    const network = Network.fromChainId(chainId);
+    return network.client.getBalance({ address: this.address });
   }
 
   /**
