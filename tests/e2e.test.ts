@@ -20,7 +20,6 @@ describe("End To End", () => {
     await expect(adapter.getBalance(chainId)).resolves.not.toThrow();
   });
 
-
   it("signAndSendTransaction", async () => {
     await expect(
       adapter.signAndSendTransaction({
