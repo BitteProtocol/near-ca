@@ -51,9 +51,11 @@ export class Network implements NetworkFields {
     });
   }
 
-  /// Returns Network by ChainId
   static fromChainId(chainId: number): Network {
-    const networkFields = SUPPORTED_NETWORKS[chainId]!;
+    const networkFields = SUPPORTED_NETWORKS[chainId];
+    if (!networkFields) {
+      throw new Error(`Network with chainId ${chainId} is not supported.`);
+    }
     return new Network(networkFields);
   }
 }
