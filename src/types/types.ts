@@ -39,7 +39,7 @@ export interface NearEthAdapterParams {
 
 export interface NearEthTxData {
   evmMessage: string | TransactionSerializable;
-  nearPayload: FunctionCallTransaction;
+  nearPayload: FunctionCallTransaction<SignArgs>;
   recoveryData: RecoveryData;
 }
 
