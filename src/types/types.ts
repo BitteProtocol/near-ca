@@ -1,16 +1,15 @@
 import { MultichainContract } from "../mpcContract";
-// import { FunctionCallAction } from "@near-wallet-selector/core";
 import { Hex, SignableMessage, TransactionSerializable } from "viem";
 
 /**
  * Borrowed from @near-wallet-selector/core
  * https://github.com/near/wallet-selector/blob/01081aefaa3c96ded9f83a23ecf0d210a4b64590/packages/core/src/lib/wallet/transactions.types.ts#L12
  */
-export interface FunctionCallAction {
+export interface FunctionCallAction<T> {
   type: "FunctionCall";
   params: {
     methodName: string;
-    args: object;
+    args: T;
     gas: string;
     deposit: string;
   };
@@ -40,7 +39,7 @@ export interface NearEthAdapterParams {
 
 export interface NearEthTxData {
   evmMessage: string | TransactionSerializable;
-  nearPayload: NearContractFunctionPayload;
+  nearPayload: FunctionCallTransaction;
   recoveryData: RecoveryData;
 }
 
@@ -69,13 +68,13 @@ export interface TxPayload {
   signArgs: SignArgs;
 }
 
-export interface NearContractFunctionPayload {
+export interface FunctionCallTransaction<T> {
   /// Signer of function call.
   signerId: string;
   /// Transaction Recipient (a Near ContractId).
   receiverId: string;
   /// Function call actions.
-  actions: Array<FunctionCallAction>;
+  actions: Array<FunctionCallAction<T>>;
 }
 
 /**

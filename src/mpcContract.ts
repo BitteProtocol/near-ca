@@ -6,11 +6,7 @@ import {
   uncompressedHexPointToEvmAddress,
 } from "./utils/kdf";
 import { NO_DEPOSIT, TGAS } from "./chains/near";
-import {
-  MPCSignature,
-  NearContractFunctionPayload,
-  SignArgs,
-} from "./types/types";
+import { MPCSignature, FunctionCallTransaction, SignArgs } from "./types/types";
 
 const DEFAULT_MPC_CONTRACT = "v2.multichain-mpc.testnet";
 
@@ -80,7 +76,7 @@ export class MultichainContract {
   encodeSignatureRequestTx(
     signArgs: SignArgs,
     gas?: bigint
-  ): NearContractFunctionPayload {
+  ): FunctionCallTransaction<SignArgs> {
     return {
       signerId: this.connectedAccount.accountId,
       receiverId: this.contract.contractId,

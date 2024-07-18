@@ -19,12 +19,13 @@ import {
 import {
   BaseTx,
   NearEthAdapterParams,
-  NearContractFunctionPayload,
+  FunctionCallTransaction,
   TxPayload,
   TransactionWithSignature,
   MPCSignature,
   RecoveryData,
   NearEthTxData,
+  SignArgs,
 } from "../types/types";
 import { MultichainContract } from "../mpcContract";
 import { buildTxPayload, addSignature, populateTx } from "../utils/transaction";
@@ -119,18 +120,38 @@ export class NearEthAdapter {
     nearGas?: bigint
   ): Promise<{
     transaction: Hex;
-    requestPayload: NearContractFunctionPayload;
+    requestPayload: FunctionCallTransaction<SignArgs>;
   }> {
     console.log("Creating Payload for sender:", this.address);
     const { transaction, signArgs } = await this.createTxPayload(txData);
     console.log("Requesting signature from Near...");
     return {
       transaction,
-      requestPayload: await this.mpcContract.encodeSignatureRequestTx(
+      requestPayload: this.mpcContract.encodeSignatureRequestTx(
         signArgs,
         nearGas
       ),
     };
+  }
+
+  /**
+   * Builds a Near Transaction Payload for Signing serialized EVM Transaction.
+   * @param {Hex} transaction RLP encoded (i.e. serialized) Ethereum Transaction
+   * @param nearGas optional gas parameter
+   * @returns {FunctionCallTransaction<SignArgs>} Prepared Near Transaction with signerId as this.address
+   */
+  mpcSignRequest(
+    transaction: Hex,
+    nearGas?: bigint
+  ): FunctionCallTransaction<SignArgs> {
+    return this.mpcContract.encodeSignatureRequestTx(
+      {
+        payload: buildTxPayload(transaction),
+        path: this.derivationPath,
+        key_version: 0,
+      },
+      nearGas
+    );
   }
 
   /**
