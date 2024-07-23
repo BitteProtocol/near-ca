@@ -5,13 +5,13 @@ import {
 } from "../../src/utils/kdf";
 
 const ROOT_PK =
-  "ecp256k1:4HFcTSodRLVCGNVcGc4Mf2fwBBBxv9jxkGdiW2S2CA1y6UpVVRWKj6RX7d7TDt65k2Bj3w9FU4BGtt43ZvuhCnNt";
+  "secp256k1:4NfTiv3UsGahebgTaHyD9vF8KYKMBnfd6kh94mK6xv8fGBiJB8TBtFMP5WWXz6B89Ac1fbpzPwAvoyQebemHFwx3";
 const DECOMPRESSED_HEX =
-  "04a410e78ef8a4f81ffc7e1f2e60c6fd6ccd5ed1689ea83b980215a58ded51871d16b2c99f3772e6b017b35a2367883552ea6b545f82552e3b05bae56975d40241";
+  "04a8bb8176747682aab5c681d4ef375ca537023b2b287d8b5f9d89505277a5a291538ef3680882d8fb793a62a5fdb4c6974c7cd8f9eb0b9cbbf659314c30347000";
 const CHILD_PK =
-  "04445b302250c5ba69e6a45d39b73a4cefc99a7e6e75ac164080c8bc68aa8c16fc332cf9b485f0f8ed0d815affdf3f9ad7e450c2658351fb09de2ad54e0f60795d";
+  "045cf2e51558f53abbfb96dbf13a205ee435c754fbee242119181a9589501c594c2639147a735c426d9b2bd92dfcc38e16abbc03c65a21352707f8d0b0686bb387";
 const CHILD_PK_NO_PATH =
-  "043e6054b729c98e7b5fd46d4c182e7e243c1b035290cf3e5db1cb0e032382dd5065675c05934a1f7cfdf524aa8af2ede5251f03ba7ea5f154cdbadd65d0e9c36a";
+  "048129eaf4ae40314954e14df39c9b8504c6cd754c7bd73d5699c16f683fcc71f81e43046a8f5aae794cbd0842594d4ec14fa7b0c0c0f0d942f19a62b01ec52f4e";
 
 describe("Crypto Functions", () => {
   it("converts NEAR public key string to uncompressed hex point", () => {
@@ -22,7 +22,7 @@ describe("Crypto Functions", () => {
 
   it("derives child public key", async () => {
     const parentHex = DECOMPRESSED_HEX;
-    const signerId = "ethdenver2024.testnet";
+    const signerId = "neareth-dev.testnet";
     const path = "ethereum,1";
     const result = await deriveChildPublicKey(parentHex, signerId, path);
     expect(result).toMatch(/^04[0-9a-f]+$/);
@@ -37,10 +37,19 @@ describe("Crypto Functions", () => {
     expect(result).toEqual(CHILD_PK_NO_PATH);
   });
 
+  it("new address from near", async () => {
+    const parentHex = DECOMPRESSED_HEX;
+    const signerId = "neareth-dev.testnet";
+    const path = "ethereum,1";
+    const publicKey = await deriveChildPublicKey(parentHex, signerId, path);
+    expect(uncompressedHexPointToEvmAddress(publicKey)).toEqual(
+      "0x759E10411Dda5138E331B7Ad5cE1B937550db737"
+    );
+  });
+
   it("converts uncompressed hex point to EVM address", () => {
-    const uncompressedHex = CHILD_PK;
-    const result = uncompressedHexPointToEvmAddress(uncompressedHex);
+    const result = uncompressedHexPointToEvmAddress(CHILD_PK);
     expect(result).toMatch(/^0x[0-9a-fA-F]{40}$/);
-    expect(result).toMatch("0x8958e9780a209b57aa639330196f2baba27d760b");
+    expect(result).toMatch("0x0c4d930335f3bcbb8720d6702f3f3c7b0ec29478");
   });
 });

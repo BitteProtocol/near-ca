@@ -2,6 +2,8 @@ import { base_decode } from "near-api-js/lib/utils/serialize";
 import { ec as EC } from "elliptic";
 import { Address, keccak256 } from "viem";
 
+const EPSILON_DERIVATION_PREFIX = "near-mpc-recovery v0.1.0 epsilon derivation";
+
 export function najPublicKeyStrToUncompressedHexPoint(
   najPublicKeyStr: string
 ): string {
@@ -15,11 +17,10 @@ export async function deriveChildPublicKey(
   path: string = ""
 ): Promise<string> {
   const ec = new EC("secp256k1");
-  const scalar = await sha256Hash(
-    `near-mpc-recovery v0.1.0 epsilon derivation:${signerId},${path}`
-  );
-
-  const scalarHex = sha256StringToScalarLittleEndian(scalar);
+  const pathString = `${EPSILON_DERIVATION_PREFIX}:${signerId},${path}`;
+  const scalarHex = sha3Hash(pathString);
+  const scalar = await sha256Hash(pathString);
+  console.log("Old Scalar", scalar);
 
   const x = parentUncompressedPublicKeyHex.substring(2, 66);
   const y = parentUncompressedPublicKeyHex.substring(66);
@@ -50,9 +51,28 @@ async function sha256Hash(str: string): Promise<string> {
   const data = encoder.encode(str);
   const hashBuffer = await crypto.subtle.digest("SHA-256", data);
   const hashArray = [...new Uint8Array(hashBuffer)];
-  return hashArray.map((b) => b.toString(16).padStart(2, "0")).join("");
+  const result = hashArray.map((b) => b.toString(16).padStart(2, "0")).join("");
+  return sha256StringToScalarLittleEndian(result);
 }
 
 function sha256StringToScalarLittleEndian(hashString: string): string {
   return hashString.match(/../g)!.reverse().join("");
+}
+
+function sha3Hash(str: string): string {
+  // js-sha3: yarn add js-sha3
+  // import { sha3_256 } from "js-sha3";
+  // return sha3_256(str);
+
+  // crypto-js: yarn add -D @types/crypto-js && yarn add crypto-js
+  // import CryptoJS from "crypto-js";
+  // return CryptoJS.SHA3(str).toString(CryptoJS.enc.Hex);
+
+  // keccak: yarn add -D @types/keccak && yarn add keccak
+  // import keccak from "keccak";
+  // return keccak("keccak256").update(str).digest("hex");
+
+  // viem
+  const data = new TextEncoder().encode(str);
+  return keccak256(data).slice(2);
 }
