@@ -2,6 +2,7 @@ import { keyStores, KeyPair, connect, Account } from "near-api-js";
 
 export const TGAS = 1000000000000n;
 export const NO_DEPOSIT = "0";
+export const ONE_YOCTO = "1";
 
 export interface NearConfig {
   networkId: string;

@@ -88,7 +88,7 @@ export class NearEthAdapter {
    * acquires signature from Near MPC Contract and submits transaction to public mempool.
    *
    * @param {BaseTx} txData - Minimal transaction data to be signed by Near MPC and executed on EVM.
-   * @param {bigint} nearGas - manually specified gas to be sent with signature request (default 300 TGAS).
+   * @param {bigint} nearGas - manually specified gas to be sent with signature request.
    * Note that the signature request is a recursive function.
    */
   async signAndSendTransaction(
@@ -98,12 +98,12 @@ export class NearEthAdapter {
     console.log("Creating Payload for sender:", this.address);
     const { transaction, signArgs } = await this.createTxPayload(txData);
     console.log("Requesting signature from Near...");
-    const { big_r, big_s } = await this.mpcContract.requestSignature(
+    const signature = await this.mpcContract.requestSignature(
       signArgs,
       nearGas
     );
-    console.log("Signature received");
-    return this.relayTransaction({ transaction, signature: { big_r, big_s } });
+    console.log("Raw signature received");
+    return this.relayTransaction({ transaction, signature });
   }
 
   /**
@@ -112,7 +112,7 @@ export class NearEthAdapter {
    * acquires signature from Near MPC Contract and submits transaction to public mempool.
    *
    * @param {BaseTx} txData - Minimal transaction data to be signed by Near MPC and executed on EVM.
-   * @param {bigint} nearGas - manually specified gas to be sent with signature request (default 300 TGAS).
+   * @param {bigint} nearGas - manually specified gas to be sent with signature request.
    * Note that the signature request is a recursive function.
    */
   async getSignatureRequestPayload(
@@ -120,11 +120,10 @@ export class NearEthAdapter {
     nearGas?: bigint
   ): Promise<{
     transaction: Hex;
-    requestPayload: FunctionCallTransaction<SignArgs>;
+    requestPayload: FunctionCallTransaction<{ request: SignArgs }>;
   }> {
     console.log("Creating Payload for sender:", this.address);
     const { transaction, signArgs } = await this.createTxPayload(txData);
-    console.log("Requesting signature from Near...");
     return {
       transaction,
       requestPayload: this.mpcContract.encodeSignatureRequestTx(
@@ -143,7 +142,7 @@ export class NearEthAdapter {
   mpcSignRequest(
     transaction: Hex,
     nearGas?: bigint
-  ): FunctionCallTransaction<SignArgs> {
+  ): FunctionCallTransaction<{ request: SignArgs }> {
     return this.mpcContract.encodeSignatureRequestTx(
       {
         payload: buildTxPayload(transaction),
@@ -282,7 +281,7 @@ export class NearEthAdapter {
 
     const { big_r, big_s } = await this.mpcContract.requestSignature({
       path: this.derivationPath,
-      payload: Array.from(hashToSign.reverse()),
+      payload: Array.from(hashToSign),
       key_version: 0,
     });
     const r = `0x${big_r.substring(2)}` as Hex;
@@ -298,17 +297,26 @@ export class NearEthAdapter {
     recoveryData: RecoveryData,
     signatureData: MPCSignature
   ): Promise<Hex> {
-    const { big_r, big_s } = signatureData;
+    const {
+      big_r: { affine_point },
+      s: { scalar },
+      recovery_id,
+    } = signatureData;
+    const fixedSig = {
+      big_r: affine_point,
+      big_s: scalar,
+      yParity: recovery_id,
+    };
     if (recoveryData.type === "eth_sendTransaction") {
       const signature = addSignature(
-        { transaction: recoveryData.data as Hex, signature: signatureData },
+        { transaction: recoveryData.data as Hex, signature: fixedSig },
         this.address
       );
       // Returns relayed transaction hash (without waiting for confirmation).
       return this.relaySignedTransaction(signature, false);
     }
-    const r = `0x${big_r.substring(2)}` as Hex;
-    const s = `0x${big_s}` as Hex;
+    const r = `0x${affine_point.substring(2)}` as Hex;
+    const s = `0x${scalar}` as Hex;
     const sigs: [Hex, Hex] = [
       serializeSignature({ r, s, yParity: 0 }),
       serializeSignature({ r, s, yParity: 1 }),

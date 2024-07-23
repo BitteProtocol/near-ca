@@ -42,8 +42,8 @@ export async function signatureFromTxHash(
   }
   if (base64Sig) {
     const decodedValue = Buffer.from(base64Sig, "base64").toString("utf-8");
-    const [big_r, big_s] = JSON.parse(decodedValue);
-    return { big_r, big_s };
+    const [big_r, s, recovery_id] = JSON.parse(decodedValue);
+    return { big_r, s, recovery_id };
   } else {
     throw new Error("No valid values found in the array.");
   }

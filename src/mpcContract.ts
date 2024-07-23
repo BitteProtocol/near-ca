@@ -5,8 +5,13 @@ import {
   najPublicKeyStrToUncompressedHexPoint,
   uncompressedHexPointToEvmAddress,
 } from "./utils/kdf";
-import { NO_DEPOSIT, TGAS } from "./chains/near";
-import { MPCSignature, FunctionCallTransaction, SignArgs } from "./types/types";
+import { TGAS, ONE_YOCTO } from "./chains/near";
+import {
+  MPCSignature,
+  FunctionCallTransaction,
+  SignArgs,
+  ReducedSignature,
+} from "./types/types";
 
 const DEFAULT_MPC_CONTRACT = "v2.multichain-mpc.testnet";
 
@@ -16,10 +21,10 @@ export interface ChangeMethodArgs<T> {
   args: T;
   /// GasLimit on transaction execution.
   gas: string;
-  /// Deposit (i.e. payable amount) to attach to transaction.
-  attachedDeposit: string;
   /// Account Signing the call
   signerAccount: Account;
+  /// attachedDeposit (i.e. payable amount) to attach to transaction.
+  amount: string;
 }
 
 interface MultichainContractInterface extends Contract {
@@ -27,7 +32,9 @@ interface MultichainContractInterface extends Contract {
   public_key: () => Promise<string>;
 
   // Define the signature for the `sign` change method
-  sign: (args: ChangeMethodArgs<SignArgs>) => Promise<[string, string]>;
+  sign: (
+    args: ChangeMethodArgs<{ request: SignArgs }>
+  ) => Promise<MPCSignature>;
 }
 
 /**
@@ -63,20 +70,20 @@ export class MultichainContract {
   requestSignature = async (
     signArgs: SignArgs,
     gas?: bigint
-  ): Promise<MPCSignature> => {
-    const [big_r, big_s] = await this.contract.sign({
-      args: signArgs,
+  ): Promise<ReducedSignature> => {
+    const { big_r, s, recovery_id } = await this.contract.sign({
       signerAccount: this.connectedAccount,
+      args: { request: signArgs },
       gas: gasOrDefault(gas),
-      attachedDeposit: NO_DEPOSIT,
+      amount: ONE_YOCTO,
     });
-    return { big_r, big_s };
+    return { big_r: big_r.affine_point, big_s: s.scalar, yParity: recovery_id };
   };
 
   encodeSignatureRequestTx(
     signArgs: SignArgs,
     gas?: bigint
-  ): FunctionCallTransaction<SignArgs> {
+  ): FunctionCallTransaction<{ request: SignArgs }> {
     return {
       signerId: this.connectedAccount.accountId,
       receiverId: this.contract.contractId,
@@ -85,9 +92,9 @@ export class MultichainContract {
           type: "FunctionCall",
           params: {
             methodName: "sign",
-            args: signArgs,
+            args: { request: signArgs },
             gas: gasOrDefault(gas),
-            deposit: NO_DEPOSIT,
+            deposit: ONE_YOCTO,
           },
         },
       ],
@@ -99,6 +106,6 @@ function gasOrDefault(gas?: bigint): string {
   if (gas !== undefined) {
     return gas.toString();
   }
-  // Default of 300 TGAS
-  return (TGAS * 300n).toString();
+  // Default of 250 TGAS
+  return (TGAS * 250n).toString();
 }

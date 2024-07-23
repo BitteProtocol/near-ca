@@ -18,7 +18,7 @@ export function toPayload(hexString: Hex): number[] {
   if (hexString.slice(2).length !== 32 * 2) {
     throw new Error(`Payload Hex must have 32 bytes: ${hexString}`);
   }
-  return Array.from(toBytes(hexString).reverse());
+  return Array.from(toBytes(hexString));
 }
 
 export function buildTxPayload(unsignedTxHash: `0x${string}`): number[] {
@@ -57,36 +57,29 @@ export async function populateTx(
 }
 
 export function addSignature(
-  { transaction, signature: { big_r, big_s } }: TransactionWithSignature,
+  {
+    transaction,
+    signature: { big_r, big_s, yParity },
+  }: TransactionWithSignature,
   sender: Address
 ): Hex {
   const txData = parseTransaction(transaction);
-  const r = `0x${big_r.substring(2)}` as Hex;
-  const s = `0x${big_s}` as Hex;
+  const signature = {
+    r: `0x${big_r.substring(2)}` as Hex,
+    s: `0x${big_s}` as Hex,
+    yParity,
+  };
+  const signedTx = {
+    ...signature,
+    ...txData,
+  };
+  const pk = publicKeyToAddress(
+    recoverPublicKey(keccak256(transaction), serializeSignature(signature))
+  );
 
-  const candidates = [27n, 28n].map((v) => {
-    return {
-      v,
-      r,
-      s,
-      ...txData,
-    };
-  });
-
-  const signedTx = candidates.find((tx) => {
-    const signature = serializeSignature({
-      r: tx.r!,
-      s: tx.s!,
-      v: tx.v!,
-    });
-    const pk = publicKeyToAddress(
-      recoverPublicKey(keccak256(transaction), signature)
-    );
-    return pk.toLowerCase() === sender.toLowerCase();
-  });
-  if (!signedTx) {
-    throw new Error("Signature is not valid");
-  }
+  console.log("Public Key", pk);
+  console.log("Incorrect Sender", sender);
+  console.log(signedTx);
   return serializeTransaction(signedTx);
 }
 
