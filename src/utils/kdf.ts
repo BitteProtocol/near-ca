@@ -1,8 +1,43 @@
 import { base_decode } from "near-api-js/lib/utils/serialize";
 import { ec as EC } from "elliptic";
 import { Address, keccak256 } from "viem";
+import { createHash } from "crypto";
 
 const EPSILON_DERIVATION_PREFIX = "near-mpc-recovery v0.1.0 epsilon derivation";
+const secp256k1 = new EC("secp256k1");
+
+class Scalar {
+  static fromBytes(bytes: Buffer): EC.KeyPair | null {
+    try {
+      return secp256k1.keyFromPrivate(bytes, "hex");
+    } catch {
+      return null;
+    }
+  }
+
+  static fromNonBiased(hash: Buffer): EC.KeyPair {
+    const scalar = this.fromBytes(hash);
+    if (!scalar) {
+      throw new Error("Derived epsilon value falls outside of the field");
+    }
+    return scalar;
+  }
+}
+
+export function deriveEpsilon(predecessorId: string, path: string): number[] {
+  // Construct the derivation path
+  const derivationPath = `${EPSILON_DERIVATION_PREFIX}:${predecessorId},${path}`;
+
+  // Create a SHA3-256 hash of the derivation path
+  const hasher = createHash("sha3-256");
+  hasher.update(derivationPath);
+  const hash = hasher.digest();
+
+  // Convert the hash to a Scalar and extract the private key
+  const scalar = Scalar.fromNonBiased(hash);
+  const hashBuffer = scalar.getPrivate().toArray("be", 32);
+  return [...new Uint8Array(hashBuffer)];
+}
 
 export function najPublicKeyStrToUncompressedHexPoint(
   najPublicKeyStr: string
@@ -17,10 +52,10 @@ export async function deriveChildPublicKey(
   path: string = ""
 ): Promise<string> {
   const ec = new EC("secp256k1");
-  const pathString = `${EPSILON_DERIVATION_PREFIX}:${signerId},${path}`;
-  const scalarHex = sha3Hash(pathString);
-  const scalar = await sha256Hash(pathString);
-  console.log("Old Scalar", scalar);
+  const scalarHashArray = deriveEpsilon(signerId, path);
+  const scalarHex = scalarHashArray
+    .map((b) => b.toString(16).padStart(2, "0"))
+    .join("");
 
   const x = parentUncompressedPublicKeyHex.substring(2, 66);
   const y = parentUncompressedPublicKeyHex.substring(66);
@@ -46,33 +81,36 @@ export function uncompressedHexPointToEvmAddress(
   return ("0x" + addressHash.substring(addressHash.length - 40)) as Address;
 }
 
-async function sha256Hash(str: string): Promise<string> {
-  const encoder = new TextEncoder();
-  const data = encoder.encode(str);
-  const hashBuffer = await crypto.subtle.digest("SHA-256", data);
-  const hashArray = [...new Uint8Array(hashBuffer)];
-  const result = hashArray.map((b) => b.toString(16).padStart(2, "0")).join("");
-  return sha256StringToScalarLittleEndian(result);
-}
+// async function altHash(str: string): Promise<string> {
+//   const encoder = new TextEncoder();
+//   const data = encoder.encode(str);
+//   const hashBuffer = await crypto.subtle.digest("sha3-256", data);
+//   const hashArray = [...new Uint8Array(hashBuffer)];
+//   const result = hashArray.map((b) => b.toString(16).padStart(2, "0")).join("");
+//   return sha256StringToScalarLittleEndian(result);
+// }
 
-function sha256StringToScalarLittleEndian(hashString: string): string {
-  return hashString.match(/../g)!.reverse().join("");
-}
+// function sha256StringToScalarLittleEndian(hashString: string): string {
+//   // return hashString.match(/../g)!.reverse().join("");
+//   return hashString.match(/../g)!.join("");
+// }
 
-function sha3Hash(str: string): string {
-  // js-sha3: yarn add js-sha3
-  // import { sha3_256 } from "js-sha3";
-  // return sha3_256(str);
+// function sha3Hash(str: string): string {
+//   // js-sha3: yarn add js-sha3
+//   // import { sha3_256 } from "js-sha3";
+//   // return sha3_256(str);
 
-  // crypto-js: yarn add -D @types/crypto-js && yarn add crypto-js
-  // import CryptoJS from "crypto-js";
-  // return CryptoJS.SHA3(str).toString(CryptoJS.enc.Hex);
+//   // crypto-js: yarn add -D @types/crypto-js && yarn add crypto-js
+//   // import CryptoJS from "crypto-js";
+//   // return CryptoJS.SHA3(str).toString(CryptoJS.enc.Hex);
 
-  // keccak: yarn add -D @types/keccak && yarn add keccak
-  // import keccak from "keccak";
-  // return keccak("keccak256").update(str).digest("hex");
+//   // keccak: yarn add -D @types/keccak && yarn add keccak
+//   // import keccak from "keccak";
+//   // return keccak("keccak256").update(str).digest("hex");
 
-  // viem
-  const data = new TextEncoder().encode(str);
-  return keccak256(data).slice(2);
-}
+//   // viem
+//   const data = new TextEncoder().encode(str);
+//   const bytes = keccak256(data, "bytes");
+//   console.log(bytes);
+//   return toHex(bytes).slice(2);
+// }
