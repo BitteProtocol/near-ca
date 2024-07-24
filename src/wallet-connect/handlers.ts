@@ -6,12 +6,9 @@ import {
   hashTypedData,
   keccak256,
   serializeTransaction,
-  verifyMessage,
-  verifyTypedData,
 } from "viem";
 import { populateTx, toPayload } from "../utils/transaction";
-import { MessageData, RecoveryData, TypedMessageData } from "../types/types";
-import { pickValidSignature } from "../utils/signature";
+import { RecoveryData } from "../types/types";
 
 // Interface for Ethereum transaction parameters
 export interface EthTransactionParams {
@@ -117,39 +114,6 @@ export async function wcRouter(
     }
   }
   throw new Error(`Unhandled session_request method: ${method}`);
-}
-
-export async function offChainRecovery(
-  recoveryData: RecoveryData,
-  sigs: [Hex, Hex]
-): Promise<Hex> {
-  let validity: [boolean, boolean];
-  if (recoveryData.type === "personal_sign") {
-    validity = await Promise.all([
-      verifyMessage({
-        signature: sigs[0],
-        ...(recoveryData.data as MessageData),
-      }),
-      verifyMessage({
-        signature: sigs[1],
-        ...(recoveryData.data as MessageData),
-      }),
-    ]);
-  } else if (recoveryData.type === "eth_signTypedData") {
-    validity = await Promise.all([
-      verifyTypedData({
-        signature: sigs[0],
-        ...(recoveryData.data as TypedMessageData),
-      }),
-      verifyTypedData({
-        signature: sigs[1],
-        ...(recoveryData.data as TypedMessageData),
-      }),
-    ]);
-  } else {
-    throw new Error("Invalid Path");
-  }
-  return pickValidSignature(validity, sigs);
 }
 
 function stripEip155Prefix(eip155Address: string): string {

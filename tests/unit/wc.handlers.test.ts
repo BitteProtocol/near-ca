@@ -1,11 +1,9 @@
-import { Hex, TransactionSerializable, serializeSignature, toHex } from "viem";
+import { TransactionSerializable, toHex } from "viem";
 import {
   EthTransactionParams,
   PersonalSignParams,
-  offChainRecovery,
   wcRouter,
 } from "../../src/wallet-connect/handlers";
-import { MessageData, TypedMessageData } from "../../src/types/types";
 
 describe("Wallet Connect", () => {
   const chainId = "eip155:11155111";
@@ -264,105 +262,105 @@ Challenge: 4113fc3ab2cc60f5d595b2e55349f1eec56fd0c70d4287081fe7156848263626`
     });
   });
 
-  describe("offChainRecovery: personal_sign", () => {
-    it("recovering signature", async () => {
-      const recoveryData = {
-        type: "personal_sign",
-        data: {
-          address: "0xf11c22d61ecd7b1adcb6b43542fe8a96b9328dc7",
-          message: {
-            raw: "0x57656c636f6d6520746f204f70656e536561210a0a436c69636b20746f207369676e20696e20616e642061636365707420746865204f70656e536561205465726d73206f662053657276696365202868747470733a2f2f6f70656e7365612e696f2f746f732920616e64205072697661637920506f6c696379202868747470733a2f2f6f70656e7365612e696f2f70726976616379292e0a0a5468697320726571756573742077696c6c206e6f742074726967676572206120626c6f636b636861696e207472616e73616374696f6e206f7220636f737420616e792067617320666565732e0a0a57616c6c657420616464726573733a0a3078663131633232643631656364376231616463623662343335343266653861393662393332386463370a0a4e6f6e63653a0a63336432623238622d623964652d346239662d383935362d316336663739373133613431",
-          },
-        } as MessageData,
-      };
-      const r =
-        "0x491E245DB3914B85807F3807F2125B9ED9722D0E9F3FA0FE325B31893FA5E693";
-      const s =
-        "0x387178AE4A51F304556C1B2E9DD24F1120D073F93017AF006AD801A639214EA6";
-      const sigs: [Hex, Hex] = [
-        serializeSignature({ r, s, yParity: 0 }),
-        serializeSignature({ r, s, yParity: 1 }),
-      ];
+  // describe("offChainRecovery: personal_sign", () => {
+  //   it("recovering signature", async () => {
+  //     const recoveryData = {
+  //       type: "personal_sign",
+  //       data: {
+  //         address: "0xf11c22d61ecd7b1adcb6b43542fe8a96b9328dc7",
+  //         message: {
+  //           raw: "0x57656c636f6d6520746f204f70656e536561210a0a436c69636b20746f207369676e20696e20616e642061636365707420746865204f70656e536561205465726d73206f662053657276696365202868747470733a2f2f6f70656e7365612e696f2f746f732920616e64205072697661637920506f6c696379202868747470733a2f2f6f70656e7365612e696f2f70726976616379292e0a0a5468697320726571756573742077696c6c206e6f742074726967676572206120626c6f636b636861696e207472616e73616374696f6e206f7220636f737420616e792067617320666565732e0a0a57616c6c657420616464726573733a0a3078663131633232643631656364376231616463623662343335343266653861393662393332386463370a0a4e6f6e63653a0a63336432623238622d623964652d346239662d383935362d316336663739373133613431",
+  //         },
+  //       } as MessageData,
+  //     };
+  //     const r =
+  //       "0x491E245DB3914B85807F3807F2125B9ED9722D0E9F3FA0FE325B31893FA5E693";
+  //     const s =
+  //       "0x387178AE4A51F304556C1B2E9DD24F1120D073F93017AF006AD801A639214EA6";
+  //     const sigs: [Hex, Hex] = [
+  //       serializeSignature({ r, s, yParity: 0 }),
+  //       serializeSignature({ r, s, yParity: 1 }),
+  //     ];
 
-      const signature = await offChainRecovery(recoveryData, sigs);
-      expect(signature).toEqual(
-        "0x491e245db3914b85807f3807f2125b9ed9722d0e9f3fa0fe325b31893fa5e693387178ae4a51f304556c1b2e9dd24f1120d073f93017af006ad801a639214ea61b"
-      );
-    });
+  //     const signature = await offChainRecovery(recoveryData, sigs);
+  //     expect(signature).toEqual(
+  //       "0x491e245db3914b85807f3807f2125b9ed9722d0e9f3fa0fe325b31893fa5e693387178ae4a51f304556c1b2e9dd24f1120d073f93017af006ad801a639214ea61b"
+  //     );
+  //   });
 
-    it("recovering eth_signTypedData", async () => {
-      // TODO: Find a real examples of Ethereum apps and simulate them on the test
-      const recoveryData = {
-        type: "eth_signTypedData",
-        data: {
-          address: "0xf11c22d61ecd7b1adcb6b43542fe8a96b9328dc7",
-          message: {
-            from: {
-              name: "Cow",
-              wallet: "0xCD2a3d9F938E13CD947Ec05AbC7FE734Df8DD826",
-            },
-            to: {
-              name: "Bob",
-              wallet: "0xbBbBBBBbbBBBbbbBbbBbbbbBBbBbbbbBbBbbBBbB",
-            },
-            contents: "Hello, Bob!",
-          },
-          types: {
-            Person: [
-              { name: "name", type: "string" },
-              { name: "wallet", type: "address" },
-            ],
-            Mail: [
-              { name: "from", type: "Person" },
-              { name: "to", type: "Person" },
-              { name: "contents", type: "string" },
-            ],
-          },
-          primaryType: "Mail",
-          domain: {
-            name: "Ether Mail",
-            version: "1",
-            chainId: 1,
-            verifyingContract: "0xCcCCccccCCCCcCCCCCCcCcCccCcCCCcCcccccccC",
-          },
-        } as TypedMessageData,
-      };
-      const r =
-        "0x491E245DB3914B85807F3807F2125B9ED9722D0E9F3FA0FE325B31893FA5E693";
-      const s =
-        "0x387178AE4A51F304556C1B2E9DD24F1120D073F93017AF006AD801A639214EA6";
-      const sigs: [Hex, Hex] = [
-        serializeSignature({ r, s, yParity: 0 }),
-        serializeSignature({ r, s, yParity: 1 }),
-      ];
+  //   it("recovering eth_signTypedData", async () => {
+  //     // TODO: Find a real examples of Ethereum apps and simulate them on the test
+  //     const recoveryData = {
+  //       type: "eth_signTypedData",
+  //       data: {
+  //         address: "0xf11c22d61ecd7b1adcb6b43542fe8a96b9328dc7",
+  //         message: {
+  //           from: {
+  //             name: "Cow",
+  //             wallet: "0xCD2a3d9F938E13CD947Ec05AbC7FE734Df8DD826",
+  //           },
+  //           to: {
+  //             name: "Bob",
+  //             wallet: "0xbBbBBBBbbBBBbbbBbbBbbbbBBbBbbbbBbBbbBBbB",
+  //           },
+  //           contents: "Hello, Bob!",
+  //         },
+  //         types: {
+  //           Person: [
+  //             { name: "name", type: "string" },
+  //             { name: "wallet", type: "address" },
+  //           ],
+  //           Mail: [
+  //             { name: "from", type: "Person" },
+  //             { name: "to", type: "Person" },
+  //             { name: "contents", type: "string" },
+  //           ],
+  //         },
+  //         primaryType: "Mail",
+  //         domain: {
+  //           name: "Ether Mail",
+  //           version: "1",
+  //           chainId: 1,
+  //           verifyingContract: "0xCcCCccccCCCCcCCCCCCcCcCccCcCCCcCcccccccC",
+  //         },
+  //       } as TypedMessageData,
+  //     };
+  //     const r =
+  //       "0x491E245DB3914B85807F3807F2125B9ED9722D0E9F3FA0FE325B31893FA5E693";
+  //     const s =
+  //       "0x387178AE4A51F304556C1B2E9DD24F1120D073F93017AF006AD801A639214EA6";
+  //     const sigs: [Hex, Hex] = [
+  //       serializeSignature({ r, s, yParity: 0 }),
+  //       serializeSignature({ r, s, yParity: 1 }),
+  //     ];
 
-      await expect(offChainRecovery(recoveryData, sigs)).rejects.toThrow(
-        "Invalid signature"
-      );
-    });
+  //     await expect(offChainRecovery(recoveryData, sigs)).rejects.toThrow(
+  //       "Invalid signature"
+  //     );
+  //   });
 
-    it("fail with wrong type", async () => {
-      const recoveryData = {
-        type: "wrong_type",
-        data: {
-          address: "0xf11c22d61ecd7b1adcb6b43542fe8a96b9328dc7",
-          message: {
-            raw: "0x57656c636f6d6520746f204f70656e536561210a0a436c69636b20746f207369676e20696e20616e642061636365707420746865204f70656e536561205465726d73206f662053657276696365202868747470733a2f2f6f70656e7365612e696f2f746f732920616e64205072697661637920506f6c696379202868747470733a2f2f6f70656e7365612e696f2f70726976616379292e0a0a5468697320726571756573742077696c6c206e6f742074726967676572206120626c6f636b636861696e207472616e73616374696f6e206f7220636f737420616e792067617320666565732e0a0a57616c6c657420616464726573733a0a3078663131633232643631656364376231616463623662343335343266653861393662393332386463370a0a4e6f6e63653a0a63336432623238622d623964652d346239662d383935362d316336663739373133613431",
-          },
-        } as MessageData,
-      };
-      const r =
-        "0x491E245DB3914B85807F3807F2125B9ED9722D0E9F3FA0FE325B31893FA5E693";
-      const s =
-        "0x387178AE4A51F304556C1B2E9DD24F1120D073F93017AF006AD801A639214EA6";
-      const sigs: [Hex, Hex] = [
-        serializeSignature({ r, s, yParity: 0 }),
-        serializeSignature({ r, s, yParity: 1 }),
-      ];
+  //   it("fail with wrong type", async () => {
+  //     const recoveryData = {
+  //       type: "wrong_type",
+  //       data: {
+  //         address: "0xf11c22d61ecd7b1adcb6b43542fe8a96b9328dc7",
+  //         message: {
+  //           raw: "0x57656c636f6d6520746f204f70656e536561210a0a436c69636b20746f207369676e20696e20616e642061636365707420746865204f70656e536561205465726d73206f662053657276696365202868747470733a2f2f6f70656e7365612e696f2f746f732920616e64205072697661637920506f6c696379202868747470733a2f2f6f70656e7365612e696f2f70726976616379292e0a0a5468697320726571756573742077696c6c206e6f742074726967676572206120626c6f636b636861696e207472616e73616374696f6e206f7220636f737420616e792067617320666565732e0a0a57616c6c657420616464726573733a0a3078663131633232643631656364376231616463623662343335343266653861393662393332386463370a0a4e6f6e63653a0a63336432623238622d623964652d346239662d383935362d316336663739373133613431",
+  //         },
+  //       } as MessageData,
+  //     };
+  //     const r =
+  //       "0x491E245DB3914B85807F3807F2125B9ED9722D0E9F3FA0FE325B31893FA5E693";
+  //     const s =
+  //       "0x387178AE4A51F304556C1B2E9DD24F1120D073F93017AF006AD801A639214EA6";
+  //     const sigs: [Hex, Hex] = [
+  //       serializeSignature({ r, s, yParity: 0 }),
+  //       serializeSignature({ r, s, yParity: 1 }),
+  //     ];
 
-      await expect(offChainRecovery(recoveryData, sigs)).rejects.toThrow(
-        "Invalid Path"
-      );
-    });
-  });
+  //     await expect(offChainRecovery(recoveryData, sigs)).rejects.toThrow(
+  //       "Invalid Path"
+  //     );
+  //   });
+  // });
 });

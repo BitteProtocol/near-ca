@@ -1,5 +1,5 @@
 import { MultichainContract } from "../mpcContract";
-import { Hex, SignableMessage, TransactionSerializable } from "viem";
+import { Hex, SignableMessage, Signature, TransactionSerializable } from "viem";
 
 /**
  * Borrowed from @near-wallet-selector/core
@@ -96,12 +96,6 @@ export interface MPCSignature {
   recovery_id: number;
 }
 
-export interface ReducedSignature {
-  big_r: string;
-  big_s: string;
-  yParity: number;
-}
-
 export interface MessageData {
   address: Hex;
   message: SignableMessage;
@@ -130,5 +124,5 @@ export interface TransactionWithSignature {
   /// Unsigned Ethereum transaction data.
   transaction: Hex;
   /// Representation of the transaction's signature.
-  signature: ReducedSignature;
+  signature: Signature;
 }

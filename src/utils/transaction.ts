@@ -1,24 +1,19 @@
 import {
-  Address,
   Hex,
   TransactionSerializable,
-  hexToNumber,
   keccak256,
   parseTransaction,
   serializeTransaction,
-  serializeSignature,
   toBytes,
 } from "viem";
 import { BaseTx, TransactionWithSignature } from "../types/types";
-import { secp256k1 } from "@noble/curves/secp256k1";
-import { publicKeyToAddress } from "viem/utils";
 import { Network } from "../network";
 
 export function toPayload(hexString: Hex): number[] {
   if (hexString.slice(2).length !== 32 * 2) {
     throw new Error(`Payload Hex must have 32 bytes: ${hexString}`);
   }
-  return Array.from(toBytes(hexString));
+  return Array.from(toBytes(hexString).reverse());
 }
 
 export function buildTxPayload(unsignedTxHash: `0x${string}`): number[] {
@@ -56,45 +51,14 @@ export async function populateTx(
   };
 }
 
-export function addSignature(
-  {
-    transaction,
-    signature: { big_r, big_s, yParity },
-  }: TransactionWithSignature,
-  sender: Address
-): Hex {
+export function addSignature({
+  transaction,
+  signature,
+}: TransactionWithSignature): Hex {
   const txData = parseTransaction(transaction);
-  const signature = {
-    r: `0x${big_r.substring(2)}` as Hex,
-    s: `0x${big_s}` as Hex,
-    yParity,
-  };
   const signedTx = {
     ...signature,
     ...txData,
   };
-  const pk = publicKeyToAddress(
-    recoverPublicKey(keccak256(transaction), serializeSignature(signature))
-  );
-
-  console.log("Public Key", pk);
-  console.log("Incorrect Sender", sender);
-  console.log(signedTx);
   return serializeTransaction(signedTx);
-}
-
-// This method is mostly pasted from viem since they use an unnecessary async import.
-// import { secp256k1 } from "@noble/curves/secp256k1";
-// TODO - fix their async import!
-export function recoverPublicKey(hash: Hex, signature: Hex): Hex {
-  // Derive v = recoveryId + 27 from end of the signature (27 is added when signing the message)
-  // The recoveryId represents the y-coordinate on the secp256k1 elliptic curve and can have a value [0, 1].
-  let v = hexToNumber(`0x${signature.slice(130)}`);
-  if (v === 0 || v === 1) v += 27;
-
-  const publicKey = secp256k1.Signature.fromCompact(signature.substring(2, 130))
-    .addRecoveryBit(v - 27)
-    .recoverPublicKey(hash.substring(2))
-    .toHex(false);
-  return `0x${publicKey}`;
 }
