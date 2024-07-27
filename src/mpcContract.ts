@@ -8,7 +8,7 @@ import {
 import { TGAS, ONE_YOCTO } from "./chains/near";
 import { MPCSignature, FunctionCallTransaction, SignArgs } from "./types/types";
 
-const DEFAULT_MPC_CONTRACT = "v2.multichain-mpc.testnet";
+const DEFAULT_MPC_CONTRACT = "v1.signer-prod.testnet";
 
 /// Near Contract Type for change methods
 export interface ChangeMethodArgs<T> {

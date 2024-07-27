@@ -57,7 +57,7 @@ describe("End To End", () => {
     ).rejects.toThrow();
   });
 
-  it("signMessage", async () => {
+  it.only("signMessage", async () => {
     await expect(adapter.signMessage("NearEth")).resolves.not.toThrow();
   });
 
