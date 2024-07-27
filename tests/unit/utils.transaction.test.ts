@@ -24,7 +24,7 @@ describe("Transaction Builder Functions", () => {
     );
   });
 
-  it("addSignature", async () => {
+  it.only("addSignature", async () => {
     const testTx: TransactionWithSignature = {
       transaction:
         "0x02e883aa36a780845974e6f084d0aa7af08094deadbeef0000000000000000000000000b00b1e50180c0",
@@ -34,7 +34,16 @@ describe("Transaction Builder Functions", () => {
         yParity: 1,
       },
     };
-    expect(addSignature(testTx)).toEqual(
+    const t = "0x02eb83aa36a7808403bab19885077103441082520894102543f7e6b5786a444cc89ff73012825d13000d0180c0"
+    const x = {
+      r: '0xE71E2966EF16E5EA36A31E0EB4A367D0DA3F42E8570A615BAEDF509B12F2CA6E' as `0x${string}`,
+      s: '0x79F757FF827506F1D6FD5C433FE0F58A12102560184243C902272BC3AFE5E906' as `0x${string}`,
+      yParity: 1
+    };
+    expect(addSignature({ transaction: t, signature: x }, "0x102543f7e6b5786a444cc89ff73012825d13000d")).toEqual(
+      "0x02f86b83aa36a780845974e6f084d0aa7af08094deadbeef0000000000000000000000000b00b1e50180c001a0ef532579e267c932b959a1adb9e455ac3c5397d0473471c4c3dd5d62fd4d7edea07c195e658c713d601d245311a259115bb91ec87c86acb07c03bd9c1936a6a9e8"
+    );
+    expect(addSignature(testTx, "0x102543f7e6b5786a444cc89ff73012825d13000d")).toEqual(
       "0x02f86b83aa36a780845974e6f084d0aa7af08094deadbeef0000000000000000000000000b00b1e50180c001a0ef532579e267c932b959a1adb9e455ac3c5397d0473471c4c3dd5d62fd4d7edea07c195e658c713d601d245311a259115bb91ec87c86acb07c03bd9c1936a6a9e8"
     );
   });
