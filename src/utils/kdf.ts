@@ -1,26 +1,7 @@
 import { base_decode } from "near-api-js/lib/utils/serialize";
 import { ec as EC } from "elliptic";
 import { Address, keccak256 } from "viem";
-import { createHash } from "crypto";
-
-const EPSILON_DERIVATION_PREFIX = "near-mpc-recovery v0.1.0 epsilon derivation";
-const secp256k1 = new EC("secp256k1");
-
-export function deriveEpsilon(predecessorId: string, path: string): string {
-  const derivationPath = `${EPSILON_DERIVATION_PREFIX}:${predecessorId},${path}`;
-
-  // Create a SHA3-256 hash of the derivation path
-  const hasher = createHash("sha3-256");
-  hasher.update(derivationPath);
-  const hash = hasher.digest();
-
-  // Convert the hash to a Scalar and extract the private key
-  const scalar = secp256k1.keyFromPrivate(hash, "hex");
-  const hashBuffer = scalar.getPrivate().toArray("be", 32);
-
-  // Convert and return hex representation.
-  return hashBuffer.map((b) => b.toString(16).padStart(2, "0")).join("");
-}
+import { sha3_256 } from "js-sha3";
 
 export function najPublicKeyStrToUncompressedHexPoint(
   najPublicKeyStr: string
@@ -34,16 +15,19 @@ export async function deriveChildPublicKey(
   signerId: string,
   path: string = ""
 ): Promise<string> {
-  const scalarHex = deriveEpsilon(signerId, path);
+  const ec = new EC("secp256k1");
+  const scalarHex = sha3_256(
+    `near-mpc-recovery v0.1.0 epsilon derivation:${signerId},${path}`
+  );
 
   const x = parentUncompressedPublicKeyHex.substring(2, 66);
   const y = parentUncompressedPublicKeyHex.substring(66);
 
   // Create a point object from X and Y coordinates
-  const oldPublicKeyPoint = secp256k1.curve.point(x, y);
+  const oldPublicKeyPoint = ec.curve.point(x, y);
 
   // Multiply the scalar by the generator point G
-  const scalarTimesG = secp256k1.g.mul(scalarHex);
+  const scalarTimesG = ec.g.mul(scalarHex);
 
   // Add the result to the old public key point
   const newPublicKeyPoint = oldPublicKeyPoint.add(scalarTimesG);

@@ -2,7 +2,6 @@ import {
   najPublicKeyStrToUncompressedHexPoint,
   deriveChildPublicKey,
   uncompressedHexPointToEvmAddress,
-  deriveEpsilon,
 } from "../../src/utils/kdf";
 
 const ROOT_PK =
@@ -46,15 +45,6 @@ describe("Crypto Functions", () => {
     expect(uncompressedHexPointToEvmAddress(publicKey)).toEqual(
       "0x759e10411dda5138e331b7ad5ce1b937550db737"
     );
-  });
-
-  it("deriveEpsilon", async () => {
-    const epsilon = deriveEpsilon("daveo.near", "path");
-    expect(epsilon).toEqual(
-      "8b3b8618e64b6ce67977f71d27376b855809acc1bc30dd93eb1e530ff855445f"
-    );
-    // [139, 59, 134, 24, 230, 75, 108, 230, 121, 119, 247, 29, 39, 55, 107, 133,
-    // 88, 9, 172, 193, 188, 48, 221, 147, 235, 30, 83, 15, 248, 85, 68, 95]
   });
 
   it("converts uncompressed hex point to EVM address", () => {
