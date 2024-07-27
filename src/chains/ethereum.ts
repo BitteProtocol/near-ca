@@ -155,7 +155,7 @@ export class NearEthAdapter {
    * @returns Hash of relayed transaction.
    */
   async relayTransaction(tx: TransactionWithSignature): Promise<Hash> {
-    const signedTx = addSignature(tx);
+    const signedTx = addSignature(tx, this.address);
     return this.relaySignedTransaction(signedTx);
   }
 

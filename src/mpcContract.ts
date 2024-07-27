@@ -76,7 +76,7 @@ export class MultichainContract {
     const signature = {
       r: `0x${big_r.affine_point.substring(2)}` as Hex,
       s: `0x${s.scalar}` as Hex,
-      yParity: recovery_id,
+      v: 27n + BigInt(recovery_id),
     };
     return signature;
   };
