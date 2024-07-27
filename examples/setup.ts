@@ -25,7 +25,7 @@ export async function setupNearEthAdapter(): Promise<NearEthAdapter> {
       account,
       process.env.NEAR_MULTICHAIN_CONTRACT!
     ),
-    derivationPath: "ethereum,1",
+    // derivationPath: "ethereum,1",
   });
 }
 
