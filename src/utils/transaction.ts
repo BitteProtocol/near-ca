@@ -68,9 +68,6 @@ export function addSignature({
   //   ...txData,
   // };
 
-  // const r = `0x${big_r.substring(2)}` as Hex;
-  // const s = `0x${big_s}` as Hex;
-
   const candidates = [27n, 28n].map((v) => {
     return {
       v,
