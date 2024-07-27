@@ -108,7 +108,7 @@ await adapter.signAndSendTransaction({
   receiver: "0xdeADBeeF0000000000000000000000000b00B1e5",
   amount: 1n,
   chainId: 11_155_111,
-  // Optional: Set nearGas (default is 300 TGAS, which sometimes might not be sufficient)
+  // Optional: Set nearGas (default is 250 TGAS, which sometimes might not be sufficient)
 });
 ```
 

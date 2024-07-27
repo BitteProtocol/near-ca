@@ -1,6 +1,7 @@
 import { base_decode } from "near-api-js/lib/utils/serialize";
 import { ec as EC } from "elliptic";
 import { Address, keccak256 } from "viem";
+import { sha3_256 } from "js-sha3";
 
 export function najPublicKeyStrToUncompressedHexPoint(
   najPublicKeyStr: string
@@ -15,11 +16,9 @@ export async function deriveChildPublicKey(
   path: string = ""
 ): Promise<string> {
   const ec = new EC("secp256k1");
-  const scalar = await sha256Hash(
+  const scalarHex = sha3_256(
     `near-mpc-recovery v0.1.0 epsilon derivation:${signerId},${path}`
   );
-
-  const scalarHex = sha256StringToScalarLittleEndian(scalar);
 
   const x = parentUncompressedPublicKeyHex.substring(2, 66);
   const y = parentUncompressedPublicKeyHex.substring(66);
@@ -43,16 +42,4 @@ export function uncompressedHexPointToEvmAddress(
   const addressHash = keccak256(`0x${uncompressedHexPoint.slice(2)}`);
   // Ethereum address is last 20 bytes of hash (40 characters), prefixed with 0x
   return ("0x" + addressHash.substring(addressHash.length - 40)) as Address;
-}
-
-async function sha256Hash(str: string): Promise<string> {
-  const encoder = new TextEncoder();
-  const data = encoder.encode(str);
-  const hashBuffer = await crypto.subtle.digest("SHA-256", data);
-  const hashArray = [...new Uint8Array(hashBuffer)];
-  return hashArray.map((b) => b.toString(16).padStart(2, "0")).join("");
-}
-
-function sha256StringToScalarLittleEndian(hashString: string): string {
-  return hashString.match(/../g)!.reverse().join("");
 }

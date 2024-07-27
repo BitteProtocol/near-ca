@@ -7,8 +7,6 @@ import {
   toBytes,
   isBytes,
   SignableMessage,
-  verifyMessage,
-  verifyTypedData,
   serializeSignature,
   hashTypedData,
   TypedData,
@@ -22,17 +20,14 @@ import {
   FunctionCallTransaction,
   TxPayload,
   TransactionWithSignature,
-  MPCSignature,
-  RecoveryData,
   NearEthTxData,
   SignArgs,
 } from "../types/types";
 import { MultichainContract } from "../mpcContract";
 import { buildTxPayload, addSignature, populateTx } from "../utils/transaction";
 import { Network } from "../network";
-import { pickValidSignature } from "../utils/signature";
 import { Web3WalletTypes } from "@walletconnect/web3wallet";
-import { offChainRecovery, wcRouter } from "../wallet-connect/handlers";
+import { wcRouter } from "../wallet-connect/handlers";
 
 export class NearEthAdapter {
   readonly mpcContract: MultichainContract;
@@ -88,7 +83,7 @@ export class NearEthAdapter {
    * acquires signature from Near MPC Contract and submits transaction to public mempool.
    *
    * @param {BaseTx} txData - Minimal transaction data to be signed by Near MPC and executed on EVM.
-   * @param {bigint} nearGas - manually specified gas to be sent with signature request (default 300 TGAS).
+   * @param {bigint} nearGas - manually specified gas to be sent with signature request.
    * Note that the signature request is a recursive function.
    */
   async signAndSendTransaction(
@@ -98,12 +93,12 @@ export class NearEthAdapter {
     console.log("Creating Payload for sender:", this.address);
     const { transaction, signArgs } = await this.createTxPayload(txData);
     console.log("Requesting signature from Near...");
-    const { big_r, big_s } = await this.mpcContract.requestSignature(
+    const signature = await this.mpcContract.requestSignature(
       signArgs,
       nearGas
     );
-    console.log("Signature received");
-    return this.relayTransaction({ transaction, signature: { big_r, big_s } });
+    console.log("Raw signature received");
+    return this.relayTransaction({ transaction, signature });
   }
 
   /**
@@ -112,7 +107,7 @@ export class NearEthAdapter {
    * acquires signature from Near MPC Contract and submits transaction to public mempool.
    *
    * @param {BaseTx} txData - Minimal transaction data to be signed by Near MPC and executed on EVM.
-   * @param {bigint} nearGas - manually specified gas to be sent with signature request (default 300 TGAS).
+   * @param {bigint} nearGas - manually specified gas to be sent with signature request.
    * Note that the signature request is a recursive function.
    */
   async getSignatureRequestPayload(
@@ -120,11 +115,10 @@ export class NearEthAdapter {
     nearGas?: bigint
   ): Promise<{
     transaction: Hex;
-    requestPayload: FunctionCallTransaction<SignArgs>;
+    requestPayload: FunctionCallTransaction<{ request: SignArgs }>;
   }> {
     console.log("Creating Payload for sender:", this.address);
     const { transaction, signArgs } = await this.createTxPayload(txData);
-    console.log("Requesting signature from Near...");
     return {
       transaction,
       requestPayload: this.mpcContract.encodeSignatureRequestTx(
@@ -143,7 +137,7 @@ export class NearEthAdapter {
   mpcSignRequest(
     transaction: Hex,
     nearGas?: bigint
-  ): FunctionCallTransaction<SignArgs> {
+  ): FunctionCallTransaction<{ request: SignArgs }> {
     return this.mpcContract.encodeSignatureRequestTx(
       {
         payload: buildTxPayload(transaction),
@@ -161,7 +155,7 @@ export class NearEthAdapter {
    * @returns Hash of relayed transaction.
    */
   async relayTransaction(tx: TransactionWithSignature): Promise<Hash> {
-    const signedTx = await this.reconstructSignature(tx);
+    const signedTx = addSignature(tx);
     return this.relaySignedTransaction(signedTx);
   }
 
@@ -195,10 +189,6 @@ export class NearEthAdapter {
     return serializeTransaction(transaction);
   }
 
-  reconstructSignature(tx: TransactionWithSignature): Hex {
-    return addSignature(tx, this.address);
-  }
-
   /**
    * Relays signed transaction to Ethereum mem-pool for execution.
    * @param serializedTransaction - Signed Ethereum transaction.
@@ -229,47 +219,11 @@ export class NearEthAdapter {
     const typedData extends TypedData | Record<string, unknown>,
     primaryType extends keyof typedData | "EIP712Domain" = keyof typedData,
   >(typedData: TypedDataDefinition<typedData, primaryType>): Promise<Hash> {
-    const sigs = await this.sign(hashTypedData(typedData));
-
-    const common = {
-      address: this.address,
-      types: typedData.types,
-      /* eslint-disable @typescript-eslint/no-explicit-any */
-      primaryType: typedData.primaryType as any,
-      message: typedData.message as any,
-      domain: typedData.domain as any,
-      /* eslint-enable @typescript-eslint/no-explicit-any */
-    };
-    const validity = await Promise.all([
-      verifyTypedData({
-        signature: sigs[0],
-        ...common,
-      }),
-      verifyTypedData({
-        signature: sigs[1],
-        ...common,
-      }),
-    ]);
-    return pickValidSignature(validity, sigs);
+    return this.sign(hashTypedData(typedData));
   }
 
   async signMessage(message: SignableMessage): Promise<Hash> {
-    const sigs = await this.sign(hashMessage(message));
-    const common = {
-      address: this.address,
-      message,
-    };
-    const validity = await Promise.all([
-      verifyMessage({
-        signature: sigs[0],
-        ...common,
-      }),
-      verifyMessage({
-        signature: sigs[1],
-        ...common,
-      }),
-    ]);
-    return pickValidSignature(validity, sigs);
+    return this.sign(hashMessage(message));
   }
 
   /**
@@ -277,43 +231,15 @@ export class NearEthAdapter {
    * @param msgHash - Message Hash to be signed.
    * @returns Two different potential signatures for the hash (one of which is valid).
    */
-  async sign(msgHash: `0x${string}` | Uint8Array): Promise<[Hex, Hex]> {
+  async sign(msgHash: `0x${string}` | Uint8Array): Promise<Hex> {
     const hashToSign = isBytes(msgHash) ? msgHash : toBytes(msgHash);
 
-    const { big_r, big_s } = await this.mpcContract.requestSignature({
+    const signature = await this.mpcContract.requestSignature({
       path: this.derivationPath,
       payload: Array.from(hashToSign.reverse()),
       key_version: 0,
     });
-    const r = `0x${big_r.substring(2)}` as Hex;
-    const s = `0x${big_s}` as Hex;
-
-    return [
-      serializeSignature({ r, s, yParity: 0 }),
-      serializeSignature({ r, s, yParity: 1 }),
-    ];
-  }
-
-  async recoverSignature(
-    recoveryData: RecoveryData,
-    signatureData: MPCSignature
-  ): Promise<Hex> {
-    const { big_r, big_s } = signatureData;
-    if (recoveryData.type === "eth_sendTransaction") {
-      const signature = addSignature(
-        { transaction: recoveryData.data as Hex, signature: signatureData },
-        this.address
-      );
-      // Returns relayed transaction hash (without waiting for confirmation).
-      return this.relaySignedTransaction(signature, false);
-    }
-    const r = `0x${big_r.substring(2)}` as Hex;
-    const s = `0x${big_s}` as Hex;
-    const sigs: [Hex, Hex] = [
-      serializeSignature({ r, s, yParity: 0 }),
-      serializeSignature({ r, s, yParity: 1 }),
-    ];
-    return offChainRecovery(recoveryData, sigs);
+    return serializeSignature(signature);
   }
 
   /// Mintbase Wallet
