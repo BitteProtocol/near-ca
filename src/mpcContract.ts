@@ -1,5 +1,5 @@
 import { Contract, Account } from "near-api-js";
-import { Address, Hex, Signature } from "viem";
+import { Address, Signature } from "viem";
 import {
   deriveChildPublicKey,
   najPublicKeyStrToUncompressedHexPoint,
