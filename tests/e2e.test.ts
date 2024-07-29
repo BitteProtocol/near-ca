@@ -20,7 +20,7 @@ describe("End To End", () => {
     await expect(adapter.getBalance(chainId)).resolves.not.toThrow();
   });
 
-  it("signAndSendTransaction", async () => {
+  it.only("signAndSendTransaction", async () => {
     await expect(
       adapter.signAndSendTransaction({
         // Sending 1 WEI to self (so we never run out of funds)
@@ -57,7 +57,7 @@ describe("End To End", () => {
     ).rejects.toThrow();
   });
 
-  it.only("signMessage", async () => {
+  it("signMessage", async () => {
     await expect(adapter.signMessage("NearEth")).resolves.not.toThrow();
   });
 
