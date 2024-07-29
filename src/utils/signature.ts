@@ -63,9 +63,12 @@ export function transformSignature(mpcSig: MPCSignature): Signature {
   };
 }
 
-export async function signatureFromOutcome(
-  outcome: FinalExecutionOutcome
-): Promise<Signature> {
+export function signatureFromOutcome(
+  // The Partial object is intended to make up for the
+  // difference between all the different near-api versions and wallet-selector bullshit
+  // the field `final_execution_status` is in one, but not the other and we don't use it anyway.
+  outcome: FinalExecutionOutcome | Partial<FinalExecutionOutcome>
+): Signature {
   // TODO: Find example outcome when status is not of this casted type.
   const b64Sig = (outcome.status as FinalExecutionStatus).SuccessValue!;
   const decodedValue = Buffer.from(b64Sig, "base64").toString("utf-8");
