@@ -1,5 +1,5 @@
 import { Contract, Account } from "near-api-js";
-import { Address, Hex, Signature } from "viem";
+import { Address, Signature } from "viem";
 import {
   deriveChildPublicKey,
   najPublicKeyStrToUncompressedHexPoint,
@@ -7,6 +7,7 @@ import {
 } from "./utils/kdf";
 import { TGAS, ONE_YOCTO } from "./chains/near";
 import { MPCSignature, FunctionCallTransaction, SignArgs } from "./types/types";
+import { transformSignature } from "./utils/signature";
 
 const DEFAULT_MPC_CONTRACT = "v1.signer-prod.testnet";
 
@@ -66,19 +67,14 @@ export class MultichainContract {
     signArgs: SignArgs,
     gas?: bigint
   ): Promise<Signature> => {
-    const { big_r, s, recovery_id } = await this.contract.sign({
+    const mpcSig = await this.contract.sign({
       signerAccount: this.connectedAccount,
       args: { request: signArgs },
       gas: gasOrDefault(gas),
       amount: ONE_YOCTO,
     });
 
-    const signature = {
-      r: `0x${big_r.affine_point.substring(2)}` as Hex,
-      s: `0x${s.scalar}` as Hex,
-      yParity: recovery_id,
-    };
-    return signature;
+    return transformSignature(mpcSig);
   };
 
   encodeSignatureRequestTx(
