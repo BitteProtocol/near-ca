@@ -12,15 +12,9 @@ describe("utility: get Signature", () => {
   it("successful: signatureFromTxHash", async () => {
     const sig = await signatureFromTxHash(url, successHash);
     expect(sig).toEqual({
-      big_r: {
-        affine_point:
-          "023BA6A8CE1369484EF384084EC1089581D815260FC274FEF780478C7969F3CFFC",
-      },
-      s: {
-        scalar:
-          "5194CCE1D9F239C28C7765453873A07F35850A485DFE285551FB62C899B61170",
-      },
-      recovery_id: 1,
+      r: "0x3BA6A8CE1369484EF384084EC1089581D815260FC274FEF780478C7969F3CFFC",
+      s: "0x5194CCE1D9F239C28C7765453873A07F35850A485DFE285551FB62C899B61170",
+      yParity: 1,
     });
   });
 
