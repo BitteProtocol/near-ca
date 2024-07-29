@@ -13,7 +13,7 @@ export function toPayload(hexString: Hex): number[] {
   if (hexString.slice(2).length !== 32 * 2) {
     throw new Error(`Payload Hex must have 32 bytes: ${hexString}`);
   }
-  return Array.from(toBytes(hexString).reverse());
+  return Array.from(toBytes(hexString));
 }
 
 export function buildTxPayload(unsignedTxHash: `0x${string}`): number[] {

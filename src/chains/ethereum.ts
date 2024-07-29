@@ -236,7 +236,7 @@ export class NearEthAdapter {
 
     const signature = await this.mpcContract.requestSignature({
       path: this.derivationPath,
-      payload: Array.from(hashToSign.reverse()),
+      payload: Array.from(hashToSign),
       key_version: 0,
     });
     return serializeSignature(signature);
