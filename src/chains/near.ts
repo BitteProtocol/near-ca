@@ -35,7 +35,7 @@ export const nearAccountFromAccountId = async (
   return createNearAccount(accountId, network);
 };
 
-const createNearAccount = async (
+export const createNearAccount = async (
   accountId: string,
   network: NearConfig,
   keyPair?: KeyPair
