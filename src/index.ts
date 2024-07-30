@@ -11,16 +11,19 @@ export * from "./types/types";
 export * from "./utils/signature";
 export * from "./network";
 
-export async function setupNearEthAdapter(
-  accountId: string,
-  network: NearConfig,
-  privateKey?: string,
-  mpcContractId?: string,
-  derivationPath?: string
-): Promise<NearEthAdapter> {
+interface SetupConfig {
+  accountId: string;
+  network: NearConfig;
+  privateKey?: string;
+  mpcContractId?: string;
+  derivationPath?: string;
+}
+
+export async function setupAdapter(args: SetupConfig): Promise<NearEthAdapter> {
+  const { privateKey, mpcContractId, derivationPath } = args;
   const account = await createNearAccount(
-    accountId,
-    network,
+    args.accountId,
+    args.network,
     privateKey ? KeyPair.fromString(privateKey) : undefined
   );
   return NearEthAdapter.fromConfig({
