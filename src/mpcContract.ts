@@ -9,8 +9,6 @@ import { TGAS, ONE_YOCTO } from "./chains/near";
 import { MPCSignature, FunctionCallTransaction, SignArgs } from "./types/types";
 import { transformSignature } from "./utils/signature";
 
-const DEFAULT_MPC_CONTRACT = "v1.signer-prod.testnet";
-
 /// Near Contract Type for change methods
 export interface ChangeMethodArgs<T> {
   /// Change method function agruments.
@@ -41,7 +39,7 @@ export class MultichainContract {
   contract: MultichainContractInterface;
   connectedAccount: Account;
 
-  constructor(account: Account, contractId: string = DEFAULT_MPC_CONTRACT) {
+  constructor(account: Account, contractId: string) {
     this.connectedAccount = account;
 
     this.contract = new Contract(account.connection, contractId, {

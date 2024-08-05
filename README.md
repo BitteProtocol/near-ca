@@ -33,11 +33,12 @@ npx tsx examples/send-eth.ts
 
 ### NEAR Credentials
 
-Before using NEAR-CA, ensure you have the following environment variables set:
+Before using NEAR-CA, ensure you have the following environment variables set in your `.env` file:
 
 - `NEAR_ACCOUNT_ID`: Your NEAR account identifier.
 - `NEAR_ACCOUNT_PRIVATE_KEY`: Your NEAR account private key.
-- `NEAR_MULTICHAIN_CONTRACT`: The NEAR contract that handles multichain operations.
+- `MPC_CONTRACT_ID`: The NEAR contract that handles multichain operations.
+- `NETWORK`: Either `near` or `testnet`.
 
 Copy the `.env.example` file and add these values to the `.env` file.
 
@@ -77,31 +78,15 @@ Here's an example of how to set up the `NearEthAdapter` and send ETH:
 
 ```typescript
 import dotenv from "dotenv";
-import {
-  MultichainContract,
-  NearEthAdapter,
-  nearAccountFromKeyPair,
-} from "near-ca";
-import { KeyPair } from "near-api-js";
+import { setupAdapter } from "near-ca";
 
 dotenv.config();
 const { NEAR_ACCOUNT_ID, NEAR_ACCOUNT_PRIVATE_KEY } = process.env;
 
-const account = await nearAccountFromKeyPair({
-    accountId: NEAR_ACCOUNT_ID!,
-    keyPair: KeyPair.fromString(NEAR_ACCOUNT_PRIVATE_KEY!),
-    network: {
-      networkId: "testnet",
-      nodeUrl: "https://rpc.testnet.near.org",
-    },
-  });
-
-const adapter = await NearEthAdapter.fromConfig({
-  mpcContract: new MultichainContract(
-    account,
-    process.env.NEAR_MULTICHAIN_CONTRACT!
-  ),
-  // derivationPath: "ethereum,1",
+const adapter = await setupAdapter({
+  accountId: NEAR_ACCOUNT_ID!,
+  privateKey: NEAR_ACCOUNT_PRIVATE_KEY!,
+  mpcContractId: MPC_CONTRACT_ID!,
 });
 
 await adapter.signAndSendTransaction({
@@ -129,18 +114,18 @@ npx tsx examples/*.ts
 
 ## Configuration
 
-Before using NEAR-CA, ensure you have the following environment variables set:
+Before using NEAR-CA, ensure you have the following environment variables set in your `.env` file:
 
 - `NEAR_ACCOUNT_ID`: Your NEAR account identifier.
 - `NEAR_ACCOUNT_PRIVATE_KEY`: Your NEAR account private key.
-- `NEAR_MULTICHAIN_CONTRACT`: The NEAR contract that handles multichain operations.
+- `MPC_CONTRACT_ID`: The NEAR contract that handles multichain operations.
+- `NETWORK`: Either `near` or `testnet`.
 
-Copy the `.env.example` file and place these values in `.env`
-
+Copy the `.env.example` file and add these values to the `.env` file.
 
 Steps to get your `NEAR_ACCOUNT_ID` and `NEAR_ACCOUNT_PRIVATE_KEY`:
 
-1. Create a mintbase wallet, super easy, here: https://wallet.mintbase.xyz/
+1. Create a mintbase wallet, super easy, here: https://wallet.bitte.ai/
 2. Your `XYZ.testnet` is your `NEAR_ACCOUNT_ID`.
 3. In mintbase, on the top right corner click on the gear (settings) icon.
 4. Go to "Security & Recovery" -> "Export Account".
