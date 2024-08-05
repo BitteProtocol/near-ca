@@ -55,6 +55,6 @@ export async function setupAdapter(args: SetupConfig): Promise<NearEthAdapter> {
   );
   return NearEthAdapter.fromConfig({
     mpcContract: new MultichainContract(account, mpcContractId),
-    derivationPath: derivationPath || "ethereum,1",
+    derivationPath: derivationPath ?? "ethereum,1",
   });
 }
