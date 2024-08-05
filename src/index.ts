@@ -50,7 +50,7 @@ export async function setupAdapter(args: SetupConfig): Promise<NearEthAdapter> {
   const config = args.network ?? configFromNetworkId(accountNetwork);
   if (accountNetwork !== config.networkId) {
     throw new Error(
-      `AccountId ${accountId} differs from networkId ${config.networkId}`
+      `The accountId ${accountId} does not match the networkId ${config.networkId}. Please ensure that your accountId is correct and corresponds to the intended network.`
     );
   }
 
