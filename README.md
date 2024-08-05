@@ -33,12 +33,12 @@ npx tsx examples/send-eth.ts
 
 ### NEAR Credentials
 
-Before using NEAR-CA, ensure you have the following environment variables set:
+Before using NEAR-CA, ensure you have the following environment variables set in your `.env` file:
 
 - `NEAR_ACCOUNT_ID`: Your NEAR account identifier.
 - `NEAR_ACCOUNT_PRIVATE_KEY`: Your NEAR account private key.
 - `MPC_CONTRACT_ID`: The NEAR contract that handles multichain operations.
-- `NETWORK_ID`: Either `near` or `testnet`
+- `NETWORK`: Either `near` or `testnet`.
 
 Copy the `.env.example` file and add these values to the `.env` file.
 
@@ -114,18 +114,18 @@ npx tsx examples/*.ts
 
 ## Configuration
 
-Before using NEAR-CA, ensure you have the following environment variables set:
+Before using NEAR-CA, ensure you have the following environment variables set in your `.env` file:
 
 - `NEAR_ACCOUNT_ID`: Your NEAR account identifier.
 - `NEAR_ACCOUNT_PRIVATE_KEY`: Your NEAR account private key.
-- `MPC_CONTRACT_ID`: The NEAR contract that provides signatures.
-- `NETWORK_ID`: Either `near` or `testnet`
+- `MPC_CONTRACT_ID`: The NEAR contract that handles multichain operations.
+- `NETWORK`: Either `near` or `testnet`.
 
-Copy the `.env.example` file and place these values in `.env`
+Copy the `.env.example` file and add these values to the `.env` file.
 
 Steps to get your `NEAR_ACCOUNT_ID` and `NEAR_ACCOUNT_PRIVATE_KEY`:
 
-1. Create a mintbase wallet, super easy, here: https://wallet.mintbase.xyz/
+1. Create a mintbase wallet, super easy, here: https://wallet.bitte.ai/
 2. Your `XYZ.testnet` is your `NEAR_ACCOUNT_ID`.
 3. In mintbase, on the top right corner click on the gear (settings) icon.
 4. Go to "Security & Recovery" -> "Export Account".
