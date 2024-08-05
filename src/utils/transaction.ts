@@ -35,11 +35,7 @@ export async function populateTx(
     );
   }
   const transactionData = {
-    nonce:
-      tx.nonce ||
-      (await provider.getTransactionCount({
-        address: from,
-      })),
+    nonce: tx.nonce ?? (await provider.getTransactionCount({ address: from })),
     account: from,
     to: tx.to,
     value: tx.value ?? 0n,

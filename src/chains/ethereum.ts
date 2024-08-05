@@ -93,7 +93,7 @@ export class NearEthAdapter {
     console.log("Creating Payload for sender:", this.address);
     const { transaction, signArgs } = await this.createTxPayload(txData);
     console.log(
-      `Requesting signature from Near at ${this.mpcContract.contract.contractId}`
+      `Requesting signature from Near at ${this.mpcContract.accountId}`
     );
     const signature = await this.mpcContract.requestSignature(
       signArgs,
