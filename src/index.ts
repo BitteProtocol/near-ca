@@ -1,4 +1,4 @@
-import { KeyPair } from "near-api-js";
+import { Account, KeyPair } from "near-api-js";
 import { NearEthAdapter } from "./chains/ethereum";
 import { MultichainContract } from "./mpcContract";
 import { NearConfig } from "near-api-js/lib/near";
@@ -39,22 +39,34 @@ export function configFromNetworkId(networkId: NetworkId): NearConfig {
 }
 
 export async function setupAdapter(args: SetupConfig): Promise<NearEthAdapter> {
-  const { accountId, privateKey, mpcContractId, derivationPath } = args;
+  const {
+    accountId,
+    privateKey,
+    mpcContractId,
+    derivationPath = "ethereum,1",
+  } = args;
   // Load near config from provided accountId if not provided
-  const config = args.network ?? configFromNetworkId(getNetworkId(accountId));
-  if (getNetworkId(accountId) !== config.networkId) {
+  const accountNetwork = getNetworkId(accountId);
+  const config = args.network ?? configFromNetworkId(accountNetwork);
+  if (accountNetwork !== config.networkId) {
     throw new Error(
       `AccountId ${accountId} differs from networkId ${config.networkId}`
     );
   }
 
-  const account = await createNearAccount(
-    accountId,
-    config,
-    privateKey ? KeyPair.fromString(privateKey) : undefined
-  );
+  let account: Account;
+  try {
+    account = await createNearAccount(
+      accountId,
+      config,
+      privateKey ? KeyPair.fromString(privateKey) : undefined
+    );
+  } catch (error: unknown) {
+    console.error(`Failed to create NEAR account: ${error}`);
+    throw error;
+  }
   return NearEthAdapter.fromConfig({
     mpcContract: new MultichainContract(account, mpcContractId),
-    derivationPath: derivationPath ?? "ethereum,1",
+    derivationPath: derivationPath,
   });
 }
