@@ -43,12 +43,12 @@ describe("Transaction Builder Functions", () => {
 
   it("populateTx", async () => {
     const baseTx = {
-      chainId: 1,
+      chainId: 11155111,
       to: zeroAddress,
     };
     await expect(() =>
       populateTx(baseTx, zeroAddress, Network.fromChainId(100).client)
-    ).rejects.toThrow("client chainId=100 mismatch with tx.chainId=1");
+    ).rejects.toThrow("client chainId=100 mismatch with tx.chainId=11155111");
 
     const tx = await populateTx(baseTx, zeroAddress);
     expect(tx.to).toEqual(zeroAddress);
