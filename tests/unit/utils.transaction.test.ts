@@ -49,5 +49,9 @@ describe("Transaction Builder Functions", () => {
     await expect(() =>
       populateTx(baseTx, zeroAddress, Network.fromChainId(100).client)
     ).rejects.toThrow("client chainId=100 mismatch with tx.chainId=1");
+
+    const tx = await populateTx(baseTx, zeroAddress);
+    expect(tx.to).toEqual(zeroAddress);
+    expect(tx.value).toEqual(0n);
   });
 });

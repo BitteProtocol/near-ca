@@ -18,6 +18,6 @@ jobs:
       - name: E2E Test
         run: yarn && yarn test e2e
         env:
-          NEAR_MULTICHAIN_CONTRACT: v2.multichain-mpc.testnet
+          NEAR_MULTICHAIN_CONTRACT: v1.signer-dev.testnet
           NEAR_ACCOUNT_ID: ${{secrets.NEAR_ACCOUNT_ID}}
           NEAR_ACCOUNT_PRIVATE_KEY: ${{secrets.NEAR_PK}}
