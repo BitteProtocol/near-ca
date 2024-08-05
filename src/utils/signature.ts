@@ -32,19 +32,7 @@ export async function signatureFromTxHash(
   });
 
   const jsonResponse = (await response.json()) as JSONRPCResponse;
-  let base64Sig = jsonResponse.result.status?.SuccessValue;
-  // TODO: Find an example when successValue isn't available and we need to enter this block.
-  if (base64Sig === "") {
-    // Extract receipts_outcome
-    const receiptsOutcome = jsonResponse.result.receipts_outcome;
-    // Map to get SuccessValue
-    const successValues = receiptsOutcome.map(
-      // eslint-disable-next-line
-      (outcome: any) => outcome.outcome.status.SuccessValue
-    );
-    // Find the first non-empty value
-    base64Sig = successValues.find((value) => value && value.trim().length > 0);
-  }
+  const base64Sig = jsonResponse.result.status?.SuccessValue;
   if (base64Sig) {
     const decodedValue = Buffer.from(base64Sig, "base64").toString("utf-8");
     const signature: MPCSignature = JSON.parse(decodedValue);
