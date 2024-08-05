@@ -18,9 +18,15 @@ describe("utility: get Signature", () => {
     });
   });
 
-  it("failed: signatureFromTxHash", async () => {
+  it("signatureFromTxHash fails with no signature", async () => {
     await expect(signatureFromTxHash(url, failedHash)).rejects.toThrow(
       `No detectable signature found in transaction ${failedHash}`
+    );
+  });
+
+  it("signatureFromTxHash fails with parse error", async () => {
+    await expect(signatureFromTxHash(url, "nonsense")).rejects.toThrow(
+      "JSON-RPC error: Parse error"
     );
   });
 
