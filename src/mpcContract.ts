@@ -51,9 +51,9 @@ export class MultichainContract {
     }) as MultichainContractInterface;
   }
 
-  accountId = (): string => {
+  accountId(): string {
     return this.contract.contractId;
-  };
+  }
 
   deriveEthAddress = async (derivationPath: string): Promise<Address> => {
     const rootPublicKey = await this.contract.public_key();

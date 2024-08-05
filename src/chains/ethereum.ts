@@ -246,12 +246,12 @@ export class NearEthAdapter {
 
   /// Mintbase Wallet
   async handleSessionRequest(
-    request: Web3WalletTypes.SessionRequest
+    request: Partial<Web3WalletTypes.SessionRequest>
   ): Promise<NearEthTxData> {
     const {
       chainId,
       request: { method, params },
-    } = request.params;
+    } = request.params!;
     console.log(`Session Request of type ${method} for chainId ${chainId}`);
     const { evmMessage, payload, signatureRecoveryData } = await wcRouter(
       method,
