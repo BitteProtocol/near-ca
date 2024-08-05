@@ -30,15 +30,20 @@ export async function signatureFromTxHash(
     },
     body: JSON.stringify(payload),
   });
+  if (!response.ok) {
+    throw new Error(`HTTP error! status: ${response.status}`);
+  }
 
-  const jsonResponse = (await response.json()) as JSONRPCResponse;
-  const base64Sig = jsonResponse.result.status?.SuccessValue;
-  if (base64Sig) {
-    const decodedValue = Buffer.from(base64Sig, "base64").toString("utf-8");
-    const signature: MPCSignature = JSON.parse(decodedValue);
-    return transformSignature(signature);
+  const json: JSONRPCResponse<FinalExecutionOutcome> = await response.json();
+
+  if (json.error) {
+    throw new Error(`JSON-RPC error: ${json.error.message}`);
+  }
+
+  if (json.result) {
+    return signatureFromOutcome(json.result);
   } else {
-    throw new Error(`No valid values found in transaction receipt ${txHash}`);
+    throw new Error(`No FinalExecutionOutcome in response: ${json}`);
   }
 }
 
@@ -58,8 +63,13 @@ export function signatureFromOutcome(
   outcome: FinalExecutionOutcome | Partial<FinalExecutionOutcome>
 ): Signature {
   // TODO: Find example outcome when status is not of this casted type.
-  const b64Sig = (outcome.status as FinalExecutionStatus).SuccessValue!;
-  const decodedValue = Buffer.from(b64Sig, "base64").toString("utf-8");
-  const signature = JSON.parse(decodedValue);
-  return transformSignature(signature);
+  const b64Sig = (outcome.status as FinalExecutionStatus).SuccessValue;
+  if (b64Sig) {
+    const decodedValue = Buffer.from(b64Sig, "base64").toString("utf-8");
+    const signature = JSON.parse(decodedValue);
+    return transformSignature(signature);
+  }
+  throw new Error(
+    `No detectable signature found in transaction ${outcome.transaction_outcome?.id}`
+  );
 }

@@ -20,7 +20,7 @@ describe("utility: get Signature", () => {
 
   it("failed: signatureFromTxHash", async () => {
     await expect(signatureFromTxHash(url, failedHash)).rejects.toThrow(
-      `No valid values found in transaction receipt ${failedHash}`
+      `No detectable signature found in transaction ${failedHash}`
     );
   });
 
