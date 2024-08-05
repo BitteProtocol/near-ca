@@ -31,7 +31,7 @@ export async function populateTx(
   if (chainId !== tx.chainId) {
     // Can only happen when client is provided.
     throw new Error(
-      `client chainId=${chainId} mismatch with transaction (${tx.chainId})`
+      `client chainId=${chainId} mismatch with tx.chainId=${tx.chainId}`
     );
   }
   const transactionData = {
