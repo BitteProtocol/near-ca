@@ -14,17 +14,43 @@ export * from "./utils/transaction";
 
 interface SetupConfig {
   accountId: string;
-  network: NearConfig;
+  mpcContractId: string;
+  network?: NearConfig;
   privateKey?: string;
-  mpcContractId?: string;
   derivationPath?: string;
 }
 
+type NetworkId = "near" | "testnet";
+
+function getNetworkId(accountId: string): NetworkId {
+  const networkId = accountId.split(".").pop() || "";
+  if (!["near", "testnet"].includes(networkId)) {
+    throw new Error(`Invalid network extracted from accountId ${accountId}`);
+  }
+  return networkId as NetworkId;
+}
+
+export function configFromNetworkId(networkId: NetworkId): NearConfig {
+  const network = networkId === "near" ? "mainnet" : "testnet";
+  return {
+    networkId,
+    nodeUrl: `https://rpc.${network}.near.org`,
+  };
+}
+
 export async function setupAdapter(args: SetupConfig): Promise<NearEthAdapter> {
-  const { privateKey, mpcContractId, derivationPath } = args;
+  const { accountId, privateKey, mpcContractId, derivationPath } = args;
+  // Load near config from provided accountId if not provided
+  const config = args.network ?? configFromNetworkId(getNetworkId(accountId));
+  if (getNetworkId(accountId) !== config.networkId) {
+    throw new Error(
+      `AccountId ${accountId} differs from networkId ${config.networkId}`
+    );
+  }
+
   const account = await createNearAccount(
-    args.accountId,
-    args.network,
+    accountId,
+    config,
     privateKey ? KeyPair.fromString(privateKey) : undefined
   );
   return NearEthAdapter.fromConfig({
