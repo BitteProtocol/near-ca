@@ -1,8 +1,13 @@
 // Basic structure of the JSON-RPC response
-export interface JSONRPCResponse {
+export interface JSONRPCResponse<T> {
   jsonrpc: string;
-  result: Result;
-  id: string;
+  id: number | string | null;
+  result?: T;
+  error?: {
+    code: number;
+    message: string;
+    data?: unknown;
+  };
 }
 
 // Result contains various fields like final execution status, an array of receipts, etc.

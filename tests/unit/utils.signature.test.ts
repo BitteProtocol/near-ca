@@ -19,22 +19,15 @@ describe("utility: get Signature", () => {
     });
   });
 
-  // Still need a NEW example of this!
-  // it("successful: alternative signatureFromTxHash", async () => {
-  //   const sig = await signatureFromTxHash(
-  //     url,
-  //     "EK4XUwyR29w6eaSfSSPb8he3y7nkTQSbYJVXgSx5vZ4T"
-  //   );
-  //   expect(sig).toEqual({
-  //     big_r:
-  //       "024598E193A9377B98A5B4621BA81FDEEA9DED3E3E7F41C073D0537BC2769C10FC",
-  //     big_s: "65D23B4EA333FFC5486FA295B7AEAB02EACA4E35E22B55108563A63199B96558",
-  //   });
-  // });
-
-  it("failed: signatureFromTxHash", async () => {
+  it("signatureFromTxHash fails with no signature", async () => {
     await expect(signatureFromTxHash(url, failedHash)).rejects.toThrow(
-      `No valid values found in transaction receipt ${failedHash}`
+      `No detectable signature found in transaction ${failedHash}`
+    );
+  });
+
+  it("signatureFromTxHash fails with parse error", async () => {
+    await expect(signatureFromTxHash(url, "nonsense")).rejects.toThrow(
+      "JSON-RPC error: Parse error"
     );
   });
 
