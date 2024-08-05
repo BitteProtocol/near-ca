@@ -10,6 +10,7 @@ export * from "./mpcContract";
 export * from "./types/types";
 export * from "./utils/signature";
 export * from "./network";
+export * from "./utils/transaction";
 
 interface SetupConfig {
   accountId: string;

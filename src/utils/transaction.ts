@@ -1,5 +1,6 @@
 import {
   Hex,
+  PublicClient,
   TransactionSerializable,
   keccak256,
   parseTransaction,
@@ -22,15 +23,19 @@ export function buildTxPayload(unsignedTxHash: `0x${string}`): number[] {
 
 export async function populateTx(
   tx: BaseTx,
-  from: Hex
+  from: Hex,
+  client?: PublicClient
 ): Promise<TransactionSerializable> {
-  const network = Network.fromChainId(tx.chainId);
+  const provider = client || Network.fromChainId(tx.chainId).client;
+  const chainId = await provider.getChainId();
+  if (chainId !== tx.chainId) {
+    // Can only happen when client is provided.
+    throw new Error(
+      `client chainId=${chainId} mismatch with tx.chainId=${tx.chainId}`
+    );
+  }
   const transactionData = {
-    nonce:
-      tx.nonce ||
-      (await network.client.getTransactionCount({
-        address: from,
-      })),
+    nonce: tx.nonce ?? (await provider.getTransactionCount({ address: from })),
     account: from,
     to: tx.to,
     value: tx.value ?? 0n,
@@ -39,15 +44,15 @@ export async function populateTx(
   const [estimatedGas, { maxFeePerGas, maxPriorityFeePerGas }] =
     await Promise.all([
       // Only estimate gas if not provided.
-      tx.gas || network.client.estimateGas(transactionData),
-      network.client.estimateFeesPerGas(),
+      tx.gas || provider.estimateGas(transactionData),
+      provider.estimateFeesPerGas(),
     ]);
   return {
     ...transactionData,
     gas: estimatedGas,
     maxFeePerGas,
     maxPriorityFeePerGas,
-    chainId: network.chainId,
+    chainId,
   };
 }
 

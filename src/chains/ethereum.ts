@@ -92,7 +92,9 @@ export class NearEthAdapter {
   ): Promise<Hash> {
     console.log("Creating Payload for sender:", this.address);
     const { transaction, signArgs } = await this.createTxPayload(txData);
-    console.log("Requesting signature from Near...");
+    console.log(
+      `Requesting signature from Near at ${this.mpcContract.accountId}`
+    );
     const signature = await this.mpcContract.requestSignature(
       signArgs,
       nearGas
@@ -244,12 +246,12 @@ export class NearEthAdapter {
 
   /// Mintbase Wallet
   async handleSessionRequest(
-    request: Web3WalletTypes.SessionRequest
+    request: Partial<Web3WalletTypes.SessionRequest>
   ): Promise<NearEthTxData> {
     const {
       chainId,
       request: { method, params },
-    } = request.params;
+    } = request.params!;
     console.log(`Session Request of type ${method} for chainId ${chainId}`);
     const { evmMessage, payload, signatureRecoveryData } = await wcRouter(
       method,
