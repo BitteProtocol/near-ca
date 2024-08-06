@@ -17,8 +17,8 @@ export function toPayload(hexString: Hex): number[] {
   return Array.from(toBytes(hexString));
 }
 
-export function buildTxPayload(unsignedTxHash: `0x${string}`): number[] {
-  return toPayload(keccak256(unsignedTxHash));
+export function buildTxPayload(serializedTx: `0x${string}`): number[] {
+  return toPayload(keccak256(serializedTx));
 }
 
 export async function populateTx(

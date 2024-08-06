@@ -13,6 +13,7 @@ import {
   TypedDataDefinition,
   parseTransaction,
   keccak256,
+  Signature,
 } from "viem";
 import {
   BaseTx,
@@ -22,6 +23,7 @@ import {
   TransactionWithSignature,
   NearEthTxData,
   SignArgs,
+  RecoveryData,
 } from "../types/types";
 import { MultichainContract } from "../mpcContract";
 import { buildTxPayload, addSignature, populateTx } from "../utils/transaction";
@@ -268,5 +270,20 @@ export class NearEthAdapter {
       evmMessage,
       recoveryData: signatureRecoveryData,
     };
+  }
+
+  async wcRespond(
+    recoveryData: RecoveryData,
+    signature: Signature
+  ): Promise<Hex> {
+    if (recoveryData.type === "eth_sendTransaction") {
+      const signedTx = addSignature({
+        transaction: recoveryData.data as Hex,
+        signature,
+      });
+      // Returns relayed transaction hash (without waiting for confirmation).
+      return this.relaySignedTransaction(signedTx, false);
+    }
+    return serializeSignature(signature);
   }
 }
