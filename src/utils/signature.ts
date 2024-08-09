@@ -75,29 +75,30 @@ export function signatureFromOutcome(
     | FinalExecutionOutcome
     | Omit<FinalExecutionOutcome, "final_execution_status">
 ): Signature {
+  // TODO - find a scenario when outcome.status is `FinalExecutionStatusBasic`!
   let b64Sig = (outcome.status as FinalExecutionStatus).SuccessValue;
-  if (b64Sig === "") {
+  if (!b64Sig) {
     // This scenario occurs when sign call is relayed (i.e. executed by someone else).
-    // We have to dig more into the receipt and extract the signature from within.
     // E.g. https://testnet.nearblocks.io/txns/G1f1HVUxDBWXAEimgNWobQ9yCx1EgA2tzYHJBFUfo3dj
-    // Extract receipts_outcome
-    const receiptsOutcome = outcome.receipts_outcome;
-    // Map to get SuccessValues: The Signature will appear twice.
-    const successValues = receiptsOutcome.map(
-      (outcome) => (outcome.outcome.status as FinalExecutionStatus).SuccessValue
-    );
-    // We want the second occurence of the signature
-    // (the other is nested inside `{ Ok: signature }`)
-    b64Sig = successValues
-      .reverse() // Find the LAST non-empty value!
+    // We have to dig into `receipts_outcome` and extract the signature from within.
+    // We want the second occurence of the signature because
+    // the first is nested inside `{ Ok: MPCSignature }`)
+    b64Sig = outcome.receipts_outcome
+      // Map to get SuccessValues: The Signature will appear twice.
+      .map(
+        (outcome) =>
+          (outcome.outcome.status as FinalExecutionStatus).SuccessValue
+      )
+      // Reverse the to "find" the last non-empty value!
+      .reverse()
       .find((value) => value && value.trim().length > 0);
+    if (!b64Sig) {
+      throw new Error(
+        `No detectable signature found in transaction ${outcome.transaction_outcome?.id}`
+      );
+    }
   }
-  if (b64Sig) {
-    const decodedValue = Buffer.from(b64Sig, "base64").toString("utf-8");
-    const signature = JSON.parse(decodedValue);
-    return transformSignature(signature);
-  }
-  throw new Error(
-    `No detectable signature found in transaction ${outcome.transaction_outcome?.id}`
-  );
+  const decodedValue = Buffer.from(b64Sig, "base64").toString("utf-8");
+  const signature = JSON.parse(decodedValue);
+  return transformSignature(signature);
 }
