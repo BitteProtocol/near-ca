@@ -44,8 +44,8 @@ describe("index", () => {
   });
 
   it("configFromNetworkId", async () => {
-    expect(configFromNetworkId("near")).toStrictEqual({
-      networkId: "near",
+    expect(configFromNetworkId("mainnet")).toStrictEqual({
+      networkId: "mainnet",
       nodeUrl: "https://rpc.mainnet.near.org",
     });
 

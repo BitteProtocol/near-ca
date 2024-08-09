@@ -1,6 +1,6 @@
 import { Account, KeyPair } from "near-api-js";
 import { NearEthAdapter } from "./chains/ethereum";
-import { MultichainContract } from "./mpcContract";
+import { MultichainContract as MpcContract } from "./mpcContract";
 import { NearConfig } from "near-api-js/lib/near";
 import {
   configFromNetworkId,
@@ -53,7 +53,7 @@ export async function setupAdapter(args: SetupConfig): Promise<NearEthAdapter> {
     throw error;
   }
   return NearEthAdapter.fromConfig({
-    mpcContract: new MultichainContract(account, mpcContractId),
+    mpcContract: new MpcContract(account, mpcContractId),
     derivationPath: derivationPath,
   });
 }
