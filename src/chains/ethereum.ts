@@ -24,7 +24,7 @@ import {
   NearEthTxData,
   SignArgs,
   RecoveryData,
-} from "../types/types";
+} from "../types";
 import { MpcContract } from "../mpcContract";
 import { buildTxPayload, addSignature, populateTx } from "../utils/transaction";
 import { Network } from "../network";
