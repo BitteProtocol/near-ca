@@ -1,10 +1,21 @@
 import { Signature } from "viem";
-import { JSONRPCResponse } from "../types/rpc";
-import { MPCSignature } from "../types/types";
+import { MPCSignature } from "../types";
 import {
   FinalExecutionOutcome,
   FinalExecutionStatus,
 } from "near-api-js/lib/providers";
+
+// Basic structure of the JSON-RPC response
+export interface JSONRPCResponse<T> {
+  jsonrpc: string;
+  id: number | string | null;
+  result?: T;
+  error?: {
+    code: number;
+    message: string;
+    data?: unknown;
+  };
+}
 
 export async function signatureFromTxHash(
   nodeUrl: string,

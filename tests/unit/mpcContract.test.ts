@@ -1,4 +1,4 @@
-import { createNearAccount, MultichainContract } from "../../src/";
+import { createNearAccount, MpcContract } from "../../src/";
 
 const TESTNET_CONFIG = {
   networkId: "testnet",
@@ -10,7 +10,7 @@ describe("mpcContract", () => {
     const accountId = "farmface.testnet";
     const contractId = "v1.signer-dev.testnet";
     const account = await createNearAccount(accountId, TESTNET_CONFIG);
-    const mpc = new MultichainContract(account, contractId);
+    const mpc = new MpcContract(account, contractId);
     const ethAddress = await mpc.deriveEthAddress(path);
     expect(mpc.accountId()).toEqual(contractId);
     expect(ethAddress).toEqual("0xde886d5d90cf3ca465bcaf410fe2b460ec79a7d9");
