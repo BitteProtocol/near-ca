@@ -86,8 +86,8 @@ export function signatureFromOutcome(
     b64Sig = outcome.receipts_outcome
       // Map to get SuccessValues: The Signature will appear twice.
       .map(
-        (outcome) =>
-          (outcome.outcome.status as FinalExecutionStatus).SuccessValue
+        (receipt) =>
+          (receipt.outcome.status as FinalExecutionStatus).SuccessValue
       )
       // Reverse the to "find" the last non-empty value!
       .reverse()
