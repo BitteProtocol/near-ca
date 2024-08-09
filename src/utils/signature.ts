@@ -71,13 +71,28 @@ export function signatureFromOutcome(
   // The Partial object is intended to make up for the
   // difference between all the different near-api versions and wallet-selector bullshit
   // the field `final_execution_status` is in one, but not the other and we don't use it anyway.
-  outcome: FinalExecutionOutcome | Partial<FinalExecutionOutcome>
+  outcome:
+    | FinalExecutionOutcome
+    | Omit<FinalExecutionOutcome, "final_execution_status">
 ): Signature {
-  // TODO: Find example outcome when status is not of this casted type.
-  const b64Sig = (outcome.status as FinalExecutionStatus).SuccessValue;
+  let b64Sig = (outcome.status as FinalExecutionStatus).SuccessValue;
+  if (b64Sig === "") {
+    // Extract receipts_outcome
+    const receiptsOutcome = outcome.receipts_outcome;
+    // Map to get SuccessValues
+    const successValues = receiptsOutcome.map(
+      (outcome) => (outcome.outcome.status as FinalExecutionStatus).SuccessValue
+    );
+    // Find the last non-empty value
+    b64Sig = successValues
+      .reverse()
+      .find((value) => value && value.trim().length > 0);
+  }
   if (b64Sig) {
     const decodedValue = Buffer.from(b64Sig, "base64").toString("utf-8");
     const signature = JSON.parse(decodedValue);
+    // Ok happens
+    // return transformSignature("Ok" in signature ? signature.Ok : signature);
     return transformSignature(signature);
   }
   throw new Error(
