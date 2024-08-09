@@ -77,22 +77,24 @@ export function signatureFromOutcome(
 ): Signature {
   let b64Sig = (outcome.status as FinalExecutionStatus).SuccessValue;
   if (b64Sig === "") {
+    // This scenario occurs when sign call is relayed (i.e. executed by someone else).
+    // We have to dig more into the receipt and extract the signature from within.
+    // E.g. https://testnet.nearblocks.io/txns/G1f1HVUxDBWXAEimgNWobQ9yCx1EgA2tzYHJBFUfo3dj
     // Extract receipts_outcome
     const receiptsOutcome = outcome.receipts_outcome;
-    // Map to get SuccessValues
+    // Map to get SuccessValues: The Signature will appear twice.
     const successValues = receiptsOutcome.map(
       (outcome) => (outcome.outcome.status as FinalExecutionStatus).SuccessValue
     );
-    // Find the last non-empty value
+    // We want the second occurence of the signature
+    // (the other is nested inside `{ Ok: signature }`)
     b64Sig = successValues
-      .reverse()
+      .reverse() // Find the LAST non-empty value!
       .find((value) => value && value.trim().length > 0);
   }
   if (b64Sig) {
     const decodedValue = Buffer.from(b64Sig, "base64").toString("utf-8");
     const signature = JSON.parse(decodedValue);
-    // Ok happens
-    // return transformSignature("Ok" in signature ? signature.Ok : signature);
     return transformSignature(signature);
   }
   throw new Error(
