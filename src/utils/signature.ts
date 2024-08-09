@@ -71,16 +71,54 @@ export function signatureFromOutcome(
   // The Partial object is intended to make up for the
   // difference between all the different near-api versions and wallet-selector bullshit
   // the field `final_execution_status` is in one, but not the other and we don't use it anyway.
-  outcome: FinalExecutionOutcome | Partial<FinalExecutionOutcome>
+  outcome:
+    | FinalExecutionOutcome
+    | Omit<FinalExecutionOutcome, "final_execution_status">
 ): Signature {
-  // TODO: Find example outcome when status is not of this casted type.
-  const b64Sig = (outcome.status as FinalExecutionStatus).SuccessValue;
-  if (b64Sig) {
-    const decodedValue = Buffer.from(b64Sig, "base64").toString("utf-8");
-    const signature = JSON.parse(decodedValue);
-    return transformSignature(signature);
+  const txHash = outcome.transaction_outcome?.id;
+  // TODO - find a scenario when outcome.status is `FinalExecutionStatusBasic`!
+  let b64Sig = (outcome.status as FinalExecutionStatus).SuccessValue;
+  if (!b64Sig) {
+    // This scenario occurs when sign call is relayed (i.e. executed by someone else).
+    // E.g. https://testnet.nearblocks.io/txns/G1f1HVUxDBWXAEimgNWobQ9yCx1EgA2tzYHJBFUfo3dj
+    // We have to dig into `receipts_outcome` and extract the signature from within.
+    // We want the second occurence of the signature because
+    // the first is nested inside `{ Ok: MPCSignature }`)
+    b64Sig = outcome.receipts_outcome
+      // Map to get SuccessValues: The Signature will appear twice.
+      .map(
+        (receipt) =>
+          (receipt.outcome.status as FinalExecutionStatus).SuccessValue
+      )
+      // Reverse the to "find" the last non-empty value!
+      .reverse()
+      .find((value) => value && value.trim().length > 0);
   }
-  throw new Error(
-    `No detectable signature found in transaction ${outcome.transaction_outcome?.id}`
+  if (!b64Sig) {
+    throw new Error(`No detectable signature found in transaction ${txHash}`);
+  }
+  if (b64Sig === "eyJFcnIiOiJGYWlsZWQifQ==") {
+    // {"Err": "Failed"}
+    throw new Error(`Signature Request Failed in ${txHash}`);
+  }
+  const decodedValue = Buffer.from(b64Sig, "base64").toString("utf-8");
+  const signature = JSON.parse(decodedValue);
+  if (isMPCSignature(signature)) {
+    return transformSignature(signature);
+  } else {
+    throw new Error(`No detectable signature found in transaction ${txHash}`);
+  }
+}
+
+// type guard for MPCSignature object.
+function isMPCSignature(obj: unknown): obj is MPCSignature {
+  return (
+    typeof obj === "object" &&
+    obj !== null &&
+    typeof (obj as MPCSignature).big_r === "object" &&
+    typeof (obj as MPCSignature).big_r.affine_point === "string" &&
+    typeof (obj as MPCSignature).s === "object" &&
+    typeof (obj as MPCSignature).s.scalar === "string" &&
+    typeof (obj as MPCSignature).recovery_id === "number"
   );
 }

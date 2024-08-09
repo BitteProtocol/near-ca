@@ -8,7 +8,11 @@ describe("utility: get Signature", () => {
   const url: string = "https://archival-rpc.testnet.near.org";
   // const accountId = "neareth-dev.testnet";
   const successHash = "GeqmwWmWxddzh2yCEhugbJkhzsJMhCuFyQZa61w5dk7N";
+  const relayedSuccessHash = "G1f1HVUxDBWXAEimgNWobQ9yCx1EgA2tzYHJBFUfo3dj";
   const failedHash = "6yRm5FjHn9raRYPoHH6wimizhT53PnPnuvkpecyQDqLY";
+  const nonExistantTxHash = "7yRm5FjHn9raRYPoHH6wimizhT53PnPnuvkpecyQDqLY";
+  const nonSignatureRequestHash =
+    "4pNDN238dgEjj5eNaAF4qzoztF4TmrN82hwJs2zTwuqe";
 
   it("successful: signatureFromTxHash", async () => {
     const sig = await signatureFromTxHash(url, successHash);
@@ -17,11 +21,33 @@ describe("utility: get Signature", () => {
       s: "0x5194CCE1D9F239C28C7765453873A07F35850A485DFE285551FB62C899B61170",
       yParity: 1,
     });
+
+    const relayedSig = await signatureFromTxHash(url, relayedSuccessHash);
+    expect(relayedSig).toEqual({
+      r: "0x593873A56AB98F91C60C23DCA370835CA05254A0305F2753A1CFC3CEB4C46F86",
+      s: "0x783D9887FB4AA9B07E672D7FA88587FB45E7FDC066F7ECA0774E6FE36806404F",
+      yParity: 1,
+    });
+  });
+
+  it("signatureFromTxHash fails Error", async () => {
+    await expect(signatureFromTxHash(url, failedHash)).rejects.toThrow(
+      `Signature Request Failed in ${failedHash}`
+    );
   });
 
   it("signatureFromTxHash fails with no signature", async () => {
-    await expect(signatureFromTxHash(url, failedHash)).rejects.toThrow(
-      `No detectable signature found in transaction ${failedHash}`
+    await expect(
+      signatureFromTxHash(url, nonSignatureRequestHash)
+    ).rejects.toThrow(
+      `No detectable signature found in transaction ${nonSignatureRequestHash}`
+    );
+  });
+
+  // This one takes too long.
+  it.skip("signatureFromTxHash fails with server error", async () => {
+    await expect(signatureFromTxHash(url, nonExistantTxHash)).rejects.toThrow(
+      "JSON-RPC error: Server error"
     );
   });
 
@@ -56,6 +82,20 @@ describe("utility: get Signature", () => {
       status: {
         SuccessValue:
           "eyJiaWdfciI6eyJhZmZpbmVfcG9pbnQiOiIwMkVBRDJCMUYwN0NDNDk4REIyNTU2MzE0QTZGNzdERkUzRUUzRDE0NTNCNkQ3OTJBNzcwOTE5MjRFNTFENEMyNDcifSwicyI6eyJzY2FsYXIiOiIxQTlGNjBDMkNDMjM5OEE1MDk3N0Q0Q0E5M0M0MDE2OEU4RjJDRTdBOUM5MEUzNzQ1MjJERjNDNzZDRjU0RjJFIn0sInJlY292ZXJ5X2lkIjoxfQ==",
+      },
+      // irrelevant fields
+      receipts_outcome: [],
+      transaction: null,
+      transaction_outcome: {
+        id: "",
+        outcome: {
+          logs: [],
+          receipt_ids: [],
+          gas_burnt: 0,
+          tokens_burnt: "",
+          executor_id: "string",
+          status: {},
+        },
       },
     };
     expect(signatureFromOutcome(outcome)).toEqual({
