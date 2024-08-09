@@ -121,6 +121,10 @@ function stripEip155Prefix(eip155Address: string): string {
   return eip155Address.split(":").pop() ?? "";
 }
 
+/**
+ * Features currently underdevelopment that will be migrated into the adapter class once refined.
+ * These features are accessible through the adapter class as `adapter.beta.methodName(...)`
+ */
 export class Beta {
   adapter: NearEthAdapter;
 
