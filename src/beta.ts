@@ -1,14 +1,18 @@
 import {
   Hex,
+  Signature,
   TransactionSerializable,
   fromHex,
   hashMessage,
   hashTypedData,
   keccak256,
+  serializeSignature,
   serializeTransaction,
 } from "viem";
-import { populateTx, toPayload } from "../utils/transaction";
-import { RecoveryData } from "../types";
+import { addSignature, populateTx, toPayload } from "./utils/transaction";
+import { NearEthTxData, RecoveryData } from "./types";
+import { NearEthAdapter } from "./chains/ethereum";
+import { Web3WalletTypes } from "@walletconnect/web3wallet";
 
 // Interface for Ethereum transaction parameters
 export interface EthTransactionParams {
@@ -25,10 +29,10 @@ export type PersonalSignParams = [Hex, Hex];
 /// Interface for eth_sign parameters (address and message)
 export type EthSignParams = [Hex, Hex];
 
-// Interface for complex structured parameters like EIP-712
+/// Interface for complex structured parameters like EIP-712
 export type TypedDataParams = [Hex, string];
 
-type SessionRequestParams =
+export type SessionRequestParams =
   | EthTransactionParams[]
   | PersonalSignParams
   | EthSignParams
@@ -104,10 +108,7 @@ export async function wcRouter(
           type: "eth_signTypedData",
           data: {
             address: sender,
-            types: typedData.types,
-            primaryType: typedData.primaryType,
-            message: typedData.message,
-            domain: typedData.domain,
+            ...typedData,
           },
         },
       };
@@ -118,4 +119,52 @@ export async function wcRouter(
 
 function stripEip155Prefix(eip155Address: string): string {
   return eip155Address.split(":").pop() ?? "";
+}
+
+export class Beta {
+  adapter: NearEthAdapter;
+
+  constructor(adapter: NearEthAdapter) {
+    this.adapter = adapter;
+  }
+
+  async handleSessionRequest(
+    request: Partial<Web3WalletTypes.SessionRequest>
+  ): Promise<NearEthTxData> {
+    const {
+      chainId,
+      request: { method, params },
+    } = request.params!;
+    console.log(`Session Request of type ${method} for chainId ${chainId}`);
+    const { evmMessage, payload, recoveryData } = await wcRouter(
+      method,
+      chainId,
+      params
+    );
+    console.log("Parsed Request:", payload, recoveryData);
+    return {
+      nearPayload: this.adapter.mpcContract.encodeSignatureRequestTx({
+        path: this.adapter.derivationPath,
+        payload,
+        key_version: 0,
+      }),
+      evmMessage,
+      recoveryData,
+    };
+  }
+
+  async respondSessionRequest(
+    recoveryData: RecoveryData,
+    signature: Signature
+  ): Promise<Hex> {
+    if (recoveryData.type === "eth_sendTransaction") {
+      const signedTx = addSignature({
+        transaction: recoveryData.data as Hex,
+        signature,
+      });
+      // Returns relayed transaction hash (without waiting for confirmation).
+      return this.adapter.relaySignedTransaction(signedTx, false);
+    }
+    return serializeSignature(signature);
+  }
 }

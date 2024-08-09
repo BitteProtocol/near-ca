@@ -11,7 +11,6 @@ import {
   TypedDataDefinition,
   parseTransaction,
   keccak256,
-  Signature,
 } from "viem";
 import {
   BaseTx,
@@ -19,25 +18,21 @@ import {
   FunctionCallTransaction,
   TxPayload,
   TransactionWithSignature,
-  NearEthTxData,
   SignArgs,
-  RecoveryData,
-} from "../types";
-import { MpcContract } from "../mpcContract";
-import {
+  MpcContract,
+  Network,
   buildTxPayload,
   addSignature,
   populateTx,
   toPayload,
-} from "../utils/transaction";
-import { Network } from "../network";
-import { Web3WalletTypes } from "@walletconnect/web3wallet";
-import { wcRouter } from "../wallet-connect/handlers";
+} from "..";
+import { Beta } from "../beta";
 
 export class NearEthAdapter {
   readonly mpcContract: MpcContract;
   readonly address: Address;
   readonly derivationPath: string;
+  readonly beta: Beta;
 
   private constructor(config: {
     mpcContract: MpcContract;
@@ -47,6 +42,7 @@ export class NearEthAdapter {
     this.mpcContract = config.mpcContract;
     this.derivationPath = config.derivationPath;
     this.address = config.sender;
+    this.beta = new Beta(this);
   }
 
   /**
@@ -242,47 +238,6 @@ export class NearEthAdapter {
       payload: toPayload(msgHash),
       key_version: 0,
     });
-    return serializeSignature(signature);
-  }
-
-  /// Mintbase Wallet
-  async handleSessionRequest(
-    request: Partial<Web3WalletTypes.SessionRequest>
-  ): Promise<NearEthTxData> {
-    const {
-      chainId,
-      request: { method, params },
-    } = request.params!;
-    console.log(`Session Request of type ${method} for chainId ${chainId}`);
-    const { evmMessage, payload, recoveryData } = await wcRouter(
-      method,
-      chainId,
-      params
-    );
-    console.log("Parsed Request:", payload, recoveryData);
-    return {
-      nearPayload: this.mpcContract.encodeSignatureRequestTx({
-        path: this.derivationPath,
-        payload,
-        key_version: 0,
-      }),
-      evmMessage,
-      recoveryData,
-    };
-  }
-
-  async wcRespond(
-    recoveryData: RecoveryData,
-    signature: Signature
-  ): Promise<Hex> {
-    if (recoveryData.type === "eth_sendTransaction") {
-      const signedTx = addSignature({
-        transaction: recoveryData.data as Hex,
-        signature,
-      });
-      // Returns relayed transaction hash (without waiting for confirmation).
-      return this.relaySignedTransaction(signedTx, false);
-    }
     return serializeSignature(signature);
   }
 }
