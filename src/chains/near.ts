@@ -1,12 +1,28 @@
 import { keyStores, KeyPair, connect, Account } from "near-api-js";
+import { NearConfig } from "near-api-js/lib/near";
 
 export const TGAS = 1000000000000n;
 export const NO_DEPOSIT = "0";
 export const ONE_YOCTO = "1";
 
-export interface NearConfig {
-  networkId: string;
-  nodeUrl: string;
+type NetworkId = "mainnet" | "testnet";
+
+export function getNetworkId(accountId: string): NetworkId {
+  const accountExt = accountId.split(".").pop() || "";
+  if (!["near", "testnet"].includes(accountExt)) {
+    console.warn(
+      `Unusual or invalid network extracted from accountId ${accountId}`
+    );
+  }
+  // Consider anything that isn't testnet as mainnet.
+  return accountExt !== "testnet" ? "mainnet" : accountExt;
+}
+
+export function configFromNetworkId(networkId: NetworkId): NearConfig {
+  return {
+    networkId,
+    nodeUrl: `https://rpc.${networkId}.near.org`,
+  };
 }
 
 /**
