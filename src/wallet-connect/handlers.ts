@@ -41,7 +41,7 @@ export async function wcRouter(
 ): Promise<{
   evmMessage: TransactionSerializable | string;
   payload: number[];
-  signatureRecoveryData: RecoveryData;
+  recoveryData: RecoveryData;
 }> {
   switch (method) {
     case "eth_sign": {
@@ -49,7 +49,7 @@ export async function wcRouter(
       return {
         evmMessage: fromHex(messageHash, "string"),
         payload: toPayload(hashMessage({ raw: messageHash })),
-        signatureRecoveryData: {
+        recoveryData: {
           type: method,
           data: {
             address: sender,
@@ -63,7 +63,7 @@ export async function wcRouter(
       return {
         evmMessage: fromHex(messageHash, "string"),
         payload: toPayload(hashMessage({ raw: messageHash })),
-        signatureRecoveryData: {
+        recoveryData: {
           type: method,
           data: {
             address: sender,
@@ -87,7 +87,7 @@ export async function wcRouter(
       return {
         payload: toPayload(keccak256(serializeTransaction(transaction))),
         evmMessage: transaction,
-        signatureRecoveryData: {
+        recoveryData: {
           type: "eth_sendTransaction",
           data: serializeTransaction(transaction),
         },
@@ -100,7 +100,7 @@ export async function wcRouter(
       return {
         evmMessage: dataString,
         payload: toPayload(hashTypedData(typedData)),
-        signatureRecoveryData: {
+        recoveryData: {
           type: "eth_signTypedData",
           data: {
             address: sender,

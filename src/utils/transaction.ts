@@ -2,6 +2,7 @@ import {
   Hex,
   PublicClient,
   TransactionSerializable,
+  isBytes,
   keccak256,
   parseTransaction,
   serializeTransaction,
@@ -10,11 +11,12 @@ import {
 import { BaseTx, TransactionWithSignature } from "../types";
 import { Network } from "../network";
 
-export function toPayload(hexString: Hex): number[] {
-  if (hexString.slice(2).length !== 32 * 2) {
-    throw new Error(`Payload Hex must have 32 bytes: ${hexString}`);
+export function toPayload(msgHash: Hex | Uint8Array): number[] {
+  const bytes = isBytes(msgHash) ? msgHash : toBytes(msgHash);
+  if (bytes.length !== 32) {
+    throw new Error(`Payload must have 32 bytes: ${msgHash}`);
   }
-  return Array.from(toBytes(hexString));
+  return Array.from(bytes);
 }
 
 export function buildTxPayload(unsignedTxHash: `0x${string}`): number[] {
