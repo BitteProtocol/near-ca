@@ -4,8 +4,6 @@ import {
   Hash,
   serializeTransaction,
   hashMessage,
-  toBytes,
-  isBytes,
   SignableMessage,
   serializeSignature,
   hashTypedData,
@@ -26,7 +24,12 @@ import {
   RecoveryData,
 } from "../types";
 import { MpcContract } from "../mpcContract";
-import { buildTxPayload, addSignature, populateTx } from "../utils/transaction";
+import {
+  buildTxPayload,
+  addSignature,
+  populateTx,
+  toPayload,
+} from "../utils/transaction";
 import { Network } from "../network";
 import { Web3WalletTypes } from "@walletconnect/web3wallet";
 import { wcRouter } from "../wallet-connect/handlers";
@@ -92,16 +95,12 @@ export class NearEthAdapter {
     txData: BaseTx,
     nearGas?: bigint
   ): Promise<Hash> {
-    console.log("Creating Payload for sender:", this.address);
     const { transaction, signArgs } = await this.createTxPayload(txData);
-    console.log(
-      `Requesting signature from Near at ${this.mpcContract.accountId}`
-    );
+    console.log(`Requesting signature from ${this.mpcContract.accountId()}`);
     const signature = await this.mpcContract.requestSignature(
       signArgs,
       nearGas
     );
-    console.log("Raw signature received");
     return this.relayTransaction({ transaction, signature });
   }
 
@@ -121,7 +120,6 @@ export class NearEthAdapter {
     transaction: Hex;
     requestPayload: FunctionCallTransaction<{ request: SignArgs }>;
   }> {
-    console.log("Creating Payload for sender:", this.address);
     const { transaction, signArgs } = await this.createTxPayload(txData);
     return {
       transaction,
@@ -172,6 +170,9 @@ export class NearEthAdapter {
    * @returns Transaction and its bytes (the payload to be signed on Near).
    */
   async createTxPayload(tx: BaseTx): Promise<TxPayload> {
+    console.log(
+      `Creating payload for sender: ${this.nearAccountId()} <> ${this.address}`
+    );
     const transaction = await this.buildTransaction(tx);
     console.log("Built (unsigned) Transaction", transaction);
     const signArgs = {
@@ -236,11 +237,9 @@ export class NearEthAdapter {
    * @returns Two different potential signatures for the hash (one of which is valid).
    */
   async sign(msgHash: `0x${string}` | Uint8Array): Promise<Hex> {
-    const hashToSign = isBytes(msgHash) ? msgHash : toBytes(msgHash);
-
     const signature = await this.mpcContract.requestSignature({
       path: this.derivationPath,
-      payload: Array.from(hashToSign),
+      payload: toPayload(msgHash),
       key_version: 0,
     });
     return serializeSignature(signature);
@@ -255,12 +254,12 @@ export class NearEthAdapter {
       request: { method, params },
     } = request.params!;
     console.log(`Session Request of type ${method} for chainId ${chainId}`);
-    const { evmMessage, payload, signatureRecoveryData } = await wcRouter(
+    const { evmMessage, payload, recoveryData } = await wcRouter(
       method,
       chainId,
       params
     );
-    console.log("Parsed Request:", payload, signatureRecoveryData);
+    console.log("Parsed Request:", payload, recoveryData);
     return {
       nearPayload: this.mpcContract.encodeSignatureRequestTx({
         path: this.derivationPath,
@@ -268,7 +267,7 @@ export class NearEthAdapter {
         key_version: 0,
       }),
       evmMessage,
-      recoveryData: signatureRecoveryData,
+      recoveryData,
     };
   }
 

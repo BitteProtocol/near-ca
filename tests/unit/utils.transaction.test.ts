@@ -22,7 +22,7 @@ describe("Transaction Builder Functions", () => {
     const txHash =
       "0x02e783aa36a7808309e8bb84773f7cbb8094deadbeef0000000000000000000000000b00b1e50180c00";
     expect(() => toPayload(txHash)).toThrow(
-      `Payload Hex must have 32 bytes: ${txHash}`
+      `Payload must have 32 bytes: ${txHash}`
     );
   });
 
