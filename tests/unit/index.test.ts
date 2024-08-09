@@ -30,16 +30,15 @@ describe("index", () => {
   });
 
   it("setupAdapter fails", async () => {
+    const accountId = "your-account.testnet";
+    const networkId = "mainnet";
     const config = {
-      accountId: "your-account.testnet",
-      network: {
-        networkId: "near",
-        nodeUrl: "https://rpc.mainnet.near.org",
-      },
+      accountId,
+      network: configFromNetworkId(networkId),
       mpcContractId: "v1.signer-prod.testnet",
     };
     await expect(() => setupAdapter(config)).rejects.toThrow(
-      "The accountId your-account.testnet does not match the networkId near."
+      `accountId ${accountId} doesn't match the networkId ${networkId}. Please ensure that your accountId is correct and corresponds to the intended network.`
     );
   });
 
