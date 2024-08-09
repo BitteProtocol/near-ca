@@ -75,6 +75,7 @@ export function signatureFromOutcome(
     | FinalExecutionOutcome
     | Omit<FinalExecutionOutcome, "final_execution_status">
 ): Signature {
+  const txHash = outcome.transaction_outcome?.id;
   // TODO - find a scenario when outcome.status is `FinalExecutionStatusBasic`!
   let b64Sig = (outcome.status as FinalExecutionStatus).SuccessValue;
   if (!b64Sig) {
@@ -92,13 +93,32 @@ export function signatureFromOutcome(
       // Reverse the to "find" the last non-empty value!
       .reverse()
       .find((value) => value && value.trim().length > 0);
-    if (!b64Sig) {
-      throw new Error(
-        `No detectable signature found in transaction ${outcome.transaction_outcome?.id}`
-      );
-    }
+  }
+  if (!b64Sig) {
+    throw new Error(`No detectable signature found in transaction ${txHash}`);
+  }
+  if (b64Sig === "eyJFcnIiOiJGYWlsZWQifQ==") {
+    // {"Err": "Failed"}
+    throw new Error(`Signature Request Failed in ${txHash}`);
   }
   const decodedValue = Buffer.from(b64Sig, "base64").toString("utf-8");
   const signature = JSON.parse(decodedValue);
-  return transformSignature(signature);
+  if (isMPCSignature(signature)) {
+    return transformSignature(signature);
+  } else {
+    throw new Error(`No detectable signature found in transaction ${txHash}`);
+  }
+}
+
+// type guard for MPCSignature object.
+function isMPCSignature(obj: unknown): obj is MPCSignature {
+  return (
+    typeof obj === "object" &&
+    obj !== null &&
+    typeof (obj as MPCSignature).big_r === "object" &&
+    typeof (obj as MPCSignature).big_r.affine_point === "string" &&
+    typeof (obj as MPCSignature).s === "object" &&
+    typeof (obj as MPCSignature).s.scalar === "string" &&
+    typeof (obj as MPCSignature).recovery_id === "number"
+  );
 }
