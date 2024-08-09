@@ -8,7 +8,7 @@ import {
   serializeTransaction,
 } from "viem";
 import { populateTx, toPayload } from "../utils/transaction";
-import { RecoveryData } from "../types/types";
+import { RecoveryData } from "../types";
 
 // Interface for Ethereum transaction parameters
 export interface EthTransactionParams {

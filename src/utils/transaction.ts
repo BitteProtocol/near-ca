@@ -7,7 +7,7 @@ import {
   serializeTransaction,
   toBytes,
 } from "viem";
-import { BaseTx, TransactionWithSignature } from "../types/types";
+import { BaseTx, TransactionWithSignature } from "../types";
 import { Network } from "../network";
 
 export function toPayload(hexString: Hex): number[] {

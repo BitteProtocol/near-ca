@@ -1,41 +1,36 @@
 import { Account, KeyPair } from "near-api-js";
 import { NearEthAdapter } from "./chains/ethereum";
-import { MultichainContract } from "./mpcContract";
+import { MpcContract } from "./mpcContract";
 import { NearConfig } from "near-api-js/lib/near";
-import { createNearAccount } from "./chains/near";
+import {
+  configFromNetworkId,
+  createNearAccount,
+  getNetworkId,
+} from "./chains/near";
 
 export * from "./chains/ethereum";
 export * from "./chains/near";
 export * from "./mpcContract";
-export * from "./types/types";
+export * from "./types";
 export * from "./utils/signature";
 export * from "./network";
 export * from "./utils/transaction";
 
+/**
+ * Configuration for setting up the adapter.
+ *
+ * @property {string} accountId - The NEAR account ID.
+ * @property {string} mpcContractId - The MPC contract ID.
+ * @property {NearConfig} [network] - (Optional) The NEAR network configuration.
+ * @property {string} [privateKey] - (Optional) The private key for the account.
+ * @property {string} [derivationPath] - (Optional) The derivation path for the Ethereum account. Defaults to "ethereum,1".
+ */
 interface SetupConfig {
   accountId: string;
   mpcContractId: string;
   network?: NearConfig;
   privateKey?: string;
   derivationPath?: string;
-}
-
-type NetworkId = "near" | "testnet";
-
-function getNetworkId(accountId: string): NetworkId {
-  const networkId = accountId.split(".").pop() || "";
-  if (!["near", "testnet"].includes(networkId)) {
-    throw new Error(`Invalid network extracted from accountId ${accountId}`);
-  }
-  return networkId as NetworkId;
-}
-
-export function configFromNetworkId(networkId: NetworkId): NearConfig {
-  const network = networkId === "near" ? "mainnet" : "testnet";
-  return {
-    networkId,
-    nodeUrl: `https://rpc.${network}.near.org`,
-  };
 }
 
 export async function setupAdapter(args: SetupConfig): Promise<NearEthAdapter> {
@@ -50,7 +45,7 @@ export async function setupAdapter(args: SetupConfig): Promise<NearEthAdapter> {
   const config = args.network ?? configFromNetworkId(accountNetwork);
   if (accountNetwork !== config.networkId) {
     throw new Error(
-      `The accountId ${accountId} does not match the networkId ${config.networkId}. Please ensure that your accountId is correct and corresponds to the intended network.`
+      `accountId ${accountId} doesn't match the networkId ${config.networkId}. Please ensure that your accountId is correct and corresponds to the intended network.`
     );
   }
 
@@ -59,6 +54,7 @@ export async function setupAdapter(args: SetupConfig): Promise<NearEthAdapter> {
     account = await createNearAccount(
       accountId,
       config,
+      // Without private key, MPC contract connection is read-only.
       privateKey ? KeyPair.fromString(privateKey) : undefined
     );
   } catch (error: unknown) {
@@ -66,7 +62,7 @@ export async function setupAdapter(args: SetupConfig): Promise<NearEthAdapter> {
     throw error;
   }
   return NearEthAdapter.fromConfig({
-    mpcContract: new MultichainContract(account, mpcContractId),
+    mpcContract: new MpcContract(account, mpcContractId),
     derivationPath: derivationPath,
   });
 }

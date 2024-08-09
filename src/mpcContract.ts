@@ -6,22 +6,26 @@ import {
   uncompressedHexPointToEvmAddress,
 } from "./utils/kdf";
 import { TGAS, ONE_YOCTO } from "./chains/near";
-import { MPCSignature, FunctionCallTransaction, SignArgs } from "./types/types";
+import { MPCSignature, FunctionCallTransaction, SignArgs } from "./types";
 import { transformSignature } from "./utils/signature";
 
-/// Near Contract Type for change methods
+/**
+ * Near Contract Type for change methods.
+ *
+ * @template T - The type of the arguments for the change method.
+ * @property {T} args - Change method function arguments.
+ * @property {string} gas - Gas limit on transaction execution.
+ * @property {Account} signerAccount - Account signing the call.
+ * @property {string} amount - Attached deposit (i.e., payable amount) to attach to the transaction.
+ */
 export interface ChangeMethodArgs<T> {
-  /// Change method function agruments.
   args: T;
-  /// GasLimit on transaction execution.
   gas: string;
-  /// Account Signing the call
   signerAccount: Account;
-  /// attachedDeposit (i.e. payable amount) to attach to transaction.
   amount: string;
 }
 
-interface MultichainContractInterface extends Contract {
+interface MpcContractInterface extends Contract {
   // Define the signature for the `public_key` view method
   public_key: () => Promise<string>;
 
@@ -35,8 +39,8 @@ interface MultichainContractInterface extends Contract {
  * High-level interface for the Near MPC-Recovery Contract
  * located in: https://github.com/near/mpc-recovery
  */
-export class MultichainContract {
-  contract: MultichainContractInterface;
+export class MpcContract {
+  contract: MpcContractInterface;
   connectedAccount: Account;
 
   constructor(account: Account, contractId: string) {
@@ -46,7 +50,7 @@ export class MultichainContract {
       changeMethods: ["sign"],
       viewMethods: ["public_key"],
       useLocalViewExecution: false,
-    }) as MultichainContractInterface;
+    }) as MpcContractInterface;
   }
 
   accountId(): string {
