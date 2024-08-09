@@ -1,6 +1,6 @@
 import { Account, KeyPair } from "near-api-js";
 import { NearEthAdapter } from "./chains/ethereum";
-import { MultichainContract as MpcContract } from "./mpcContract";
+import { MpcContract } from "./mpcContract";
 import { NearConfig } from "near-api-js/lib/near";
 import {
   configFromNetworkId,
@@ -11,11 +11,20 @@ import {
 export * from "./chains/ethereum";
 export * from "./chains/near";
 export * from "./mpcContract";
-export * from "./types/types";
+export * from "./types";
 export * from "./utils/signature";
 export * from "./network";
 export * from "./utils/transaction";
 
+/**
+ * Configuration for setting up the adapter.
+ *
+ * @property {string} accountId - The NEAR account ID.
+ * @property {string} mpcContractId - The MPC contract ID.
+ * @property {NearConfig} [network] - (Optional) The NEAR network configuration.
+ * @property {string} [privateKey] - (Optional) The private key for the account.
+ * @property {string} [derivationPath] - (Optional) The derivation path for the Ethereum account. Defaults to "ethereum,1".
+ */
 interface SetupConfig {
   accountId: string;
   mpcContractId: string;

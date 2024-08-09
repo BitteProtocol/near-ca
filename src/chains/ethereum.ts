@@ -16,26 +16,26 @@ import {
 } from "viem";
 import {
   BaseTx,
-  NearEthAdapterParams,
+  AdapterParams,
   FunctionCallTransaction,
   TxPayload,
   TransactionWithSignature,
   NearEthTxData,
   SignArgs,
-} from "../types/types";
-import { MultichainContract } from "../mpcContract";
+} from "../types";
+import { MpcContract } from "../mpcContract";
 import { buildTxPayload, addSignature, populateTx } from "../utils/transaction";
 import { Network } from "../network";
 import { Web3WalletTypes } from "@walletconnect/web3wallet";
 import { wcRouter } from "../wallet-connect/handlers";
 
 export class NearEthAdapter {
-  readonly mpcContract: MultichainContract;
+  readonly mpcContract: MpcContract;
   readonly address: Address;
   readonly derivationPath: string;
 
   private constructor(config: {
-    mpcContract: MultichainContract;
+    mpcContract: MpcContract;
     derivationPath: string;
     sender: Address;
   }) {
@@ -64,9 +64,9 @@ export class NearEthAdapter {
 
   /**
    * Constructs an EVM instance with the provided configuration.
-   * @param {NearEthAdapterParams} args - The configuration object for the Adapter instance.
+   * @param {AdapterParams} args - The configuration object for the Adapter instance.
    */
-  static async fromConfig(args: NearEthAdapterParams): Promise<NearEthAdapter> {
+  static async fromConfig(args: AdapterParams): Promise<NearEthAdapter> {
     // Sender is uniquely determined by the derivation path!
     const mpcContract = args.mpcContract;
     const derivationPath = args.derivationPath || "ethereum,1";
