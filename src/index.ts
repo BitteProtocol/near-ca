@@ -15,6 +15,8 @@ export * from "./types";
 export * from "./utils/signature";
 export * from "./network";
 export * from "./utils/transaction";
+/// Beta features
+export * from "./beta";
 
 /**
  * Configuration for setting up the adapter.

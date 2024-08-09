@@ -31,7 +31,7 @@ describe("ethereum", () => {
     expect(request.actions.length).toEqual(1);
 
     expect(() =>
-      adapter.handleSessionRequest({
+      adapter.beta.handleSessionRequest({
         params: {
           chainId: "11155111",
           request: { method: "poop", params: [] },
@@ -39,7 +39,7 @@ describe("ethereum", () => {
       })
     ).rejects.toThrow("Unhandled session_request method: poop");
 
-    const ethSign = await adapter.handleSessionRequest({
+    const ethSign = await adapter.beta.handleSessionRequest({
       params: {
         chainId: "11155111",
         request: {
