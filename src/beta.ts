@@ -1,7 +1,6 @@
 import {
   Hex,
   Signature,
-  TransactionSerializable,
   fromHex,
   hashMessage,
   hashTypedData,
@@ -43,7 +42,7 @@ export async function wcRouter(
   chainId: string,
   params: SessionRequestParams
 ): Promise<{
-  evmMessage: TransactionSerializable | string;
+  evmMessage: string;
   payload: number[];
   recoveryData: RecoveryData;
 }> {
@@ -88,12 +87,13 @@ export async function wcRouter(
         },
         tx.from
       );
+      const txHex = serializeTransaction(transaction);
       return {
         payload: toPayload(keccak256(serializeTransaction(transaction))),
-        evmMessage: transaction,
+        evmMessage: txHex,
         recoveryData: {
           type: "eth_sendTransaction",
-          data: serializeTransaction(transaction),
+          data: txHex,
         },
       };
     }
@@ -158,14 +158,11 @@ export class Beta {
   }
 
   async respondSessionRequest(
-    recoveryData: RecoveryData,
-    signature: Signature
+    signature: Signature,
+    transaction?: Hex
   ): Promise<Hex> {
-    if (recoveryData.type === "eth_sendTransaction") {
-      const signedTx = addSignature({
-        transaction: recoveryData.data as Hex,
-        signature,
-      });
+    if (transaction) {
+      const signedTx = addSignature({ transaction, signature });
       // Returns relayed transaction hash (without waiting for confirmation).
       return this.adapter.relaySignedTransaction(signedTx, false);
     }
