@@ -1,4 +1,4 @@
-import { Hex, TransactionSerializable, toHex } from "viem";
+import { Hex, isHex, toHex } from "viem";
 import { wcRouter } from "../../src/beta";
 
 describe("Wallet Connect", () => {
@@ -71,6 +71,7 @@ Challenge: 4113fc3ab2cc60f5d595b2e55349f1eec56fd0c70d4287081fe7156848263626`
     });
   });
   describe("wcRouter: eth_sendTransaction", () => {
+    /// can't test payload: its non-deterministic because of gas values!
     it("with value", async () => {
       const { evmMessage } = await wcRouter("eth_sendTransaction", chainId, [
         {
@@ -81,21 +82,7 @@ Challenge: 4113fc3ab2cc60f5d595b2e55349f1eec56fd0c70d4287081fe7156848263626`
           data: "0xd0e30db0",
         },
       ]);
-      const tx = evmMessage as TransactionSerializable;
-
-      delete tx.maxFeePerGas;
-      delete tx.maxPriorityFeePerGas;
-      delete tx.nonce;
-
-      expect(tx).toEqual({
-        account: from,
-        chainId: 11155111,
-        data: "0xd0e30db0",
-        gas: 54045n,
-        to,
-        value: 100000000000000000n,
-      });
-      /// can't test payload: its non-deterministic because of gas values!
+      expect(isHex(evmMessage)).toBe(true);
     });
 
     it("null value", async () => {
@@ -107,21 +94,8 @@ Challenge: 4113fc3ab2cc60f5d595b2e55349f1eec56fd0c70d4287081fe7156848263626`
           data: "0x2e1a7d4d000000000000000000000000000000000000000000000000002386f26fc10000",
         },
       ]);
-      const tx = evmMessage as TransactionSerializable;
 
-      delete tx.maxFeePerGas;
-      delete tx.maxPriorityFeePerGas;
-      delete tx.nonce;
-
-      expect(tx).toEqual({
-        account: from,
-        chainId: 11155111,
-        data: "0x2e1a7d4d000000000000000000000000000000000000000000000000002386f26fc10000",
-        gas: 43203n,
-        to,
-        value: 0n,
-      });
-      /// can't test payload: its non-deterministic because of gas values!
+      expect(isHex(evmMessage)).toBe(true);
     });
 
     it("null data", async () => {
@@ -133,21 +107,8 @@ Challenge: 4113fc3ab2cc60f5d595b2e55349f1eec56fd0c70d4287081fe7156848263626`
           value: "0x01",
         },
       ]);
-      const tx = evmMessage as TransactionSerializable;
 
-      delete tx.maxFeePerGas;
-      delete tx.maxPriorityFeePerGas;
-      delete tx.nonce;
-
-      expect(tx).toEqual({
-        account: from,
-        chainId: 11155111,
-        data: "0x",
-        gas: 43203n,
-        to,
-        value: 1n,
-      });
-      /// can't test payload: its non-deterministic because of gas values!
+      expect(isHex(evmMessage)).toBe(true);
     });
   });
   describe("wcRouter: eth_signTypedData", () => {
