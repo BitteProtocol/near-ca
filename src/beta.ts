@@ -1,6 +1,5 @@
 import {
   Hex,
-  Signature,
   fromHex,
   hashMessage,
   hashTypedData,
@@ -11,7 +10,11 @@ import {
 import { addSignature, populateTx, toPayload } from "./utils/transaction";
 import { NearEthTxData, RecoveryData } from "./types";
 import { NearEthAdapter } from "./chains/ethereum";
-import { Web3WalletTypes } from "@walletconnect/web3wallet";
+import Web3Wallet, { Web3WalletTypes } from "@walletconnect/web3wallet";
+import { buildApprovedNamespaces } from "@walletconnect/utils";
+import { SessionTypes } from "@walletconnect/types";
+import { configFromNetworkId, getNetworkId } from "./chains/near";
+import { signatureFromTxHash } from "./utils/signature";
 
 // Interface for Ethereum transaction parameters
 export interface EthTransactionParams {
@@ -131,7 +134,28 @@ export class Beta {
   constructor(adapter: NearEthAdapter) {
     this.adapter = adapter;
   }
-
+  async approveSession(
+    w3Wallet: Web3Wallet,
+    proposal: Web3WalletTypes.SessionProposal
+  ): Promise<SessionTypes.Struct> {
+    const result = await w3Wallet.approveSession({
+      id: proposal.id,
+      namespaces: buildApprovedNamespaces({
+        proposal: proposal.params,
+        supportedNamespaces: {
+          eip155: {
+            chains: supportedChainIds.map((id) => `eip155:${id}`),
+            methods: supportedMethods,
+            events: supportedEvents,
+            accounts: supportedChainIds.map(
+              (id) => `eip155:${id}:${this.adapter.address}`
+            ),
+          },
+        },
+      }),
+    });
+    return result;
+  }
   async handleSessionRequest(
     request: Partial<Web3WalletTypes.SessionRequest>
   ): Promise<NearEthTxData> {
@@ -158,14 +182,61 @@ export class Beta {
   }
 
   async respondSessionRequest(
-    signature: Signature,
+    w3Wallet: Web3Wallet,
+    request: Web3WalletTypes.SessionRequest,
+    nearTxHash: string,
     transaction?: Hex
-  ): Promise<Hex> {
+  ): Promise<void> {
+    const nearConfig = configFromNetworkId(
+      getNetworkId(this.adapter.nearAccountId())
+    );
+    const signature = await signatureFromTxHash(nearConfig.nodeUrl, nearTxHash);
+    let result = serializeSignature(signature);
     if (transaction) {
       const signedTx = addSignature({ transaction, signature });
       // Returns relayed transaction hash (without waiting for confirmation).
-      return this.adapter.relaySignedTransaction(signedTx, false);
+      result = await this.adapter.relaySignedTransaction(signedTx, false);
     }
-    return serializeSignature(signature);
+
+    await w3Wallet.respondSessionRequest({
+      topic: request.topic,
+      response: {
+        id: request.id,
+        jsonrpc: "2.0",
+        result,
+      },
+    });
   }
 }
+
+const supportedChainIds = [1, 100, 11155111];
+const supportedMethods = [
+  // "eth_accounts",
+  // "eth_requestAccounts",
+  "eth_sendRawTransaction",
+  "eth_sign",
+  "eth_signTransaction",
+  "eth_signTypedData",
+  "eth_signTypedData_v3",
+  "eth_signTypedData_v4",
+  "eth_sendTransaction",
+  "personal_sign",
+  // "wallet_switchEthereumChain",
+  // "wallet_addEthereumChain",
+  // "wallet_getPermissions",
+  // "wallet_requestPermissions",
+  // "wallet_registerOnboarding",
+  // "wallet_watchAsset",
+  // "wallet_scanQRCode",
+  // "wallet_sendCalls",
+  // "wallet_getCallsStatus",
+  // "wallet_showCallsStatus",
+  // "wallet_getCapabilities",
+];
+const supportedEvents = [
+  "chainChanged",
+  "accountsChanged",
+  "message",
+  "disconnect",
+  "connect",
+];

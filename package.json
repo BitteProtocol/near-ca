@@ -27,6 +27,7 @@
     "@types/node": "^22.1.0",
     "@typescript-eslint/eslint-plugin": "^8.0.0",
     "@typescript-eslint/parser": "^8.0.0",
+    "@walletconnect/types": "^2.14.0",
     "dotenv": "^16.4.5",
     "eslint": "^9.7.0",
     "ethers": "^6.13.1",
@@ -38,6 +39,7 @@
     "typescript": "^5.5.3"
   },
   "dependencies": {
+    "@walletconnect/utils": "^2.14.0",
     "@walletconnect/web3wallet": "^1.13.0",
     "elliptic": "^6.5.6",
     "near-api-js": "^4.0.3",
