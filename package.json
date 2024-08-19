@@ -2,6 +2,20 @@
   "name": "near-ca",
   "version": "0.0.0",
   "license": "MIT",
+  "description": "An SDK for controlling Ethereum Accounts from a Near Account.",
+  "author": "bh2smith",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/mintbase/near-ca.git"
+  },
+  "bugs": {
+    "url": "https://github.com/mintbase/near-ca/issues"
+  },
+  "keywords": [
+    "near",
+    "ethereum",
+    "chain-signatures"
+  ],
   "main": "dist/cjs/index.js",
   "module": "dist/mjs/index.js",
   "types": "dist/esm/index.d.ts",
