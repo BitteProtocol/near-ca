@@ -1,5 +1,5 @@
 import { zeroAddress } from "viem";
-import { setupAdapter } from "../../src/";
+import { MPC_MAX_DEPOSIT, setupAdapter } from "../../src/";
 
 const accountId = "farmface.testnet";
 const network = {
@@ -70,7 +70,7 @@ describe("ethereum", () => {
                 },
               },
               gas: "250000000000000",
-              deposit: "1",
+              deposit: MPC_MAX_DEPOSIT,
             },
           },
         ],

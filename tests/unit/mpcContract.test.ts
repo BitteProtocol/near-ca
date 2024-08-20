@@ -1,4 +1,4 @@
-import { createNearAccount, MpcContract } from "../../src/";
+import { createNearAccount, MPC_MAX_DEPOSIT, MpcContract } from "../../src/";
 
 const TESTNET_CONFIG = {
   networkId: "testnet",
@@ -36,7 +36,7 @@ describe("mpcContract", () => {
               },
             },
             gas: "250000000000000",
-            deposit: "1",
+            deposit: MPC_MAX_DEPOSIT,
           },
         },
       ],
