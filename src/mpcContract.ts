@@ -5,7 +5,7 @@ import {
   najPublicKeyStrToUncompressedHexPoint,
   uncompressedHexPointToEvmAddress,
 } from "./utils/kdf";
-import { TGAS, ONE_YOCTO } from "./chains/near";
+import { TGAS, MPC_MAX_DEPOSIT } from "./chains/near";
 import { MPCSignature, FunctionCallTransaction, SignArgs } from "./types";
 import { transformSignature } from "./utils/signature";
 
@@ -77,7 +77,7 @@ export class MpcContract {
       signerAccount: this.connectedAccount,
       args: { request: signArgs },
       gas: gasOrDefault(gas),
-      amount: ONE_YOCTO,
+      amount: MPC_MAX_DEPOSIT,
     });
 
     return transformSignature(mpcSig);
@@ -97,7 +97,7 @@ export class MpcContract {
             methodName: "sign",
             args: { request: signArgs },
             gas: gasOrDefault(gas),
-            deposit: ONE_YOCTO,
+            deposit: MPC_MAX_DEPOSIT,
           },
         },
       ],
