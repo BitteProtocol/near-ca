@@ -3,8 +3,6 @@ import { NearConfig } from "near-api-js/lib/near";
 
 export const TGAS = 1000000000000n;
 export const NO_DEPOSIT = "0";
-// Unused amount will be returned to user (apparently).
-export const MPC_MAX_DEPOSIT = "50000000000000000000000";
 
 type NetworkId = "mainnet" | "testnet";
 
