@@ -9,22 +9,19 @@ import {
   hashTypedData,
   TypedData,
   TypedDataDefinition,
-  parseTransaction,
-  keccak256,
 } from "viem";
 import {
   BaseTx,
   AdapterParams,
   FunctionCallTransaction,
   TxPayload,
-  TransactionWithSignature,
   SignArgs,
   MpcContract,
   Network,
   buildTxPayload,
-  addSignature,
   populateTx,
   toPayload,
+  broadcastSignedTransaction,
 } from "..";
 import { Beta } from "../beta";
 
@@ -97,7 +94,7 @@ export class NearEthAdapter {
       signArgs,
       nearGas
     );
-    return this.relayTransaction({ transaction, signature });
+    return broadcastSignedTransaction({ transaction, signature });
   }
 
   /**
@@ -147,17 +144,6 @@ export class NearEthAdapter {
   }
 
   /**
-   * Relays valid representation of signed transaction to Etherem mempool for execution.
-   *
-   * @param {TransactionWithSignature} tx - Signed Ethereum transaction.
-   * @returns Hash of relayed transaction.
-   */
-  async relayTransaction(tx: TransactionWithSignature): Promise<Hash> {
-    const signedTx = addSignature(tx);
-    return this.relaySignedTransaction(signedTx);
-  }
-
-  /**
    * Builds a complete, unsigned transaction (with nonce, gas estimates, current prices)
    * and payload bytes in preparation to be relayed to Near MPC contract.
    *
@@ -190,30 +176,6 @@ export class NearEthAdapter {
     return serializeTransaction(transaction);
   }
 
-  /**
-   * Relays signed transaction to Ethereum mem-pool for execution.
-   * @param serializedTransaction - Signed Ethereum transaction.
-   * @returns Transaction Hash of relayed transaction.
-   */
-  async relaySignedTransaction(
-    serializedTransaction: Hex,
-    wait: boolean = true
-  ): Promise<Hash> {
-    const tx = parseTransaction(serializedTransaction);
-    const network = Network.fromChainId(tx.chainId!);
-    if (wait) {
-      const hash = await network.client.sendRawTransaction({
-        serializedTransaction,
-      });
-      console.log(`Transaction Confirmed: ${network.scanUrl}/tx/${hash}`);
-      return hash;
-    } else {
-      network.client.sendRawTransaction({
-        serializedTransaction,
-      });
-      return keccak256(serializedTransaction);
-    }
-  }
   // Below code is inspired by https://github.com/Connor-ETHSeoul/near-viem
 
   async signTypedData<

@@ -31,7 +31,7 @@ interface SetupConfig {
   accountId: string;
   mpcContractId: string;
   network?: NearConfig;
-  privateKey?: string;
+  privateKey?: `ed25519:${string}` | `secp256k1:${string}`;
   derivationPath?: string;
 }
 

@@ -8,7 +8,12 @@ import {
   serializeSignature,
   serializeTransaction,
 } from "viem";
-import { addSignature, populateTx, toPayload } from "./utils/transaction";
+import {
+  addSignature,
+  populateTx,
+  relaySignedTransaction,
+  toPayload,
+} from "./utils/transaction";
 import { NearEthTxData, RecoveryData } from "./types";
 import { NearEthAdapter } from "./chains/ethereum";
 import { Web3WalletTypes } from "@walletconnect/web3wallet";
@@ -164,7 +169,7 @@ export class Beta {
     if (transaction) {
       const signedTx = addSignature({ transaction, signature });
       // Returns relayed transaction hash (without waiting for confirmation).
-      return this.adapter.relaySignedTransaction(signedTx, false);
+      return relaySignedTransaction(signedTx, false);
     }
     return serializeSignature(signature);
   }
