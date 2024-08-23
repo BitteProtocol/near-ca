@@ -29,7 +29,9 @@ interface MpcContractInterface extends Contract {
   /// Define the signature for the `public_key` view method.
   public_key: () => Promise<string>;
   /// Returns required deposit based on current request queue.
-  experimental_signature_deposit: () => Promise<bigint>;
+  experimental_signature_deposit: () => Promise<number>;
+  /// Some clown deployed one version of the contracts with this typo
+  experimantal_signature_deposit: () => Promise<number>;
 
   /// Define the signature for the `sign` change method.
   sign: (
@@ -50,7 +52,11 @@ export class MpcContract {
 
     this.contract = new Contract(account.connection, contractId, {
       changeMethods: ["sign"],
-      viewMethods: ["public_key", "experimental_signature_deposit"],
+      viewMethods: [
+        "public_key",
+        "experimental_signature_deposit",
+        "experimantal_signature_deposit",
+      ],
       useLocalViewExecution: false,
     }) as MpcContractInterface;
   }
@@ -72,7 +78,21 @@ export class MpcContract {
   };
 
   getDeposit = async (): Promise<string> => {
-    return (await this.contract.experimental_signature_deposit()).toString();
+    let deposit = 1;
+    try {
+      deposit = await this.contract.experimental_signature_deposit();
+    } catch (error: unknown) {
+      if (
+        error instanceof Error &&
+        error.message === "Contract method is not found"
+      ) {
+        // Clown town
+        deposit = await this.contract.experimantal_signature_deposit();
+      }
+    }
+    return BigInt(
+      deposit.toLocaleString("fullwide", { useGrouping: false })
+    ).toString();
   };
 
   requestSignature = async (
