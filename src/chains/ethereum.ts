@@ -119,7 +119,7 @@ export class NearEthAdapter {
     const { transaction, signArgs } = await this.createTxPayload(txData);
     return {
       transaction,
-      requestPayload: this.mpcContract.encodeSignatureRequestTx(
+      requestPayload: await this.mpcContract.encodeSignatureRequestTx(
         signArgs,
         nearGas
       ),
@@ -132,10 +132,10 @@ export class NearEthAdapter {
    * @param nearGas optional gas parameter
    * @returns {FunctionCallTransaction<SignArgs>} Prepared Near Transaction with signerId as this.address
    */
-  mpcSignRequest(
+  async mpcSignRequest(
     transaction: Hex,
     nearGas?: bigint
-  ): FunctionCallTransaction<{ request: SignArgs }> {
+  ): Promise<FunctionCallTransaction<{ request: SignArgs }>> {
     return this.mpcContract.encodeSignatureRequestTx(
       {
         payload: buildTxPayload(transaction),

@@ -147,7 +147,7 @@ export class Beta {
     );
     console.log("Parsed Request:", payload, recoveryData);
     return {
-      nearPayload: this.adapter.mpcContract.encodeSignatureRequestTx({
+      nearPayload: await this.adapter.mpcContract.encodeSignatureRequestTx({
         path: this.adapter.derivationPath,
         payload,
         key_version: 0,

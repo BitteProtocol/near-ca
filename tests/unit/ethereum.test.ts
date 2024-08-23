@@ -1,5 +1,5 @@
 import { zeroAddress } from "viem";
-import { MPC_MAX_DEPOSIT, setupAdapter } from "../../src/";
+import { setupAdapter } from "../../src/";
 
 const accountId = "farmface.testnet";
 const network = {
@@ -27,7 +27,7 @@ describe("ethereum", () => {
       chainId: 11155111,
     });
 
-    const request = adapter.mpcSignRequest(transaction);
+    const request = await adapter.mpcSignRequest(transaction);
     expect(request.actions.length).toEqual(1);
 
     expect(() =>
@@ -70,7 +70,7 @@ describe("ethereum", () => {
                 },
               },
               gas: "250000000000000",
-              deposit: MPC_MAX_DEPOSIT,
+              deposit: "50000000000000000000000",
             },
           },
         ],

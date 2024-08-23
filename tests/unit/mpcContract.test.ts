@@ -1,4 +1,4 @@
-import { createNearAccount, MPC_MAX_DEPOSIT, MpcContract } from "../../src/";
+import { createNearAccount, MpcContract } from "../../src/";
 
 const TESTNET_CONFIG = {
   networkId: "testnet",
@@ -36,14 +36,15 @@ describe("mpcContract", () => {
               },
             },
             gas: "250000000000000",
-            deposit: MPC_MAX_DEPOSIT,
+            deposit: "1",
           },
         },
       ],
     };
-    expect(mpc.encodeSignatureRequestTx(signArgs)).toEqual(expected);
+    const result = await mpc.encodeSignatureRequestTx(signArgs);
+    expect(result).toEqual(expected);
     // Set Gas:
     expected.actions[0]!.params.gas = "1";
-    expect(mpc.encodeSignatureRequestTx(signArgs, 1n)).toEqual(expected);
+    expect(await mpc.encodeSignatureRequestTx(signArgs, 1n)).toEqual(expected);
   });
 });

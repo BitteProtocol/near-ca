@@ -5,7 +5,7 @@ import {
   najPublicKeyStrToUncompressedHexPoint,
   uncompressedHexPointToEvmAddress,
 } from "./utils/kdf";
-import { TGAS, MPC_MAX_DEPOSIT } from "./chains/near";
+import { TGAS } from "./chains/near";
 import { MPCSignature, FunctionCallTransaction, SignArgs } from "./types";
 import { transformSignature } from "./utils/signature";
 
@@ -26,10 +26,14 @@ export interface ChangeMethodArgs<T> {
 }
 
 interface MpcContractInterface extends Contract {
-  // Define the signature for the `public_key` view method
+  /// Define the signature for the `public_key` view method.
   public_key: () => Promise<string>;
+  /// Returns required deposit based on current request queue.
+  experimental_signature_deposit: () => Promise<number>;
+  /// Some clown deployed one version of the contracts with this typo
+  experimantal_signature_deposit: () => Promise<number>;
 
-  // Define the signature for the `sign` change method
+  /// Define the signature for the `sign` change method.
   sign: (
     args: ChangeMethodArgs<{ request: SignArgs }>
   ) => Promise<MPCSignature>;
@@ -48,7 +52,11 @@ export class MpcContract {
 
     this.contract = new Contract(account.connection, contractId, {
       changeMethods: ["sign"],
-      viewMethods: ["public_key"],
+      viewMethods: [
+        "public_key",
+        "experimental_signature_deposit",
+        "experimantal_signature_deposit",
+      ],
       useLocalViewExecution: false,
     }) as MpcContractInterface;
   }
@@ -69,6 +77,27 @@ export class MpcContract {
     return uncompressedHexPointToEvmAddress(publicKey);
   };
 
+  getDeposit = async (): Promise<string> => {
+    let deposit = 1e23;
+    try {
+      deposit = await this.contract.experimental_signature_deposit();
+    } catch (error: unknown) {
+      if (
+        error instanceof Error &&
+        error.message === "Contract method is not found"
+      ) {
+        // Clown town
+        deposit = await this.contract.experimantal_signature_deposit();
+      }
+      console.warn(
+        `Failed to get deposit with ${error} - using fallback of 0.1 Near`
+      );
+    }
+    return BigInt(
+      deposit.toLocaleString("fullwide", { useGrouping: false })
+    ).toString();
+  };
+
   requestSignature = async (
     signArgs: SignArgs,
     gas?: bigint
@@ -77,16 +106,16 @@ export class MpcContract {
       signerAccount: this.connectedAccount,
       args: { request: signArgs },
       gas: gasOrDefault(gas),
-      amount: MPC_MAX_DEPOSIT,
+      amount: await this.getDeposit(),
     });
 
     return transformSignature(mpcSig);
   };
 
-  encodeSignatureRequestTx(
+  async encodeSignatureRequestTx(
     signArgs: SignArgs,
     gas?: bigint
-  ): FunctionCallTransaction<{ request: SignArgs }> {
+  ): Promise<FunctionCallTransaction<{ request: SignArgs }>> {
     return {
       signerId: this.connectedAccount.accountId,
       receiverId: this.contract.contractId,
@@ -97,7 +126,7 @@ export class MpcContract {
             methodName: "sign",
             args: { request: signArgs },
             gas: gasOrDefault(gas),
-            deposit: MPC_MAX_DEPOSIT,
+            deposit: await this.getDeposit(),
           },
         },
       ],
