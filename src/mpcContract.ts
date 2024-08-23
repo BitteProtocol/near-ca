@@ -78,7 +78,7 @@ export class MpcContract {
   };
 
   getDeposit = async (): Promise<string> => {
-    let deposit = 1;
+    let deposit = 1e23;
     try {
       deposit = await this.contract.experimental_signature_deposit();
     } catch (error: unknown) {
@@ -89,6 +89,9 @@ export class MpcContract {
         // Clown town
         deposit = await this.contract.experimantal_signature_deposit();
       }
+      console.warn(
+        `Failed to get deposit with ${error} - using fallback of 0.1 Near`
+      );
     }
     return BigInt(
       deposit.toLocaleString("fullwide", { useGrouping: false })
