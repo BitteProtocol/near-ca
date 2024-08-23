@@ -1,4 +1,5 @@
 import {
+  Hash,
   Hex,
   PublicClient,
   TransactionSerializable,
@@ -68,4 +69,42 @@ export function addSignature({
     ...txData,
   };
   return serializeTransaction(signedTx);
+}
+
+/**
+ * Relays signed transaction to Ethereum mem-pool for execution.
+ * @param serializedTransaction - Signed Ethereum transaction.
+ * @returns Transaction Hash of relayed transaction.
+ */
+export async function relaySignedTransaction(
+  serializedTransaction: Hex,
+  wait: boolean = true
+): Promise<Hash> {
+  const tx = parseTransaction(serializedTransaction);
+  const network = Network.fromChainId(tx.chainId!);
+  if (wait) {
+    const hash = await network.client.sendRawTransaction({
+      serializedTransaction,
+    });
+    console.log(`Transaction Confirmed: ${network.scanUrl}/tx/${hash}`);
+    return hash;
+  } else {
+    network.client.sendRawTransaction({
+      serializedTransaction,
+    });
+    return keccak256(serializedTransaction);
+  }
+}
+
+/**
+ * Relays valid representation of signed transaction to Etherem mempool for execution.
+ *
+ * @param {TransactionWithSignature} tx - Signed Ethereum transaction.
+ * @returns Hash of relayed transaction.
+ */
+export async function broadcastSignedTransaction(
+  tx: TransactionWithSignature
+): Promise<Hash> {
+  const signedTx = addSignature(tx);
+  return relaySignedTransaction(signedTx);
 }
