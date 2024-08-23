@@ -18,6 +18,8 @@ export * from "./utils/transaction";
 /// Beta features
 export * from "./beta";
 
+type KeyPairString = `ed25519:${string}` | `secp256k1:${string}`;
+
 /**
  * Configuration for setting up the adapter.
  *
@@ -31,7 +33,7 @@ interface SetupConfig {
   accountId: string;
   mpcContractId: string;
   network?: NearConfig;
-  privateKey?: `ed25519:${string}` | `secp256k1:${string}`;
+  privateKey?: string;
   derivationPath?: string;
 }
 
@@ -57,7 +59,7 @@ export async function setupAdapter(args: SetupConfig): Promise<NearEthAdapter> {
       accountId,
       config,
       // Without private key, MPC contract connection is read-only.
-      privateKey ? KeyPair.fromString(privateKey) : undefined
+      privateKey ? KeyPair.fromString(privateKey as KeyPairString) : undefined
     );
   } catch (error: unknown) {
     console.error(`Failed to create NEAR account: ${error}`);
