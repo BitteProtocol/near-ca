@@ -1,17 +1,21 @@
 import { Chain, createPublicClient, http, PublicClient } from "viem";
 import {
-  sepolia,
-  mainnet,
+  arbitrum,
+  base,
+  blast,
   gnosis,
   holesky,
-  arbitrum,
+  localhost,
+  mainnet,
   optimism,
   optimismSepolia,
-  localhost,
+  sepolia,
 } from "viem/chains";
 
 // All supported networks
 const SUPPORTED_NETWORKS = createNetworkMap([
+  base,
+  blast,
   mainnet,
   gnosis,
   sepolia,
@@ -54,7 +58,10 @@ export class Network implements NetworkFields {
   static fromChainId(chainId: number): Network {
     const networkFields = SUPPORTED_NETWORKS[chainId];
     if (!networkFields) {
-      throw new Error(`Network with chainId ${chainId} is not supported.`);
+      throw new Error(
+        `Network with chainId ${chainId} is not supported. 
+        Please reach out to the developers of https://github.com/Mintbase/near-ca`
+      );
     }
     return new Network(networkFields);
   }
