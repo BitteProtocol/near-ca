@@ -1,30 +1,8 @@
 import { Chain, createPublicClient, http, PublicClient } from "viem";
-import {
-  arbitrum,
-  base,
-  blast,
-  gnosis,
-  holesky,
-  localhost,
-  mainnet,
-  optimism,
-  optimismSepolia,
-  sepolia,
-} from "viem/chains";
+import * as chains from "viem/chains";
 
-// All supported networks
-const SUPPORTED_NETWORKS = createNetworkMap([
-  base,
-  blast,
-  mainnet,
-  gnosis,
-  sepolia,
-  holesky,
-  arbitrum,
-  optimism,
-  optimismSepolia,
-  localhost,
-]);
+// We support all networks exported by viem
+const SUPPORTED_NETWORKS = createNetworkMap(Object.values(chains));
 
 interface NetworkFields {
   name: string;
