@@ -1,4 +1,7 @@
 import {
+  Eip1559FeesNotSupportedError,
+  FeeValuesEIP1559,
+  FeeValuesLegacy,
   Hash,
   Hex,
   PublicClient,
@@ -44,17 +47,13 @@ export async function populateTx(
     value: tx.value ?? 0n,
     data: tx.data ?? "0x",
   };
-  const [estimatedGas, { maxFeePerGas, maxPriorityFeePerGas }] =
-    await Promise.all([
-      // Only estimate gas if not provided.
-      tx.gas || provider.estimateGas(transactionData),
-      provider.estimateFeesPerGas(),
-    ]);
+  // Only estimate gas if not provided.
+  const estimatedGas = tx.gas || (await provider.estimateGas(transactionData));
+  const gasValues = await getGasData(provider);
   return {
     ...transactionData,
+    ...gasValues,
     gas: estimatedGas,
-    maxFeePerGas,
-    maxPriorityFeePerGas,
     chainId,
   };
 }
@@ -69,6 +68,20 @@ export function addSignature({
     ...txData,
   };
   return serializeTransaction(signedTx);
+}
+
+export async function getGasData(
+  provider: PublicClient
+): Promise<FeeValuesEIP1559 | FeeValuesLegacy> {
+  try {
+    // EIP-1559 transaction
+    return await provider.estimateFeesPerGas();
+  } catch (error: unknown) {
+    if (error instanceof Eip1559FeesNotSupportedError) {
+      console.warn(`${error.shortMessage} Using Legacy Gas Fees`);
+    }
+    return { gasPrice: await provider.getGasPrice() };
+  }
 }
 
 /**

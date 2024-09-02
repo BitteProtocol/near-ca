@@ -1,4 +1,4 @@
-import { zeroAddress } from "viem";
+import { serializeTransaction, zeroAddress } from "viem";
 import { Network, TransactionWithSignature } from "../../src";
 import {
   buildTxPayload,
@@ -53,5 +53,14 @@ describe("Transaction Builder Functions", () => {
     const tx = await populateTx(baseTx, zeroAddress);
     expect(tx.to).toEqual(zeroAddress);
     expect(tx.value).toEqual(0n);
+  });
+
+  it.only("populate Non EIP-1559 Transaction", async () => {
+    const baseTx = {
+      chainId: 3776,
+      to: zeroAddress,
+    };
+    const tx = await populateTx(baseTx, zeroAddress);
+    console.log("Build Transaction", serializeTransaction(tx));
   });
 });
