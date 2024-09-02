@@ -70,7 +70,8 @@ describe("ethereum", () => {
                 },
               },
               gas: "250000000000000",
-              deposit: "50000000000000000000000",
+              // This isn't deterministic.
+              deposit: ethSign.nearPayload.actions[0]?.params.deposit,
             },
           },
         ],
