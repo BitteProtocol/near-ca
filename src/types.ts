@@ -1,5 +1,11 @@
 import { MpcContract } from "./mpcContract";
-import { Hex, SignableMessage, Signature, TransactionSerializable } from "viem";
+import {
+  Address,
+  Hex,
+  SignableMessage,
+  Signature,
+  TransactionSerializable,
+} from "viem";
 
 /**
  * Borrowed from @near-wallet-selector/core
@@ -179,3 +185,94 @@ export interface TransactionWithSignature {
   transaction: Hex;
   signature: Signature;
 }
+
+/// Below is hand-crafted types losely related to wallet connect
+
+/**
+ * Interface representing the parameters required for an Ethereum transaction.
+ *
+ * @property {Hex} from - The sender's Ethereum address in hexadecimal format.
+ * @property {Hex} to - The recipient's Ethereum address in hexadecimal format.
+ * @property {Hex} [gas] - Optional gas limit for the transaction in hexadecimal format.
+ * @property {Hex} [value] - Optional amount of Ether to send in hexadecimal format.
+ * @property {Hex} [data] - Optional data payload for the transaction in hexadecimal format, often used for contract interactions. */
+export interface EthTransactionParams {
+  from: Hex;
+  to: Hex;
+  gas?: Hex;
+  value?: Hex;
+  data?: Hex;
+}
+
+/**
+ * Type representing the parameters for a personal_sign request.
+ *
+ * @type {[Hex, Address]}
+ * @property {Hex} 0 - The message to be signed in hexadecimal format.
+ * @property {Address} 1 - The address of the signer in hexadecimal format.
+ */
+export type PersonalSignParams = [Hex, Address];
+
+/**
+ * Type representing the parameters for an eth_sign request.
+ *
+ * @type {[Address, Hex]}
+ * @property {Address} 0 - The address of the signer in hexadecimal format.
+ * @property {Hex} 1 - The message to be signed in hexadecimal format.
+ */
+export type EthSignParams = [Address, Hex];
+
+/**
+ * Type representing the parameters for signing complex structured data (like EIP-712).
+ *
+ * @type {[Hex, string]}
+ * @property {Hex} 0 - The address of the signer in hexadecimal format.
+ * @property {string} 1 - The structured data in JSON string format to be signed.
+ */
+export type TypedDataParams = [Hex, string];
+
+/**
+ * Type representing the possible request parameters for a signing session.
+ *
+ * @type {EthTransactionParams[] | Hex | PersonalSignParams | EthSignParams | TypedDataParams}
+ * @property {EthTransactionParams[]} - An array of Ethereum transaction parameters.
+ * @property {Hex} - A simple hexadecimal value representing RLP Encoded Ethereum Transaction.
+ * @property {PersonalSignParams} - Parameters for a personal sign request.
+ * @property {EthSignParams} - Parameters for an eth_sign request.
+ * @property {TypedDataParams} - Parameters for signing structured data.
+ */
+export type SessionRequestParams =
+  | EthTransactionParams[]
+  | Hex
+  | PersonalSignParams
+  | EthSignParams
+  | TypedDataParams;
+
+/**
+ * An array of supported signing methods.
+ */
+export const signMethods = [
+  "eth_sign",
+  "personal_sign",
+  "eth_sendTransaction",
+  "eth_signTypedData",
+  "eth_signTypedData_v4",
+] as const;
+
+/**
+ * Type representing one of the supported signing methods.
+ */
+export type SignMethod = (typeof signMethods)[number];
+
+/**
+ * Interface representing the data required for a signature request.
+ *
+ * @property {SignMethods} method - The signing method to be used.
+ * @property {number} chainId - The ID of the Ethereum chain where the transaction or signing is taking place.
+ * @property {SessionRequestParams} params - The parameters required for the signing request, which vary depending on the method.
+ */
+export type SignRequestData = {
+  method: SignMethod;
+  chainId: number;
+  params: SessionRequestParams;
+};
