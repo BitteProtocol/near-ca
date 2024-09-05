@@ -1,0 +1,40 @@
+name: Auto Yarn Upgrade
+
+on:
+  schedule:
+    # Runs at 8:20 on the 5th day of every month
+    - cron: "20 8 5 * *"
+
+jobs:
+  upgrade:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+
+      - name: Install and upgrade dependencies
+        run: |
+          yarn
+          yarn upgrade
+
+      - name: Commit changes
+        run: |
+          git config --global user.name "github-actions[bot]"
+          git config --global user.email "github-actions[bot]@users.noreply.github.com"
+          git add .
+          git commit -m "Auto upgrade dependencies" || echo "No changes to commit"
+
+      - name: Create Pull Request
+        uses: peter-evans/create-pull-request@v5
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+          commit-message: Auto upgrade dependencies
+          branch: auto-upgrade-branch
+          title: "Auto upgrade dependencies"
+          body: "This PR updates dependencies automatically."
