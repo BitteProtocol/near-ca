@@ -4,6 +4,7 @@ on:
   schedule:
     # Runs at 8:20 on the 5th day of every month
     - cron: "20 8 5 * *"
+  workflow_dispatch: # This allows manual triggering
 
 jobs:
   upgrade:
