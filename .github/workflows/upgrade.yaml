@@ -2,8 +2,8 @@ name: Auto Yarn Upgrade
 
 on:
   schedule:
-    # Runs at 8:20 on the 5th day of every month
-    - cron: "35 20 5 * *"
+    # Runs at 12 am on the 1th day of every month
+    - cron: "0 0 1 * *"
   workflow_dispatch: # This allows manual triggering
 
 permissions:
@@ -33,13 +33,13 @@ jobs:
           git config --global user.name "github-actions[bot]"
           git config --global user.email "github-actions[bot]@users.noreply.github.com"
           git add .
-          git commit -m "Auto upgrade dependencies" || echo "No changes to commit"
+          git commit -m "upgrade dependencies" || echo "No changes to commit"
 
       - name: Create Pull Request
         uses: peter-evans/create-pull-request@v7
         with:
           token: ${{ secrets.GITHUB_TOKEN }}
-          commit-message: Auto upgrade dependencies
+          commit-message: upgrade dependencies
           branch: auto-upgrade-branch
-          title: "Auto upgrade dependencies"
-          body: "This PR updates dependencies automatically."
+          title: "Yarn Upgrade"
+          body: "This PR updates dependencies via `yarn upgrade`"
