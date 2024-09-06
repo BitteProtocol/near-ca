@@ -10,13 +10,12 @@ interface NetworkFields {
   rpcUrl: string;
   chainId: number;
   scanUrl: string;
-  logo?: string;
   nativeCurrency: {
     decimals: number;
     name: string;
     symbol: string;
-    wrappedAddress: string;
-    icon?: string;
+    wrappedAddress: string | undefined;
+    icon: string | undefined;
   };
 }
 /**
@@ -33,10 +32,9 @@ export class Network implements NetworkFields {
     decimals: number;
     name: string;
     symbol: string;
-    wrappedAddress: string;
-    icon?: string;
+    wrappedAddress: string | undefined;
+    icon: string | undefined;
   };
-  logo: string;
 
   constructor({
     name,
@@ -44,7 +42,6 @@ export class Network implements NetworkFields {
     chainId,
     scanUrl,
     nativeCurrency,
-    logo,
   }: NetworkFields) {
     const network = SUPPORTED_NETWORKS[chainId]!;
 
@@ -55,7 +52,6 @@ export class Network implements NetworkFields {
     this.client = createPublicClient({
       transport: http(network.rpcUrl),
     });
-    this.logo = logo || "";
     this.nativeCurrency = nativeCurrency;
   }
 
@@ -84,10 +80,11 @@ function createNetworkMap(supportedNetworks: Chain[]): NetworkMap {
       scanUrl: network.blockExplorers?.default.url || "",
       nativeCurrency: {
         ...network.nativeCurrency,
-        wrappedAddress: CHAIN_INFO[network.id]?.wrappedToken || "",
+        wrappedAddress: CHAIN_INFO[network.id]?.wrappedToken,
+        icon:
+          CHAIN_INFO[network.id]?.icon ||
+          `/${network.nativeCurrency.symbol}.svg`,
       },
-      logo:
-        CHAIN_INFO[network.id]?.logo || `/${network.nativeCurrency.symbol}.svg`,
     };
   });
 
