@@ -1,5 +1,6 @@
 import { Chain, createPublicClient, http, PublicClient } from "viem";
 import * as chains from "viem/chains";
+import { CHAIN_INFO } from "./constants";
 
 // We support all networks exported by viem
 const SUPPORTED_NETWORKS = createNetworkMap(Object.values(chains));
@@ -9,6 +10,13 @@ interface NetworkFields {
   rpcUrl: string;
   chainId: number;
   scanUrl: string;
+  nativeCurrency: {
+    decimals: number;
+    name: string;
+    symbol: string;
+    wrappedAddress: string | undefined;
+    icon: string | undefined;
+  };
 }
 /**
  * Leveraging Network Data provided from through viem
@@ -20,8 +28,21 @@ export class Network implements NetworkFields {
   chainId: number;
   scanUrl: string;
   client: PublicClient;
+  nativeCurrency: {
+    decimals: number;
+    name: string;
+    symbol: string;
+    wrappedAddress: string | undefined;
+    icon: string | undefined;
+  };
 
-  constructor({ name, rpcUrl, chainId, scanUrl }: NetworkFields) {
+  constructor({
+    name,
+    rpcUrl,
+    chainId,
+    scanUrl,
+    nativeCurrency,
+  }: NetworkFields) {
     const network = SUPPORTED_NETWORKS[chainId]!;
 
     this.name = name;
@@ -31,6 +52,7 @@ export class Network implements NetworkFields {
     this.client = createPublicClient({
       transport: http(network.rpcUrl),
     });
+    this.nativeCurrency = nativeCurrency;
   }
 
   static fromChainId(chainId: number): Network {
@@ -56,6 +78,13 @@ function createNetworkMap(supportedNetworks: Chain[]): NetworkMap {
       rpcUrl: network.rpcUrls.default.http[0]!,
       chainId: network.id,
       scanUrl: network.blockExplorers?.default.url || "",
+      nativeCurrency: {
+        ...network.nativeCurrency,
+        wrappedAddress: CHAIN_INFO[network.id]?.wrappedToken,
+        icon:
+          CHAIN_INFO[network.id]?.icon ||
+          `/${network.nativeCurrency.symbol}.svg`,
+      },
     };
   });
 
