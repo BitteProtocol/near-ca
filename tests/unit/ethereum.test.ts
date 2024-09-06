@@ -1,5 +1,5 @@
 import { zeroAddress } from "viem";
-import { setupAdapter } from "../../src/";
+import { setupAdapter, signMethods } from "../../src/";
 
 const accountId = "farmface.testnet";
 const network = {
@@ -37,7 +37,9 @@ describe("ethereum", () => {
           request: { method: "poop", params: [] },
         },
       })
-    ).rejects.toThrow("Unhandled session_request method: poop");
+    ).rejects.toThrow(
+      `Unsupported sign method poop: Available sign methods ${signMethods}`
+    );
 
     const ethSign = await adapter.beta.handleSessionRequest({
       params: {

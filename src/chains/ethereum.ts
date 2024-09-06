@@ -22,8 +22,11 @@ import {
   populateTx,
   toPayload,
   broadcastSignedTransaction,
+  SignRequestData,
+  NearEthTxData,
 } from "..";
 import { Beta } from "../beta";
+import { requestRouter } from "../utils/request";
 
 export class NearEthAdapter {
   readonly mpcContract: MpcContract;
@@ -201,5 +204,31 @@ export class NearEthAdapter {
       key_version: 0,
     });
     return serializeSignature(signature);
+  }
+
+  /**
+   * Encodes a signature request for submission to the Near-Ethereum transaction MPC contract.
+   *
+   * @async
+   * @function encodeSignRequest
+   * @param {SignRequestData} signRequest - The signature request data containing method, chain ID, and parameters.
+   * @returns {Promise<NearEthTxData>}
+   * - Returns a promise that resolves to an object containing the encoded Near-Ethereum transaction data,
+   *   the original EVM message, and recovery data necessary for verifying or reconstructing the signature.
+   */
+  async encodeSignRequest(
+    signRequest: SignRequestData
+  ): Promise<NearEthTxData> {
+    const { evmMessage, payload, recoveryData } =
+      await requestRouter(signRequest);
+    return {
+      nearPayload: await this.mpcContract.encodeSignatureRequestTx({
+        path: this.derivationPath,
+        payload,
+        key_version: 0,
+      }),
+      evmMessage,
+      recoveryData,
+    };
   }
 }

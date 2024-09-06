@@ -10,11 +10,11 @@ import {
 
 export * from "./chains/ethereum";
 export * from "./chains/near";
+export * from "./guards";
 export * from "./mpcContract";
-export * from "./types";
-export * from "./utils/signature";
 export * from "./network";
-export * from "./utils/transaction";
+export * from "./types";
+export * from "./utils";
 /// Beta features
 export * from "./beta";
 
