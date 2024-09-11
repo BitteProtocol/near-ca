@@ -68,11 +68,11 @@ export async function requestRouter({
     }
     case "eth_sendTransaction": {
       // We only support one transaction at a time!
-      const tx = params[0] as EthTransactionParams;
       let rlpTx: Hex;
-      if (isHex(tx)) {
-        rlpTx = tx;
+      if (isHex(params)) {
+        rlpTx = params;
       } else {
+        const tx = params[0] as EthTransactionParams;
         const transaction = await populateTx(
           {
             to: tx.to,
