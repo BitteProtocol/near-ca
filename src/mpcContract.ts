@@ -88,10 +88,11 @@ export class MpcContract {
       ) {
         // Clown town
         deposit = await this.contract.experimantal_signature_deposit();
+      } else {
+        console.warn(
+          `Failed to get deposit with ${error} - using fallback of 0.1 Near`
+        );
       }
-      console.warn(
-        `Failed to get deposit with ${error} - using fallback of 0.1 Near`
-      );
     }
     return BigInt(
       deposit.toLocaleString("fullwide", { useGrouping: false })
