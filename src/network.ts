@@ -5,7 +5,7 @@ import { CHAIN_INFO } from "./constants";
 // We support all networks exported by viem
 const SUPPORTED_NETWORKS = createNetworkMap(Object.values(chains));
 
-interface NetworkFields {
+export interface NetworkFields {
   name: string;
   rpcUrl: string;
   chainId: number;
