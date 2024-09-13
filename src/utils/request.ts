@@ -4,7 +4,6 @@ import {
   fromHex,
   hashMessage,
   hashTypedData,
-  isHash,
   isHex,
   keccak256,
   serializeTransaction,
