@@ -1,14 +1,12 @@
 /// A short list of networks with known wrapped tokens.
 const ETHER_ICON = "https://cryptologos.cc/logos/ethereum-eth-logo.svg?v=024";
-
-export const CHAIN_INFO: {
-  [key: number]: {
-    currencyIcon?: string;
-    icon?: string;
-    testnet: boolean;
-    wrappedToken: string;
-  };
-} = {
+interface ChainInfo {
+  currencyIcon?: string;
+  icon?: string;
+  testnet: boolean;
+  wrappedToken: string;
+}
+export const CHAIN_INFO: Record<number, ChainInfo> = {
   1: {
     icon: ETHER_ICON,
     testnet: false,
