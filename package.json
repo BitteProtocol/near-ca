@@ -56,5 +56,9 @@
     "elliptic": "^6.5.6",
     "near-api-js": "^5.0.0",
     "viem": "^2.21.6"
+  },
+  "resolutions": {
+    "glob": "^9.0.0",
+    "base-x": "^3.0.0"
   }
 }
