@@ -39,16 +39,6 @@ export async function requestRouter({
   recoveryData: RecoveryData;
 }> {
   switch (method) {
-    case "hash": {
-      console.warn("Unsafe hash without context sign request");
-      const hash = params as Hash;
-      return {
-        payload: toPayload(hash),
-        // These should be more.
-        evmMessage: hash,
-        recoveryData: { type: "hash", data: hash },
-      };
-    }
     case "eth_sign": {
       const [sender, messageHash] = params as EthSignParams;
       return {

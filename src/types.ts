@@ -243,7 +243,6 @@ export type TypedDataParams = [Hex, string];
  * @property {TypedDataParams} - Parameters for signing structured data.
  */
 export type SessionRequestParams =
-  | Hash
   | EthTransactionParams[]
   | Hex
   | PersonalSignParams
@@ -254,7 +253,6 @@ export type SessionRequestParams =
  * An array of supported signing methods.
  */
 export const signMethods = [
-  "hash",
   "eth_sign",
   "personal_sign",
   "eth_sendTransaction",
