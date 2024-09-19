@@ -1,5 +1,4 @@
 import {
-  Hash,
   Hex,
   fromHex,
   hashMessage,

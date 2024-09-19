@@ -1,7 +1,6 @@
 import { MpcContract } from "./mpcContract";
 import {
   Address,
-  Hash,
   Hex,
   SignableMessage,
   Signature,
