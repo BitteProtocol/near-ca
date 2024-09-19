@@ -1,11 +1,11 @@
 import { MpcContract } from "./mpcContract";
 import {
   Address,
-  Hash,
   Hex,
   SignableMessage,
   Signature,
   TransactionSerializable,
+  TypedDataDomain,
 } from "viem";
 
 /**
@@ -145,35 +145,39 @@ export interface MessageData {
   message: SignableMessage;
 }
 
+interface TypedDataTypes {
+  name: string;
+  type: string;
+}
+type TypedMessageTypes = {
+  [key: string]: TypedDataTypes[];
+};
+
 /**
  * Represents the data for a typed message.
  *
- * @property {Hex} address - The address associated with the message.
- * @property {any} types - The types of the message.
- * @property {any} primaryType - The primary type of the message.
- * @property {any} message - The message itself.
- * @property {any} domain - The domain of the message.
+ * @property {TypedDataDomain} domain - The domain of the message.
+ * @property {TypedMessageTypes} types - The types of the message.
+ * @property {Record<string, unknown>} message - The message itself.
+ * @property {string} primaryType - The primary type of the message.
  */
-export interface TypedMessageData {
-  address: Hex;
-  /* eslint-disable @typescript-eslint/no-explicit-any */
-  types: any;
-  primaryType: any;
-  message: any;
-  domain: any;
-  /* eslint-enable @typescript-eslint/no-explicit-any */
-}
+export type EIP712TypedData = {
+  domain: TypedDataDomain;
+  types: TypedMessageTypes;
+  message: Record<string, unknown>;
+  primaryType: string;
+};
 
 /**
  * Represents the recovery data.
  *
  * @property {string} type - The type of the recovery data.
- * @property {MessageData | TypedMessageData | Hex} data - The recovery data.
+ * @property {MessageData | EIP712TypedData | Hex} data - The recovery data.
  */
 export interface RecoveryData {
   // TODO use enum!
   type: string;
-  data: MessageData | TypedMessageData | Hex;
+  data: MessageData | EIP712TypedData | Hex;
 }
 
 /**
@@ -243,7 +247,6 @@ export type TypedDataParams = [Hex, string];
  * @property {TypedDataParams} - Parameters for signing structured data.
  */
 export type SessionRequestParams =
-  | Hash
   | EthTransactionParams[]
   | Hex
   | PersonalSignParams
@@ -254,7 +257,6 @@ export type SessionRequestParams =
  * An array of supported signing methods.
  */
 export const signMethods = [
-  "hash",
   "eth_sign",
   "personal_sign",
   "eth_sendTransaction",
