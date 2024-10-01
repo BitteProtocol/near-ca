@@ -42,6 +42,8 @@ describe("mpcContract", () => {
       ],
     };
     const result = await mpc.encodeSignatureRequestTx(signArgs);
+    // The deposit is non-deterministic!
+    expected.actions[0]!.params.deposit = result.actions[0]!.params.deposit;
     expect(result).toEqual(expected);
     // Set Gas:
     expected.actions[0]!.params.gas = "1";
