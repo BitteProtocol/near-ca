@@ -53,7 +53,7 @@ describe("utility: get Signature", () => {
 
   it("signatureFromTxHash fails with parse error", async () => {
     await expect(signatureFromTxHash(url, "nonsense")).rejects.toThrow(
-      "JSON-RPC error: Parse error"
+      "HTTP error! status: 400"
     );
   });
 
