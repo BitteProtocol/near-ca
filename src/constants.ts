@@ -49,7 +49,7 @@ export const CHAIN_INFO: Record<number, ChainInfo> = {
     currencyIcon: ETHER_ICON,
     icon: "https://cryptologos.cc/logos/arbitrum-arb-logo.svg?v=024",
     wrappedToken: "0x82af49447d8a07e3bd95bd0d56f35241523fbab1",
-    testnet: true,
+    testnet: false,
   },
   84532: {
     currencyIcon: ETHER_ICON,
