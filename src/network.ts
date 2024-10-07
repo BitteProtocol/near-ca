@@ -64,7 +64,7 @@ export class Network implements NetworkFields {
     const networkFields = SUPPORTED_NETWORKS[chainId];
     if (!networkFields) {
       throw new Error(
-        `Network with chainId ${chainId} is not supported. 
+        `Network with chainId ${chainId} is not supported.
         Please reach out to the developers of https://github.com/Mintbase/near-ca`
       );
     }
@@ -79,7 +79,7 @@ function createNetworkMap(supportedNetworks: Chain[]): NetworkMap {
   const networkMap: NetworkMap = {};
   supportedNetworks.forEach((network) => {
     const chainInfo = CHAIN_INFO[network.id];
-    const logo = chainInfo?.icon || `/${network.nativeCurrency.symbol}.svg`;
+    const logo = chainInfo?.icon || `/${network.nativeCurrency.symbol}.`;
     networkMap[network.id] = {
       name: network.name,
       rpcUrl: network.rpcUrls.default.http[0]!,
