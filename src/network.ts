@@ -79,7 +79,7 @@ function createNetworkMap(supportedNetworks: Chain[]): NetworkMap {
   const networkMap: NetworkMap = {};
   supportedNetworks.forEach((network) => {
     const chainInfo = CHAIN_INFO[network.id];
-    const logo = chainInfo?.icon || `/${network.nativeCurrency.symbol}.`;
+    const logo = chainInfo?.icon || `/${network.nativeCurrency.symbol}.svg`;
     networkMap[network.id] = {
       name: network.name,
       rpcUrl: network.rpcUrls.default.http[0]!,
