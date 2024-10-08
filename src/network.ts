@@ -64,7 +64,7 @@ export class Network implements NetworkFields {
     const networkFields = SUPPORTED_NETWORKS[chainId];
     if (!networkFields) {
       throw new Error(
-        `Network with chainId ${chainId} is not supported. 
+        `Network with chainId ${chainId} is not supported.
         Please reach out to the developers of https://github.com/Mintbase/near-ca`
       );
     }
