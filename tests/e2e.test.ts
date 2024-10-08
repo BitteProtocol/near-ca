@@ -29,7 +29,7 @@ describe("End To End", () => {
         chainId,
       })
     ).resolves.not.toThrow();
-  }, 40000);
+  });
 
   it.skip("signAndSendTransaction - Gnosis Chain", async () => {
     await expect(
