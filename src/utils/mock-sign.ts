@@ -4,17 +4,7 @@ import { FunctionCallTransaction, SignArgs } from "../types";
 import { Account } from "near-api-js";
 import { IMpcContract, nearAccountFromAccountId, NearEthAdapter } from "..";
 
-export async function signMpc(
-  account: PrivateKeyAccount,
-  payload: number[]
-): Promise<Signature> {
-  const hexSignature = await account.sign({
-    hash: fromPayload(payload),
-  });
-  return hexToSignature(hexSignature);
-}
-
-export function fromPayload(payload: number[]): Hex {
+function fromPayload(payload: number[]): Hex {
   if (payload.length !== 32) {
     throw new Error(`Payload must have 32 bytes: ${payload}`);
   }
@@ -27,11 +17,9 @@ export function fromPayload(payload: number[]): Hex {
  * @param hexSignature The raw hexadecimal signature (e.g., '0x...')
  * @returns A structured Signature object with fields r, s, v, and yParity
  */
-function hexToSignature(hexSignature: string): Signature {
-  // Remove the "0x" prefix if it exists
-  const cleanedHex = hexSignature.startsWith("0x")
-    ? hexSignature.slice(2)
-    : hexSignature;
+function hexToSignature(hexSignature: Hex): Signature {
+  // Strip "0x" prefix if it exists
+  const cleanedHex = hexSignature.slice(2);
 
   // Ensure the signature is 65 bytes (130 hex characters)
   if (cleanedHex.length !== 130) {
@@ -42,53 +30,30 @@ function hexToSignature(hexSignature: string): Signature {
 
   // Extract the r, s, and v components from the hex signature
   const v = BigInt(`0x${cleanedHex.slice(128, 130)}`); // Last byte (2 hex characters)
-
-  // Determine yParity based on v (27 or 28 maps to 0 or 1)
-  const yParity = v === 27n ? 0 : v === 28n ? 1 : undefined;
-
   return {
     r: `0x${cleanedHex.slice(0, 64)}`, // First 32 bytes (64 hex characters)
     s: `0x${cleanedHex.slice(64, 128)}`, // Next 32 bytes (64 hex characters),
     v,
-    yParity,
+    // Determine yParity based on v (27 or 28 maps to 0 or 1)
+    yParity: v === 27n ? 0 : v === 28n ? 1 : undefined,
   };
 }
 
-// function toMpcSignature(signature: Signature): MPCSignature {
-//   const { r, s, yParity } = signature;
-
-//   return {
-//     big_r: {
-//       // Add "0x" prefix to the affine_point and ensure it matches the original structure
-//       affine_point: `0x${r}`,
-//     },
-//     s: {
-//       // Remove the "0x" prefix from s.scalar if present, or keep it as is
-//       scalar: s.startsWith("0x") ? s.substring(2) : s,
-//     },
-//     // Use yParity directly as recovery_id
-//     recovery_id: yParity ?? 0, // default to 0 if yParity is not defined
-//   };
-// }
-
-/**
- * High-level interface for the Near MPC-Recovery Contract
- * located in: https://github.com/near/mpc-recovery
- */
 export class MockMpcContract implements IMpcContract {
   connectedAccount: Account;
   private ethAccount: PrivateKeyAccount;
 
-  constructor(account: Account, _privateKey?: string) {
+  constructor(account: Account, privateKey?: Hex) {
     this.connectedAccount = account;
     this.ethAccount = privateKeyToAccount(
-      // Known Key from deterministic ganache client
-      "0x4f3edf983ac636a65a842ce7c78d9aa706d3b113bce9c46f30d7d21715b23b1d"
+      privateKey ||
+        // Known key from deterministic ganache client
+        "0x4f3edf983ac636a65a842ce7c78d9aa706d3b113bce9c46f30d7d21715b23b1d"
     );
   }
 
   accountId(): string {
-    return "mock-mpc.nonet";
+    return "mock-mpc.offline";
   }
 
   deriveEthAddress = async (_unused?: string): Promise<Address> => {
@@ -103,7 +68,10 @@ export class MockMpcContract implements IMpcContract {
     signArgs: SignArgs,
     _gas?: bigint
   ): Promise<Signature> => {
-    return signMpc(this.ethAccount, signArgs.payload);
+    const hexSignature = await this.ethAccount.sign({
+      hash: fromPayload(signArgs.payload),
+    });
+    return hexToSignature(hexSignature);
   };
 
   async encodeSignatureRequestTx(
@@ -128,11 +96,8 @@ export class MockMpcContract implements IMpcContract {
   }
 }
 
-export async function mockAdapter(
-  accountId: string,
-  privateKey?: string
-): Promise<NearEthAdapter> {
-  const account = await nearAccountFromAccountId(accountId, {
+export async function mockAdapter(privateKey?: Hex): Promise<NearEthAdapter> {
+  const account = await nearAccountFromAccountId("mock-user.offline", {
     networkId: "testnet",
     nodeUrl: "https://rpc.testnet.near.org",
   });
