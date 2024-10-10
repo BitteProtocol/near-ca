@@ -1,4 +1,4 @@
-import { SEPOLIA_CHAIN_ID } from "../examples/setup";
+import { SEPOLIA_CHAIN_ID, setupNearEthAdapter } from "../examples/setup";
 import { mockAdapter, NearEthAdapter, Network } from "../src";
 import { getBalance } from "viem/actions";
 import dotenv from "dotenv";
@@ -6,16 +6,15 @@ import { recoverTypedDataAddress, recoverMessageAddress } from "viem";
 dotenv.config();
 
 describe("End To End", () => {
-  let adapter: NearEthAdapter;
+  let mockedAdapter: NearEthAdapter;
+  let realAdapter: NearEthAdapter;
   const to = "0xdeADBeeF0000000000000000000000000b00B1e5";
   const ONE_WEI = 1n;
   const chainId = SEPOLIA_CHAIN_ID;
 
   beforeAll(async () => {
-    // This is a real adapter.
-    // adapter = await setupNearEthAdapter();
-    // This is a Mock Adapter!
-    adapter = await mockAdapter(process.env.ETH_PK! as `0x${string}`);
+    realAdapter = await setupNearEthAdapter();
+    mockedAdapter = await mockAdapter(process.env.ETH_PK! as `0x${string}`);
   });
 
   afterAll(async () => {
@@ -23,14 +22,14 @@ describe("End To End", () => {
   });
 
   it("Adapter.getBalance", async () => {
-    await expect(adapter.getBalance(chainId)).resolves.not.toThrow();
+    await expect(realAdapter.getBalance(chainId)).resolves.not.toThrow();
   });
 
   it.skip("signAndSendTransaction", async () => {
     await expect(
-      adapter.signAndSendTransaction({
+      realAdapter.signAndSendTransaction({
         // Sending 1 WEI to self (so we never run out of funds)
-        to: adapter.address,
+        to: realAdapter.address,
         value: ONE_WEI,
         chainId,
       })
@@ -39,9 +38,9 @@ describe("End To End", () => {
 
   it.skip("signAndSendTransaction - Gnosis Chain", async () => {
     await expect(
-      adapter.signAndSendTransaction({
+      realAdapter.signAndSendTransaction({
         // Sending 1 WEI to self (so we ~never run out of funds)
-        to: adapter.address,
+        to: realAdapter.address,
         value: ONE_WEI,
         // Gnosis Chain!
         chainId: 100,
@@ -52,10 +51,10 @@ describe("End To End", () => {
   it("Fails to sign and send", async () => {
     const network = Network.fromChainId(chainId);
     const senderBalance = await getBalance(network.client, {
-      address: adapter.address,
+      address: mockedAdapter.address,
     });
     await expect(
-      adapter.signAndSendTransaction({
+      realAdapter.signAndSendTransaction({
         to,
         value: senderBalance + ONE_WEI,
         chainId,
@@ -65,12 +64,12 @@ describe("End To End", () => {
 
   it("signMessage", async () => {
     const message = "NearEth";
-    const signature = await adapter.signMessage(message);
+    const signature = await mockedAdapter.signMessage(message);
     const recoveredAddress = await recoverMessageAddress({
       message,
       signature,
     });
-    expect(recoveredAddress).toBe(adapter.address);
+    expect(recoveredAddress).toBe(mockedAdapter.address);
   });
 
   it("signTypedData", async () => {
@@ -111,12 +110,12 @@ describe("End To End", () => {
       message,
       domain,
     } as const;
-    const signature = await adapter.signTypedData(typedData);
+    const signature = await mockedAdapter.signTypedData(typedData);
 
     const recoveredAddress = await recoverTypedDataAddress({
       ...typedData,
       signature,
     });
-    expect(recoveredAddress).toBe(adapter.address);
+    expect(recoveredAddress).toBe(mockedAdapter.address);
   });
 });
