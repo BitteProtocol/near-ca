@@ -43,7 +43,7 @@ interface MpcContractInterface extends Contract {
  * High-level interface for the Near MPC-Recovery Contract
  * located in: https://github.com/near/mpc-recovery
  */
-export class MpcContract {
+export class MpcContract implements IMpcContract {
   contract: MpcContractInterface;
   connectedAccount: Account;
 
@@ -141,4 +141,16 @@ function gasOrDefault(gas?: bigint): string {
   }
   // Default of 250 TGAS
   return (TGAS * 250n).toString();
+}
+
+export interface IMpcContract {
+  connectedAccount: Account;
+  accountId(): string;
+  deriveEthAddress(derivationPath: string): Promise<Address>;
+  getDeposit(): Promise<string>;
+  requestSignature(signArgs: SignArgs, gas?: bigint): Promise<Signature>;
+  encodeSignatureRequestTx(
+    signArgs: SignArgs,
+    gas?: bigint
+  ): Promise<FunctionCallTransaction<{ request: SignArgs }>>;
 }

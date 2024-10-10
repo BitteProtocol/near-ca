@@ -1,4 +1,4 @@
-import { MpcContract } from "./mpcContract";
+import { IMpcContract } from "./mpcContract";
 import {
   Address,
   Hex,
@@ -48,7 +48,7 @@ export interface BaseTx {
  * @property {string} [derivationPath] - Path used to generate ETH account from NEAR account (e.g., "ethereum,1").
  */
 export interface AdapterParams {
-  mpcContract: MpcContract;
+  mpcContract: IMpcContract;
   derivationPath?: string;
 }
 

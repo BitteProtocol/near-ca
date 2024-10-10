@@ -21,3 +21,4 @@ jobs:
           MPC_CONTRACT_ID: v1.signer-prod.testnet
           NEAR_ACCOUNT_ID: ${{secrets.NEAR_ACCOUNT_ID}}
           NEAR_ACCOUNT_PRIVATE_KEY: ${{secrets.NEAR_PK}}
+          ETH_PK: ${{secrets.ETH_PK}}

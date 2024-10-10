@@ -16,7 +16,6 @@ import {
   FunctionCallTransaction,
   TxPayload,
   SignArgs,
-  MpcContract,
   Network,
   buildTxPayload,
   populateTx,
@@ -24,18 +23,19 @@ import {
   broadcastSignedTransaction,
   SignRequestData,
   NearEthTxData,
+  IMpcContract,
 } from "..";
 import { Beta } from "../beta";
 import { requestRouter } from "../utils/request";
 
 export class NearEthAdapter {
-  readonly mpcContract: MpcContract;
+  readonly mpcContract: IMpcContract;
   readonly address: Address;
   readonly derivationPath: string;
   readonly beta: Beta;
 
   private constructor(config: {
-    mpcContract: MpcContract;
+    mpcContract: IMpcContract;
     derivationPath: string;
     sender: Address;
   }) {
@@ -68,6 +68,21 @@ export class NearEthAdapter {
    * @param {AdapterParams} args - The configuration object for the Adapter instance.
    */
   static async fromConfig(args: AdapterParams): Promise<NearEthAdapter> {
+    // Sender is uniquely determined by the derivation path!
+    const mpcContract = args.mpcContract;
+    const derivationPath = args.derivationPath || "ethereum,1";
+    return new NearEthAdapter({
+      sender: await mpcContract.deriveEthAddress(derivationPath),
+      derivationPath,
+      mpcContract,
+    });
+  }
+
+  /**
+   * Constructs an EVM instance with the provided configuration.
+   * @param {AdapterParams} args - The configuration object for the Adapter instance.
+   */
+  static async mocked(args: AdapterParams): Promise<NearEthAdapter> {
     // Sender is uniquely determined by the derivation path!
     const mpcContract = args.mpcContract;
     const derivationPath = args.derivationPath || "ethereum,1";
