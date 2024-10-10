@@ -10,14 +10,14 @@ export interface NetworkFields {
   rpcUrl: string;
   chainId: number;
   scanUrl: string;
-  logo: string | undefined;
+  icon: string | undefined; // this is the chain icon
   nativeCurrency: {
     decimals: number;
     name: string;
     symbol: string;
     wrappedAddress: string | undefined;
     // This is often Network logo, but sometimes not (e.g. Gnosis Chain & xDai)
-    icon: string | undefined;
+    icon: string | undefined; // this is the token icon
   };
 }
 /**
@@ -30,7 +30,7 @@ export class Network implements NetworkFields {
   chainId: number;
   scanUrl: string;
   client: PublicClient;
-  logo: string | undefined;
+  icon: string | undefined;
   nativeCurrency: {
     decimals: number;
     name: string;
@@ -45,7 +45,7 @@ export class Network implements NetworkFields {
     chainId,
     scanUrl,
     nativeCurrency,
-    logo,
+    icon,
   }: NetworkFields) {
     const network = SUPPORTED_NETWORKS[chainId]!;
 
@@ -57,7 +57,7 @@ export class Network implements NetworkFields {
       transport: http(network.rpcUrl),
     });
     this.nativeCurrency = nativeCurrency;
-    this.logo = logo;
+    this.icon = icon;
   }
 
   static fromChainId(chainId: number): Network {
@@ -79,17 +79,17 @@ function createNetworkMap(supportedNetworks: Chain[]): NetworkMap {
   const networkMap: NetworkMap = {};
   supportedNetworks.forEach((network) => {
     const chainInfo = CHAIN_INFO[network.id];
-    const logo = chainInfo?.icon || `/${network.nativeCurrency.symbol}.svg`;
+    const icon = chainInfo?.icon || `/${network.nativeCurrency.symbol}.svg`;
     networkMap[network.id] = {
       name: network.name,
       rpcUrl: network.rpcUrls.default.http[0]!,
       chainId: network.id,
       scanUrl: network.blockExplorers?.default.url || "",
-      logo,
+      icon,
       nativeCurrency: {
         ...network.nativeCurrency,
         wrappedAddress: chainInfo?.wrappedToken,
-        icon: chainInfo?.currencyIcon || logo,
+        icon: chainInfo?.currencyIcon || icon,
       },
     };
   });
