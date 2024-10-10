@@ -1,6 +1,9 @@
-import { SEPOLIA_CHAIN_ID, setupNearEthAdapter } from "../examples/setup";
-import { NearEthAdapter, Network } from "../src";
+import { SEPOLIA_CHAIN_ID } from "../examples/setup";
+import { mockAdapter, NearEthAdapter, Network } from "../src";
 import { getBalance } from "viem/actions";
+import dotenv from "dotenv";
+import { recoverTypedDataAddress, recoverMessageAddress } from "viem";
+dotenv.config();
 
 describe("End To End", () => {
   let adapter: NearEthAdapter;
@@ -9,7 +12,10 @@ describe("End To End", () => {
   const chainId = SEPOLIA_CHAIN_ID;
 
   beforeAll(async () => {
-    adapter = await setupNearEthAdapter();
+    // This is a real adapter.
+    // adapter = await setupNearEthAdapter();
+    // This is a Mock Adapter!
+    adapter = await mockAdapter(process.env.ETH_PK! as `0x${string}`);
   });
 
   afterAll(async () => {
@@ -20,7 +26,7 @@ describe("End To End", () => {
     await expect(adapter.getBalance(chainId)).resolves.not.toThrow();
   });
 
-  it.only("signAndSendTransaction", async () => {
+  it.skip("signAndSendTransaction", async () => {
     await expect(
       adapter.signAndSendTransaction({
         // Sending 1 WEI to self (so we never run out of funds)
@@ -34,7 +40,7 @@ describe("End To End", () => {
   it.skip("signAndSendTransaction - Gnosis Chain", async () => {
     await expect(
       adapter.signAndSendTransaction({
-        // Sending 1 WEI to self (so we never run out of funds)
+        // Sending 1 WEI to self (so we ~never run out of funds)
         to: adapter.address,
         value: ONE_WEI,
         // Gnosis Chain!
@@ -58,7 +64,13 @@ describe("End To End", () => {
   });
 
   it("signMessage", async () => {
-    await expect(adapter.signMessage("NearEth")).resolves.not.toThrow();
+    const message = "NearEth";
+    const signature = await adapter.signMessage(message);
+    const recoveredAddress = await recoverMessageAddress({
+      message,
+      signature,
+    });
+    expect(recoveredAddress).toBe(adapter.address);
   });
 
   it("signTypedData", async () => {
@@ -93,13 +105,18 @@ describe("End To End", () => {
       ],
     } as const;
 
-    await expect(
-      adapter.signTypedData({
-        types,
-        primaryType: "Mail",
-        message,
-        domain,
-      })
-    ).resolves.not.toThrow();
+    const typedData = {
+      types,
+      primaryType: "Mail",
+      message,
+      domain,
+    } as const;
+    const signature = await adapter.signTypedData(typedData);
+
+    const recoveredAddress = await recoverTypedDataAddress({
+      ...typedData,
+      signature,
+    });
+    expect(recoveredAddress).toBe(adapter.address);
   });
 });
