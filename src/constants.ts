@@ -43,7 +43,7 @@ export const CHAIN_INFO: Record<number, ChainInfo> = {
   },
   8453: {
     currencyIcon: ETHER_ICON,
-icon:BASE_SMALL,
+    icon:BASE_SMALL,
     testnet: false,
     wrappedToken: "0x4200000000000000000000000000000000000006",
   },
