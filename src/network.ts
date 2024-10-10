@@ -10,14 +10,14 @@ export interface NetworkFields {
   rpcUrl: string;
   chainId: number;
   scanUrl: string;
-  icon: string | undefined; // this is the chain icon
+  icon: string | undefined;
   nativeCurrency: {
     decimals: number;
     name: string;
     symbol: string;
     wrappedAddress: string | undefined;
     // This is often Network logo, but sometimes not (e.g. Gnosis Chain & xDai)
-    icon: string | undefined; // this is the token icon
+    icon: string | undefined;
   };
 }
 /**
