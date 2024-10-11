@@ -11,6 +11,7 @@ export interface NetworkFields {
   chainId: number;
   scanUrl: string;
   icon: string | undefined;
+  testnet: boolean;
   nativeCurrency: {
     decimals: number;
     name: string;
@@ -31,6 +32,7 @@ export class Network implements NetworkFields {
   scanUrl: string;
   client: PublicClient;
   icon: string | undefined;
+  testnet: boolean;
   nativeCurrency: {
     decimals: number;
     name: string;
@@ -56,6 +58,7 @@ export class Network implements NetworkFields {
     this.client = createPublicClient({
       transport: http(network.rpcUrl),
     });
+    this.testnet = network.testnet;
     this.nativeCurrency = nativeCurrency;
     this.icon = icon;
   }
@@ -86,6 +89,7 @@ function createNetworkMap(supportedNetworks: Chain[]): NetworkMap {
       chainId: network.id,
       scanUrl: network.blockExplorers?.default.url || "",
       icon,
+      testnet: network.testnet || false,
       nativeCurrency: {
         ...network.nativeCurrency,
         wrappedAddress: chainInfo?.wrappedToken,
@@ -95,4 +99,8 @@ function createNetworkMap(supportedNetworks: Chain[]): NetworkMap {
   });
 
   return networkMap;
+}
+
+export function isTestnet(chainId: number): boolean {
+  return Network.fromChainId(chainId).testnet;
 }
