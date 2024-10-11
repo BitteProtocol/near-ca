@@ -29,7 +29,7 @@ type KeyPairString = `ed25519:${string}` | `secp256k1:${string}`;
  * @property {string} [privateKey] - (Optional) The private key for the account.
  * @property {string} [derivationPath] - (Optional) The derivation path for the Ethereum account. Defaults to "ethereum,1".
  */
-interface SetupConfig {
+export interface SetupConfig {
   accountId: string;
   mpcContractId: string;
   network?: NearConfig;
@@ -37,6 +37,20 @@ interface SetupConfig {
   derivationPath?: string;
 }
 
+/**
+ * Sets up the NEAR-Ethereum adapter using the provided configuration.
+ *
+ * This function establishes a connection to the NEAR network using the given
+ * account details, configures the Multi-Party Computation (MPC) contract, and
+ * returns an instance of the NearEthAdapter.
+ *
+ * @param {SetupConfig} args - The configuration parameters for setting up the adapter.
+ *
+ * @returns {Promise<NearEthAdapter>} - A promise that resolves to an instance of NearEthAdapter configured with the provided settings.
+ *
+ * @throws {Error} - Throws an error if the `accountId` does not match the networkId of the provided or inferred `network`.
+ * @throws {Error} - Throws an error if there is a failure in creating a NEAR account.
+ */
 export async function setupAdapter(args: SetupConfig): Promise<NearEthAdapter> {
   const {
     accountId,
