@@ -10,7 +10,7 @@ import {
   toBytes,
 } from "viem";
 import { BaseTx, TransactionWithSignature } from "../types";
-import { Network } from "../networks";
+import { Network } from "../network";
 
 export function toPayload(msgHash: Hex | Uint8Array): number[] {
   const bytes = isBytes(msgHash) ? msgHash : toBytes(msgHash);

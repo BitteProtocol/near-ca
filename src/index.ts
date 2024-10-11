@@ -12,7 +12,7 @@ export * from "./chains/ethereum";
 export * from "./chains/near";
 export * from "./guards";
 export * from "./mpcContract";
-export * from "./networks";
+export * from "./network";
 export * from "./types";
 export * from "./utils";
 /// Beta features
