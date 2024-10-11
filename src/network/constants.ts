@@ -1,7 +1,6 @@
 interface ChainInfo {
   currencyIcon?: string;
   icon?: string;
-  testnet: boolean;
   wrappedToken: string;
 }
 
@@ -28,54 +27,46 @@ export const CHAIN_INFO: Record<number, ChainInfo> = {
   1: {
     currencyIcon: ETHER,
     icon: ETHEREUM_ICON,
-    testnet: false,
     wrappedToken: "0xC02aaA39b223FE8D0A0e5C4F27eAD9083C756Cc2",
   },
   // Optimism
   10: {
     currencyIcon: ETHER,
     icon: OPTIMISM_ICON,
-    testnet: false,
     wrappedToken: "0x4200000000000000000000000000000000000006",
   },
   // Binance Smart Chain
   56: {
     icon: BINANCE_ICON,
-    testnet: false,
     wrappedToken: "0xbb4CdB9CBd36B01bD1cBaEBF2De08d9173bc095c",
   },
   // Binance Testnet
   97: {
     icon: BINANCE_ICON,
-    testnet: true,
     wrappedToken: "0x094616f0bdfb0b526bd735bf66eca0ad254ca81f",
   },
   // Gnosis Chain
   100: {
     currencyIcon: XDAI,
     icon: GNOSIS_ICON,
-    testnet: false,
     wrappedToken: "0x6a023ccd1ff6f2045c3309768ead9e68f978f6e1",
   },
   // Polygon
   137: {
     icon: POLYGON_ICON,
     currencyIcon: POL,
-    testnet: false,
     wrappedToken: "0x7d1afa7b718fb893db30a3abc0cfc608aacfebb0",
   },
   // Base
   8453: {
     currencyIcon: ETHER,
     icon: BASE_ICON,
-    testnet: false,
     wrappedToken: "0x4200000000000000000000000000000000000006",
   },
   // Gnosis Chiado Testnet
   10200: {
     currencyIcon: XDAI,
     icon: GNOSIS_ICON,
-    testnet: true,
     wrappedToken: "0xb2D0d7aD1D4b2915390Dc7053b9421F735A723E7",
   },
   // Arbitrum
@@ -83,27 +74,23 @@ export const CHAIN_INFO: Record<number, ChainInfo> = {
     currencyIcon: ETHER,
     icon: ARBITRUM_ICON,
     wrappedToken: "0x82af49447d8a07e3bd95bd0d56f35241523fbab1",
-    testnet: false,
   },
   // Base Sepolia
   84532: {
     currencyIcon: ETHER,
     icon: BASE_ICON,
     wrappedToken: "0x4200000000000000000000000000000000000006",
-    testnet: true,
   },
   // Arbitrum Sepolia
   421614: {
     currencyIcon: ETHER,
     icon: ARBITRUM_ICON,
-    testnet: true,
     wrappedToken: "0x980b62da83eff3d4576c647993b0c1d7faf17c73",
   },
   // Sepolia
   11155111: {
     currencyIcon: ETHER,
     icon: ETHEREUM_ICON,
-    testnet: true,
     wrappedToken: "0xD0A1E359811322d97991E03f863a0C30C2cF029C",
   },
 };
