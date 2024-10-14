@@ -26,7 +26,9 @@ jobs:
             ${{ runner.os }}-yarn-
 
       - name: E2E Test
-        run: yarn && yarn test e2e
+        run: |
+          yarn --frozen-lockfile
+          yarn test e2e
         env:
           MPC_CONTRACT_ID: v1.signer-prod.testnet
           NEAR_ACCOUNT_ID: ${{secrets.NEAR_ACCOUNT_ID}}

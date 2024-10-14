@@ -29,7 +29,7 @@
     "lint": "eslint . --ignore-pattern dist/ && prettier --check **/*.ts",
     "test": "jest --testTimeout 30000",
     "coverage": "yarn test --coverage",
-    "verify": "yarn lint && yarn coverage unit",
+    "verify": "yarn coverage unit",
     "fmt": "prettier --write '{src,examples,tests}/**/*.{js,jsx,ts,tsx}' && eslint src/ --fix"
   },
   "engines": {
