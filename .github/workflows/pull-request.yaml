@@ -28,8 +28,17 @@ jobs:
             ${{ runner.os }}-yarn-
 
       - name: Install & Build
-        run: yarn && yarn build
-
-      - name: Lint & Unit Test & Coverage
         run: |
+          yarn --frozen-lockfile
+          yarn lint
+          yarn build
           yarn verify
+
+      - name: Save Cache (Only if no match was found)
+        if: steps.yarn-cache.outputs.cache-hit != 'true'
+        uses: actions/cache@v4
+        with:
+          path: |
+            node_modules
+            ~/.cache/yarn
+          key: ${{ runner.os }}-yarn-${{ hashFiles('yarn.lock') }}
