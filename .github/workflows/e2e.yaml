@@ -34,12 +34,3 @@ jobs:
           NEAR_ACCOUNT_ID: ${{secrets.NEAR_ACCOUNT_ID}}
           NEAR_ACCOUNT_PRIVATE_KEY: ${{secrets.NEAR_PK}}
           ETH_PK: ${{secrets.ETH_PK}}
-
-      - name: Save Cache (Only if no match was found)
-        if: steps.yarn-cache.outputs.cache-hit != 'true'
-        uses: actions/cache@v4
-        with:
-          path: |
-            node_modules
-            ~/.cache/yarn
-          key: ${{ runner.os }}-yarn-${{ hashFiles('yarn.lock') }}
