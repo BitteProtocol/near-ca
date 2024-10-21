@@ -15,6 +15,7 @@ export interface NetworkFields {
   name: string;
   rpcUrl: string;
   chainId: number;
+  // TODO(bh2smith): Scan data should become structure: viem/types/chain.ts
   scanUrl: string;
   scanApiUrl: string;
   icon: string | undefined;
