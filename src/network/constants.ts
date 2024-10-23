@@ -91,6 +91,6 @@ export const CHAIN_INFO: Record<number, ChainInfo> = {
   11155111: {
     currencyIcon: ETHER,
     icon: ETHEREUM_ICON,
-    wrappedToken: "0xD0A1E359811322d97991E03f863a0C30C2cF029C",
+    wrappedToken: "0xfff9976782d46cc05630d1f6ebab18b2324d6b14",
   },
 };
