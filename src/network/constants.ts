@@ -81,6 +81,12 @@ export const CHAIN_INFO: Record<number, ChainInfo> = {
     icon: BASE_ICON,
     wrappedToken: "0x4200000000000000000000000000000000000006",
   },
+  // Polygon Amoy
+  80002: {
+    currencyIcon: POL,
+    icon: POLYGON_ICON,
+    wrappedToken: "0xa5733b3a8e62a8faf43b0376d5faf46e89b3033e",
+  },
   // Arbitrum Sepolia
   421614: {
     currencyIcon: ETHER,
@@ -92,5 +98,12 @@ export const CHAIN_INFO: Record<number, ChainInfo> = {
     currencyIcon: ETHER,
     icon: ETHEREUM_ICON,
     wrappedToken: "0xfff9976782d46cc05630d1f6ebab18b2324d6b14",
+  },
+
+  // OP Testnet
+  11155420:{
+    currencyIcon: ETHER,
+    icon: OPTIMISM_ICON,
+    wrappedToken: "0x4200000000000000000000000000000000000006",
   },
 };
