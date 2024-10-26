@@ -1,6 +1,10 @@
 import { Hex, Signature, serializeSignature } from "viem";
-import { addSignature, relaySignedTransaction } from "./utils/transaction";
-import { NearEthTxData, signMethods } from "./types";
+import {
+  addSignature,
+  relaySignedTransaction,
+  toPayload,
+} from "./utils/transaction";
+import { NearEncodedSignRequest, signMethods } from "./types";
 import { NearEthAdapter } from "./chains/ethereum";
 import { Web3WalletTypes } from "@walletconnect/web3wallet";
 import { isSignMethod } from "./guards";
@@ -23,7 +27,7 @@ export class Beta {
 
   async handleSessionRequest(
     request: Partial<Web3WalletTypes.SessionRequest>
-  ): Promise<NearEthTxData> {
+  ): Promise<NearEncodedSignRequest> {
     const {
       chainId,
       request: { method, params },
@@ -34,20 +38,20 @@ export class Beta {
         `Unsupported sign method ${method}: Available sign methods ${signMethods}`
       );
     }
-    const { evmMessage, payload, recoveryData } = await requestRouter({
+    const { evmMessage, hashToSign } = await requestRouter({
       method,
       chainId: parseInt(stripEip155Prefix(chainId)),
       params,
     });
-    console.log("Parsed Request:", payload, recoveryData);
+    console.log("Parsed Request:", evmMessage, hashToSign);
     return {
       nearPayload: await this.adapter.mpcContract.encodeSignatureRequestTx({
         path: this.adapter.derivationPath,
-        payload,
+        payload: toPayload(hashToSign),
         key_version: 0,
       }),
       evmMessage,
-      recoveryData,
+      hashToSign,
     };
   }
 

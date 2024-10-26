@@ -5,6 +5,7 @@ import {
   addSignature,
   toPayload,
   populateTx,
+  fromPayload,
 } from "../../src/utils/transaction";
 
 describe("Transaction Builder Functions", () => {
@@ -18,6 +19,15 @@ describe("Transaction Builder Functions", () => {
     ]);
   });
 
+  it("pass: toPayload", async () => {
+    const txHash =
+      "0x52b6437db56d87f5991d7c173cf11b9dd0f9fb083260bef1bf0c338042bc398c";
+    expect(toPayload(txHash)).toStrictEqual([
+      82, 182, 67, 125, 181, 109, 135, 245, 153, 29, 124, 23, 60, 241, 27, 157,
+      208, 249, 251, 8, 50, 96, 190, 241, 191, 12, 51, 128, 66, 188, 57, 140,
+    ]);
+  });
+
   it("fails: toPayload", async () => {
     const txHash =
       "0x02e783aa36a7808309e8bb84773f7cbb8094deadbeef0000000000000000000000000b00b1e50180c00";
@@ -26,6 +36,11 @@ describe("Transaction Builder Functions", () => {
     );
   });
 
+  it("pass: fromPayload", async () => {
+    const txHash =
+      "0x52b6437db56d87f5991d7c173cf11b9dd0f9fb083260bef1bf0c338042bc398c";
+    expect(fromPayload(toPayload(txHash))).toBe(txHash);
+  });
   it("addSignature", async () => {
     const testTx: TransactionWithSignature = {
       transaction:

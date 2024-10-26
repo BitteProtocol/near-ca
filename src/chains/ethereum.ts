@@ -22,8 +22,8 @@ import {
   toPayload,
   broadcastSignedTransaction,
   SignRequestData,
-  NearEthTxData,
   IMpcContract,
+  NearEncodedSignRequest,
 } from "..";
 import { Beta } from "../beta";
 import { requestRouter } from "../utils/request";
@@ -233,17 +233,16 @@ export class NearEthAdapter {
    */
   async encodeSignRequest(
     signRequest: SignRequestData
-  ): Promise<NearEthTxData> {
-    const { evmMessage, payload, recoveryData } =
-      await requestRouter(signRequest);
+  ): Promise<NearEncodedSignRequest> {
+    const { evmMessage, hashToSign } = await requestRouter(signRequest);
     return {
       nearPayload: await this.mpcContract.encodeSignatureRequestTx({
         path: this.derivationPath,
-        payload,
+        payload: toPayload(hashToSign),
         key_version: 0,
       }),
       evmMessage,
-      recoveryData,
+      hashToSign,
     };
   }
 }

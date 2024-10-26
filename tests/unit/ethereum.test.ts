@@ -79,13 +79,8 @@ describe("ethereum", () => {
         ],
       },
       evmMessage: "",
-      recoveryData: {
-        type: "eth_sign",
-        data: {
-          address: "0xe09907d0a59bf84a68f5249ab328fc0ce0417a28",
-          message: { raw: "0x" },
-        },
-      },
+      hashToSign:
+        "0x5f35dce98ba4fba25530a026ed80b2cecdaa31091ba4958b99b52ea1d068adad",
     });
   });
 });

@@ -1,16 +1,13 @@
-import { Address, Hex, Signature, toHex } from "viem";
+import { Address, Hex, Signature } from "viem";
 import { PrivateKeyAccount, privateKeyToAccount } from "viem/accounts";
 import { FunctionCallTransaction, SignArgs } from "../types";
 import { Account } from "near-api-js";
-import { IMpcContract, nearAccountFromAccountId, NearEthAdapter } from "..";
-
-function fromPayload(payload: number[]): Hex {
-  if (payload.length !== 32) {
-    throw new Error(`Payload must have 32 bytes: ${payload}`);
-  }
-  // Convert number[] back to Uint8Array
-  return toHex(new Uint8Array(payload));
-}
+import {
+  fromPayload,
+  IMpcContract,
+  nearAccountFromAccountId,
+  NearEthAdapter,
+} from "..";
 
 /**
  * Converts a raw hexadecimal signature into a structured Signature object
