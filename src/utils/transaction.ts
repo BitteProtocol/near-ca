@@ -8,6 +8,7 @@ import {
   parseTransaction,
   serializeTransaction,
   toBytes,
+  toHex,
 } from "viem";
 import { BaseTx, TransactionWithSignature } from "../types";
 import { Network } from "../network";
@@ -18,6 +19,14 @@ export function toPayload(msgHash: Hex | Uint8Array): number[] {
     throw new Error(`Payload must have 32 bytes: ${msgHash}`);
   }
   return Array.from(bytes);
+}
+
+export function fromPayload(payload: number[]): Hex {
+  if (payload.length !== 32) {
+    throw new Error(`Payload must have 32 bytes: ${payload}`);
+  }
+  // Convert number[] back to Uint8Array
+  return toHex(new Uint8Array(payload));
 }
 
 export function buildTxPayload(serializedTx: `0x${string}`): number[] {

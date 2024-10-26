@@ -9,21 +9,19 @@ describe("Wallet Connect", () => {
   describe("requestRouter: eth_sign & personal_sign", () => {
     it("hello message", async () => {
       const messageString = "Hello!";
-      const { evmMessage, payload } = await requestRouter({
+      const { evmMessage, hashToSign } = await requestRouter({
         method: "eth_sign",
         chainId,
         params: [from, toHex(messageString)],
       });
       expect(evmMessage).toEqual(messageString);
-      expect(payload).toEqual([
-        82, 182, 67, 125, 181, 109, 135, 245, 153, 29, 124, 23, 60, 241, 27,
-        157, 208, 249, 251, 8, 50, 96, 190, 241, 191, 12, 51, 128, 66, 188, 57,
-        140,
-      ]);
+      expect(hashToSign).toEqual(
+        "0x52b6437db56d87f5991d7c173cf11b9dd0f9fb083260bef1bf0c338042bc398c"
+      );
     });
 
     it("opensea login", async () => {
-      const { evmMessage, payload } = await requestRouter({
+      const { evmMessage, hashToSign } = await requestRouter({
         method: "personal_sign",
         chainId,
         params: [
@@ -44,15 +42,13 @@ Wallet address:
 Nonce:
 2971c711-b798-4434-a631-1c3f13efe53e`
       );
-      expect(payload).toEqual([
-        71, 1, 115, 38, 85, 102, 123, 176, 168, 180, 141, 217, 92, 92, 166, 4,
-        91, 203, 111, 233, 203, 169, 63, 13, 203, 186, 161, 2, 249, 195, 231,
-        219,
-      ]);
+      expect(hashToSign).toEqual(
+        "0x4701732655667bb0a8b48dd95c5ca6045bcb6fe9cba93f0dcbbaa102f9c3e7db"
+      );
     });
 
     it("manifold login", async () => {
-      const { evmMessage, payload } = await requestRouter({
+      const { evmMessage, hashToSign } = await requestRouter({
         method: "personal_sign",
         chainId,
         params: [
@@ -65,11 +61,9 @@ Nonce:
 
 Challenge: 4113fc3ab2cc60f5d595b2e55349f1eec56fd0c70d4287081fe7156848263626`
       );
-      expect(payload).toEqual([
-        104, 1, 31, 81, 200, 177, 165, 108, 41, 241, 209, 48, 196, 129, 215, 86,
-        73, 102, 254, 229, 27, 107, 59, 110, 214, 33, 221, 45, 156, 197, 164,
-        211,
-      ]);
+      expect(hashToSign).toEqual(
+        "0x68011f51c8b1a56c29f1d130c481d7564966fee51b6b3b6ed621dd2d9cc5a4d3"
+      );
     });
   });
   describe("requestRouter: eth_sendTransaction", () => {
@@ -163,17 +157,15 @@ Challenge: 4113fc3ab2cc60f5d595b2e55349f1eec56fd0c70d4287081fe7156848263626`
         params: [from, jsonStr],
       };
 
-      const { evmMessage, payload } = await requestRouter({
+      const { evmMessage, hashToSign } = await requestRouter({
         method: "eth_signTypedData_v4",
         chainId,
         params: [from, jsonStr],
       });
       expect(evmMessage).toEqual(request.params[1]);
-      expect(payload).toEqual([
-        12, 48, 228, 237, 112, 46, 184, 104, 131, 82, 168, 85, 19, 250, 126, 53,
-        144, 249, 197, 39, 93, 218, 12, 56, 42, 161, 212, 122, 176, 197, 201,
-        154,
-      ]);
+      expect(hashToSign).toEqual(
+        "0x0c30e4ed702eb8688352a85513fa7e3590f9c5275dda0c382aa1d47ab0c5c99a"
+      );
     });
   });
 });

@@ -101,7 +101,7 @@ export const CHAIN_INFO: Record<number, ChainInfo> = {
   },
 
   // OP Testnet
-  11155420:{
+  11155420: {
     currencyIcon: ETHER,
     icon: OPTIMISM_ICON,
     wrappedToken: "0x4200000000000000000000000000000000000006",

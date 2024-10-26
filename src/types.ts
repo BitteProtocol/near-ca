@@ -1,6 +1,7 @@
 import { IMpcContract } from "./mpcContract";
 import {
   Address,
+  Hash,
   Hex,
   SignableMessage,
   Signature,
@@ -53,18 +54,41 @@ export interface AdapterParams {
 }
 
 /**
- * Represents the data required for a NEAR to Ethereum transaction.
+ * Represents a message that can be signed within an Ethereum Virtual Machine (EVM) context.
+ * This can be a raw string, an EIP-712 typed data structure, or a serializable transaction.
  *
- * @property {string | TransactionSerializable} evmMessage - The EVM message or transaction.
- * @property {FunctionCallTransaction<{ request: SignArgs }>} nearPayload - The NEAR payload containing the function call transaction.
- * @property {RecoveryData} recoveryData - The data required to recover partial signature.
+ * @typedef {string | EIP712TypedData | TransactionSerializable} EvmMessage
  */
-export interface NearEthTxData {
-  evmMessage: string | TransactionSerializable;
-  nearPayload: FunctionCallTransaction<{ request: SignArgs }>;
-  recoveryData: RecoveryData;
+export type EvmMessage = string | EIP712TypedData | TransactionSerializable;
+
+/**
+ * Encapsulates a signature request for an Ethereum-based message.
+ *
+ * @interface EncodedSignRequest
+ * @property {EvmMessage} evmMessage - The message to be signed, which could be in plain string format,
+ *                                     an EIP-712 typed data, or a serializable transaction.
+ * @property {Hash} hashToSign - A unique hash derived from `evmMessage` to identify the signature request.
+ */
+export interface EncodedSignRequest {
+  evmMessage: EvmMessage;
+  hashToSign: Hash;
 }
 
+/**
+ * Extends the `EncodedSignRequest` for use with NEAR protocol.
+ * This structure contains an additional payload to facilitate transaction signing in NEAR.
+ *
+ * @interface NearEncodedSignRequest
+ * @extends EncodedSignRequest
+ * @property {FunctionCallTransaction<{ request: SignArgs }>} nearPayload - A NEAR-specific transaction payload,
+ *                                                                          typically including a request with arguments
+ *                                                                          for the function call.
+ */
+export interface NearEncodedSignRequest extends EncodedSignRequest {
+  nearPayload: FunctionCallTransaction<{
+    request: SignArgs;
+  }>;
+}
 /**
  * Represents the gas fees for an Ethereum transaction.
  *
@@ -167,18 +191,6 @@ export type EIP712TypedData = {
   message: Record<string, unknown>;
   primaryType: string;
 };
-
-/**
- * Represents the recovery data.
- *
- * @property {string} type - The type of the recovery data.
- * @property {MessageData | EIP712TypedData | Hex} data - The recovery data.
- */
-export interface RecoveryData {
-  // TODO use enum!
-  type: string;
-  data: MessageData | EIP712TypedData | Hex;
-}
 
 /**
  * Sufficient data required to construct a signed Ethereum Transaction.
