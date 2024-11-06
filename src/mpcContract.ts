@@ -8,6 +8,7 @@ import {
 import { TGAS } from "./chains/near";
 import { MPCSignature, FunctionCallTransaction, SignArgs } from "./types";
 import { transformSignature } from "./utils/signature";
+import { Action, FunctionCall } from "near-api-js/lib/transaction";
 
 /**
  * Near Contract Type for change methods.
@@ -118,19 +119,19 @@ export class MpcContract implements IMpcContract {
     gas?: bigint
   ): Promise<Signature[]> => {
     const transaction = await this.encodeMulti(signArgs, gas);
-
+    // TODO: This is a hack to prevent out of gas errors
+    const maxGasPerAction = 300000000000000n / BigInt(signArgs.length);
     const result = await this.connectedAccount.signAndSendTransaction({
       receiverId: transaction.receiverId,
       actions: transaction.actions.map((action) => {
-        return {
-          enum: action.type,
-          functionCall: {
-            methodName: action.params.methodName,
+        return new Action({
+          functionCall: new FunctionCall({
+            methodName: "sign",
             args: Buffer.from(JSON.stringify(action.params.args)),
-            gas: BigInt(action.params.gas),
+            gas: maxGasPerAction,
             deposit: BigInt(action.params.deposit),
-          },
-        };
+          }),
+        });
       }),
     });
 
