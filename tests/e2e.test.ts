@@ -27,24 +27,28 @@ describe("End To End", () => {
 
   it.skip("signAndSendTransaction", async () => {
     await expect(
-      realAdapter.signAndSendTransaction({
-        // Sending 1 WEI to self (so we never run out of funds)
-        to: realAdapter.address,
-        value: ONE_WEI,
-        chainId,
-      })
+      realAdapter.signAndSendTransaction([
+        {
+          // Sending 1 WEI to self (so we never run out of funds)
+          to: realAdapter.address,
+          value: ONE_WEI,
+          chainId,
+        },
+      ])
     ).resolves.not.toThrow();
   });
 
   it.skip("signAndSendTransaction - Gnosis Chain", async () => {
     await expect(
-      realAdapter.signAndSendTransaction({
-        // Sending 1 WEI to self (so we ~never run out of funds)
-        to: realAdapter.address,
-        value: ONE_WEI,
-        // Gnosis Chain!
-        chainId: 100,
-      })
+      realAdapter.signAndSendTransaction([
+        {
+          // Sending 1 WEI to self (so we ~never run out of funds)
+          to: realAdapter.address,
+          value: ONE_WEI,
+          // Gnosis Chain!
+          chainId: 100,
+        },
+      ])
     ).resolves.not.toThrow();
   });
 
@@ -54,11 +58,13 @@ describe("End To End", () => {
       address: mockedAdapter.address,
     });
     await expect(
-      realAdapter.signAndSendTransaction({
-        to,
-        value: senderBalance + ONE_WEI,
-        chainId,
-      })
+      realAdapter.signAndSendTransaction([
+        {
+          to,
+          value: senderBalance + ONE_WEI,
+          chainId,
+        },
+      ])
     ).rejects.toThrow();
   });
 
