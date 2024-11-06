@@ -113,6 +113,34 @@ export class MpcContract implements IMpcContract {
     return transformSignature(mpcSig);
   };
 
+  requestMulti = async (
+    signArgs: SignArgs[],
+    gas?: bigint
+  ): Promise<Signature[]> => {
+    const transaction = await this.encodeMulti(signArgs, gas);
+
+    const result = await this.connectedAccount.signAndSendTransaction({
+      receiverId: transaction.receiverId,
+      actions: transaction.actions.map((action) => {
+        return {
+          enum: action.type,
+          functionCall: {
+            methodName: action.params.methodName,
+            args: Buffer.from(JSON.stringify(action.params.args)),
+            gas: BigInt(action.params.gas),
+            deposit: BigInt(action.params.deposit),
+          },
+        };
+      }),
+    });
+
+    // Extract signatures from each receipt outcome in order
+    const mpcSigs = result.receipts_outcome.map(
+      (receipt) => receipt.outcome.status as MPCSignature
+    );
+    return mpcSigs.map(transformSignature);
+  };
+
   async encodeSignatureRequestTx(
     signArgs: SignArgs,
     gas?: bigint
@@ -133,6 +161,30 @@ export class MpcContract implements IMpcContract {
       ],
     };
   }
+
+  async encodeMulti(
+    signArgs: SignArgs[],
+    gas?: bigint
+  ): Promise<FunctionCallTransaction<{ request: SignArgs }>> {
+    const deposit = await this.getDeposit();
+    return {
+      signerId: this.connectedAccount.accountId,
+      receiverId: this.contract.contractId,
+      actions: signArgs.map((args) => {
+        return {
+          type: "FunctionCall",
+          params: {
+            methodName: "sign",
+            args: {
+              request: args,
+            },
+            gas: gasOrDefault(gas),
+            deposit,
+          },
+        };
+      }),
+    };
+  }
 }
 
 function gasOrDefault(gas?: bigint): string {
@@ -149,8 +201,13 @@ export interface IMpcContract {
   deriveEthAddress(derivationPath: string): Promise<Address>;
   getDeposit(): Promise<string>;
   requestSignature(signArgs: SignArgs, gas?: bigint): Promise<Signature>;
+  requestMulti(signArgs: SignArgs[], gas?: bigint): Promise<Signature[]>;
   encodeSignatureRequestTx(
     signArgs: SignArgs,
+    gas?: bigint
+  ): Promise<FunctionCallTransaction<{ request: SignArgs }>>;
+  encodeMulti(
+    signArgs: SignArgs[],
     gas?: bigint
   ): Promise<FunctionCallTransaction<{ request: SignArgs }>>;
 }

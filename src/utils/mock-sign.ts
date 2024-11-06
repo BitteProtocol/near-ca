@@ -48,6 +48,15 @@ export class MockMpcContract implements IMpcContract {
         "0x4f3edf983ac636a65a842ce7c78d9aa706d3b113bce9c46f30d7d21715b23b1d"
     );
   }
+  requestMulti(_signArgs: SignArgs[], _gas?: bigint): Promise<Signature[]> {
+    throw new Error("Method not implemented.");
+  }
+  encodeMulti(
+    _signArgs: SignArgs[],
+    _gas?: bigint
+  ): Promise<FunctionCallTransaction<{ request: SignArgs }>> {
+    throw new Error("Method not implemented.");
+  }
 
   accountId(): string {
     return "mock-mpc.offline";

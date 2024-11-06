@@ -32,6 +32,7 @@ export class NearEthAdapter {
   readonly mpcContract: IMpcContract;
   readonly address: Address;
   readonly derivationPath: string;
+  readonly keyVersion: number;
   readonly beta: Beta;
 
   private constructor(config: {
@@ -41,6 +42,7 @@ export class NearEthAdapter {
   }) {
     this.mpcContract = config.mpcContract;
     this.derivationPath = config.derivationPath;
+    this.keyVersion = 0;
     this.address = config.sender;
     this.beta = new Beta(this);
   }
@@ -103,16 +105,29 @@ export class NearEthAdapter {
    * Note that the signature request is a recursive function.
    */
   async signAndSendTransaction(
-    txData: BaseTx,
+    txData: BaseTx[],
     nearGas?: bigint
-  ): Promise<Hash> {
-    const { transaction, signArgs } = await this.createTxPayload(txData);
+  ): Promise<Hash[]> {
+    // Note that chainIds must be all different or
+    // we have to make special consideration for the nonces.
+    const txArray = await Promise.all(
+      txData.map((tx) => this.createTxPayload(tx))
+    );
+
     console.log(`Requesting signature from ${this.mpcContract.accountId()}`);
-    const signature = await this.mpcContract.requestSignature(
-      signArgs,
+    const signatures = await this.mpcContract.requestMulti(
+      txArray.map((tx) => tx.signArgs),
       nearGas
     );
-    return broadcastSignedTransaction({ transaction, signature });
+    const transactions = txArray.map((tx) => tx.transaction);
+    return Promise.all(
+      transactions.map((transaction, i) =>
+        broadcastSignedTransaction({
+          transaction,
+          signature: signatures[i]!,
+        })
+      )
+    );
   }
 
   /**
