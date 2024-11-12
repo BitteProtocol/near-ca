@@ -12,9 +12,21 @@ const validEIP1559Transaction: TransactionSerializable = {
   chainId: 1,
   maxFeePerGas: 1n,
 };
-describe("Type Guards", () => {
-  it("isSignMethod", async () => {
-    expect(isSignMethod("poop")).toBe(false);
+
+const commonInvalidCases = [
+  null,
+  undefined,
+  {},
+  { to: "invalid-address" },
+  { value: "not-a-bigint" },
+  { chainId: "not-a-number" },
+  "random string",
+  123,
+  [],
+];
+
+describe("SignMethod", () => {
+  it("returns true for all valid SignMethods", async () => {
     [
       "eth_sign",
       "personal_sign",
@@ -24,7 +36,14 @@ describe("Type Guards", () => {
     ].map((item) => expect(isSignMethod(item)).toBe(true));
   });
 
-  it("isEIP712TypedData", async () => {
+  it("returns false for invalid data inputs", async () => {
+    ["poop", undefined, false, 1, {}].map((item) =>
+      expect(isSignMethod(item)).toBe(false)
+    );
+  });
+});
+describe("isEIP712TypedData", () => {
+  it("returns true for valid EIP712TypedData", async () => {
     const message = {
       from: {
         name: "Cow",
@@ -64,6 +83,12 @@ describe("Type Guards", () => {
     } as const;
     expect(isEIP712TypedData(typedData)).toBe(true);
   });
+
+  it("returns false for invalid data inputs", async () => {
+    commonInvalidCases.map((item) =>
+      expect(isEIP712TypedData(item)).toBe(false)
+    );
+  });
 });
 
 describe("isTransactionSerializable", () => {
@@ -72,19 +97,7 @@ describe("isTransactionSerializable", () => {
   });
 
   it("should return false for invalid transaction data", () => {
-    const invalidCases = [
-      null,
-      undefined,
-      {},
-      { to: "invalid-address" },
-      { value: "not-a-bigint" },
-      { chainId: "not-a-number" },
-      "random string",
-      123,
-      [],
-    ];
-
-    invalidCases.forEach((testCase) => {
+    commonInvalidCases.forEach((testCase) => {
       expect(isTransactionSerializable(testCase)).toBe(false);
     });
   });
