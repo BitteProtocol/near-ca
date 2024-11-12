@@ -1,12 +1,12 @@
 import { zeroAddress } from "viem";
-import { Network, TransactionWithSignature } from "../../src";
+import { Network, TransactionWithSignature } from "../../../src";
 import {
   buildTxPayload,
   addSignature,
   toPayload,
   populateTx,
   fromPayload,
-} from "../../src/utils/transaction";
+} from "../../../src/utils/transaction";
 
 describe("Transaction Builder Functions", () => {
   it("buildTxPayload", async () => {

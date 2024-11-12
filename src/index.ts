@@ -10,7 +10,6 @@ import {
 
 export * from "./chains/ethereum";
 export * from "./chains/near";
-export * from "./guards";
 export * from "./mpcContract";
 export * from "./network";
 export * from "./types";
