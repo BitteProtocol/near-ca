@@ -1,4 +1,4 @@
-import { IMpcContract } from "./mpcContract";
+import { IMpcContract } from "../mpcContract";
 import {
   Address,
   Hash,
@@ -8,6 +8,8 @@ import {
   TransactionSerializable,
   TypedDataDomain,
 } from "viem";
+
+export * from "./guards";
 
 /**
  * Borrowed from @near-wallet-selector/core
@@ -169,11 +171,11 @@ export interface MessageData {
   message: SignableMessage;
 }
 
-interface TypedDataTypes {
+export interface TypedDataTypes {
   name: string;
   type: string;
 }
-type TypedMessageTypes = {
+export type TypedMessageTypes = {
   [key: string]: TypedDataTypes[];
 };
 
