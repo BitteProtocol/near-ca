@@ -1,4 +1,11 @@
-import { isAddress, TypedDataDomain } from "viem";
+import {
+  Hex,
+  isAddress,
+  parseTransaction,
+  serializeTransaction,
+  TransactionSerializable,
+  TypedDataDomain,
+} from "viem";
 import { EIP712TypedData, SignMethod, TypedMessageTypes } from ".";
 
 export function isSignMethod(method: unknown): method is SignMethod {
@@ -76,3 +83,24 @@ export const isEIP712TypedData = (obj: unknown): obj is EIP712TypedData => {
     typeof candidate.primaryType === "string"
   );
 };
+
+// Cheeky attempt to serialize. return true if successful!
+export function isTransactionSerializable(
+  data: unknown
+): data is TransactionSerializable {
+  try {
+    serializeTransaction(data as TransactionSerializable);
+    return true;
+  } catch (error) {
+    return false;
+  }
+}
+
+export function isRlpHex(data: unknown): data is Hex {
+  try {
+    parseTransaction(data as Hex);
+    return true;
+  } catch (error) {
+    return false;
+  }
+}
