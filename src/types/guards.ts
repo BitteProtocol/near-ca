@@ -1,6 +1,7 @@
 import {
   Hex,
   isAddress,
+  isHex,
   parseTransaction,
   serializeTransaction,
   TransactionSerializable,
@@ -30,7 +31,11 @@ const isTypedDataDomain = (domain: unknown): domain is TypedDataDomain => {
   return Object.entries(candidate).every(([key, value]) => {
     switch (key) {
       case "chainId":
-        return typeof value === "undefined" || typeof value === "number";
+        return (
+          typeof value === "undefined" ||
+          typeof value === "number" ||
+          isHex(value)
+        );
       case "name":
       case "version":
         return typeof value === "undefined" || typeof value === "string";
