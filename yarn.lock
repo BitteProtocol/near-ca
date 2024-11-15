@@ -455,9 +455,9 @@
   integrity sha512-BsWiH1yFGjXXS2yvrf5LyuoSIIbPrGUWob917o+BTKuZ7qJdxX8aJLRxs1fS9n6r7vESrq1OUqb68dANcFXuQQ==
 
 "@eslint/plugin-kit@^0.2.0":
-  version "0.2.2"
-  resolved "https://registry.yarnpkg.com/@eslint/plugin-kit/-/plugin-kit-0.2.2.tgz#5eff371953bc13e3f4d88150e2c53959f64f74f6"
-  integrity sha512-CXtq5nR4Su+2I47WPOlWud98Y5Lv8Kyxp2ukhgFx/eW6Blm18VXJO5WuQylPugRo8nbluoi6GvvxBLqHcvqUUw==
+  version "0.2.3"
+  resolved "https://registry.yarnpkg.com/@eslint/plugin-kit/-/plugin-kit-0.2.3.tgz#812980a6a41ecf3a8341719f92a6d1e784a2e0e8"
+  integrity sha512-2b/g5hRmpbb1o4GnTZax9N9m0FXzz9OV42ZzI4rDDMDuHUqigAiQCEWChBWCY4ztAGVRjoWT19v0yMmc5/L5kA==
   dependencies:
     levn "^0.4.1"
 
@@ -2476,9 +2476,9 @@ ejs@^3.1.10:
     jake "^10.8.5"
 
 electron-to-chromium@^1.5.41:
-  version "1.5.56"
-  resolved "https://registry.yarnpkg.com/electron-to-chromium/-/electron-to-chromium-1.5.56.tgz#3213f369efc3a41091c3b2c05bc0f406108ac1df"
-  integrity sha512-7lXb9dAvimCFdvUMTyucD4mnIndt/xhRKFAlky0CyFogdnNmdPQNoHI23msF/2V4mpTxMzgMdjK4+YRlFlRQZw==
+  version "1.5.60"
+  resolved "https://registry.yarnpkg.com/electron-to-chromium/-/electron-to-chromium-1.5.60.tgz#29944afe568c58c40729e67af0f59f52d4d0ed32"
+  integrity sha512-HcraRUkTKJ+8yA3b10i9qvhUlPBRDlKjn1XGek1zDGVfAKcvi8TsUnImGqLiEm9j6ZulxXIWWIo9BmbkbCTGgA==
 
 elliptic@6.5.4:
   version "6.5.4"
@@ -2506,10 +2506,23 @@ elliptic@6.5.7:
     minimalistic-assert "^1.0.1"
     minimalistic-crypto-utils "^1.0.1"
 
-elliptic@6.6.0, elliptic@^6.5.4, elliptic@^6.5.6:
+elliptic@6.6.0:
   version "6.6.0"
   resolved "https://registry.yarnpkg.com/elliptic/-/elliptic-6.6.0.tgz#5919ec723286c1edf28685aa89261d4761afa210"
   integrity sha512-dpwoQcLc/2WLQvJvLRHKZ+f9FgOdjnq11rurqwekGQygGPsYSK29OMMD2WalatiqQ+XGFDglTNixpPfI+lpaAA==
+  dependencies:
+    bn.js "^4.11.9"
+    brorand "^1.1.0"
+    hash.js "^1.0.0"
+    hmac-drbg "^1.0.1"
+    inherits "^2.0.4"
+    minimalistic-assert "^1.0.1"
+    minimalistic-crypto-utils "^1.0.1"
+
+elliptic@^6.5.4, elliptic@^6.5.6:
+  version "6.6.1"
+  resolved "https://registry.yarnpkg.com/elliptic/-/elliptic-6.6.1.tgz#3b8ffb02670bf69e382c7f65bf524c97c5405c06"
+  integrity sha512-RaddvvMatK2LJHqFJ+YA4WysVN5Ita9E35botqIYspQ4TkRAlCicdzKOjlyv/1Za5RyTNn7di//eEV0uTAfe3g==
   dependencies:
     bn.js "^4.11.9"
     brorand "^1.1.0"
@@ -5028,9 +5041,9 @@ v8-to-istanbul@^9.0.1:
     convert-source-map "^2.0.0"
 
 viem@^2.21.37:
-  version "2.21.44"
-  resolved "https://registry.yarnpkg.com/viem/-/viem-2.21.44.tgz#793600a6afa8c0c1d62b4b819d036f833f623195"
-  integrity sha512-oyLTCt7OQUetQN2m9KPNgSA//MzpnQLABAyglPKh+fAypU8cTT/hC5UyLQvaYt4WPg6dkbKOxfsahV4739pu9w==
+  version "2.21.45"
+  resolved "https://registry.yarnpkg.com/viem/-/viem-2.21.45.tgz#7a445428d4909cc334f231ee916ede1b69190603"
+  integrity sha512-I+On/IiaObQdhDKWU5Rurh6nf3G7reVkAODG5ECIfjsrGQ3EPJnxirUPT4FNV6bWER5iphoG62/TidwuTSOA1A==
   dependencies:
     "@noble/curves" "1.6.0"
     "@noble/hashes" "1.5.0"
