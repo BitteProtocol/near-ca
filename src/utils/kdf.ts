@@ -10,11 +10,11 @@ export function najPublicKeyStrToUncompressedHexPoint(
   return "04" + Buffer.from(decodedKey).toString("hex");
 }
 
-export async function deriveChildPublicKey(
+export function deriveChildPublicKey(
   parentUncompressedPublicKeyHex: string,
   signerId: string,
   path: string = ""
-): Promise<string> {
+): string {
   const ec = new EC("secp256k1");
   const scalarHex = sha3_256(
     `near-mpc-recovery v0.1.0 epsilon derivation:${signerId},${path}`
