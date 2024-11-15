@@ -27,6 +27,7 @@ type KeyPairString = `ed25519:${string}` | `secp256k1:${string}`;
  * @property {NearConfig} [network] - (Optional) The NEAR network configuration.
  * @property {string} [privateKey] - (Optional) The private key for the account.
  * @property {string} [derivationPath] - (Optional) The derivation path for the Ethereum account. Defaults to "ethereum,1".
+ * @property {string} [rootPublicKey] - (Optional) The root public key for the account. If not available it will be fetched from the MPC contract.
  */
 export interface SetupConfig {
   accountId: string;
