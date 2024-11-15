@@ -44,11 +44,13 @@ interface MpcContractInterface extends Contract {
  * located in: https://github.com/near/mpc-recovery
  */
 export class MpcContract implements IMpcContract {
+  rootPublicKey: string | undefined;
   contract: MpcContractInterface;
   connectedAccount: Account;
 
-  constructor(account: Account, contractId: string) {
+  constructor(account: Account, contractId: string, rootPublicKey?: string) {
     this.connectedAccount = account;
+    this.rootPublicKey = rootPublicKey;
 
     this.contract = new Contract(account.connection, contractId, {
       changeMethods: ["sign"],
@@ -66,10 +68,12 @@ export class MpcContract implements IMpcContract {
   }
 
   deriveEthAddress = async (derivationPath: string): Promise<Address> => {
-    const rootPublicKey = await this.contract.public_key();
+    if (!this.rootPublicKey) {
+      this.rootPublicKey = await this.contract.public_key();
+    }
 
-    const publicKey = await deriveChildPublicKey(
-      najPublicKeyStrToUncompressedHexPoint(rootPublicKey),
+    const publicKey = deriveChildPublicKey(
+      najPublicKeyStrToUncompressedHexPoint(this.rootPublicKey),
       this.connectedAccount.accountId,
       derivationPath
     );

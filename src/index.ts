@@ -34,6 +34,7 @@ export interface SetupConfig {
   network?: NearConfig;
   privateKey?: string;
   derivationPath?: string;
+  rootPublicKey?: string;
 }
 
 /**
@@ -79,7 +80,7 @@ export async function setupAdapter(args: SetupConfig): Promise<NearEthAdapter> {
     throw error;
   }
   return NearEthAdapter.fromConfig({
-    mpcContract: new MpcContract(account, mpcContractId),
+    mpcContract: new MpcContract(account, mpcContractId, args.rootPublicKey),
     derivationPath: derivationPath,
   });
 }
