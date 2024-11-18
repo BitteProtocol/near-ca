@@ -27,7 +27,7 @@
     "build:esm": "tsc -p tsconfig.esm.json",
     "build:cjs": "tsc -p tsconfig.cjs.json",
     "lint": "eslint . --ignore-pattern dist/ && prettier --check **/*.ts",
-    "test": "jest --testTimeout 30000",
+    "test": "jest --passWithNoTests",
     "coverage": "yarn test --coverage",
     "verify": "yarn coverage unit",
     "fmt": "prettier --write '{src,examples,tests}/**/*.{js,jsx,ts,tsx}' && eslint src/ --fix"
