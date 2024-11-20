@@ -8,6 +8,7 @@ import {
 import { TGAS } from "./chains/near";
 import { MPCSignature, FunctionCallTransaction, SignArgs } from "./types";
 import { transformSignature } from "./utils/signature";
+import { Action, FunctionCall } from "near-api-js/lib/transaction";
 
 /**
  * Near Contract Type for change methods.
@@ -117,6 +118,34 @@ export class MpcContract implements IMpcContract {
     return transformSignature(mpcSig);
   };
 
+  requestMulti = async (
+    signArgs: SignArgs[],
+    gas?: bigint
+  ): Promise<Signature[]> => {
+    const transaction = await this.encodeMulti(signArgs, gas);
+    // TODO: This is a hack to prevent out of gas errors
+    const maxGasPerAction = 300000000000000n / BigInt(signArgs.length);
+    const result = await this.connectedAccount.signAndSendTransaction({
+      receiverId: transaction.receiverId,
+      actions: transaction.actions.map((action) => {
+        return new Action({
+          functionCall: new FunctionCall({
+            methodName: "sign",
+            args: Buffer.from(JSON.stringify(action.params.args)),
+            gas: maxGasPerAction,
+            deposit: BigInt(action.params.deposit),
+          }),
+        });
+      }),
+    });
+
+    // Extract signatures from each receipt outcome in order
+    const mpcSigs = result.receipts_outcome.map(
+      (receipt) => receipt.outcome.status as MPCSignature
+    );
+    return mpcSigs.map(transformSignature);
+  };
+
   async encodeSignatureRequestTx(
     signArgs: SignArgs,
     gas?: bigint
@@ -137,6 +166,30 @@ export class MpcContract implements IMpcContract {
       ],
     };
   }
+
+  async encodeMulti(
+    signArgs: SignArgs[],
+    gas?: bigint
+  ): Promise<FunctionCallTransaction<{ request: SignArgs }>> {
+    const deposit = await this.getDeposit();
+    return {
+      signerId: this.connectedAccount.accountId,
+      receiverId: this.contract.contractId,
+      actions: signArgs.map((args) => {
+        return {
+          type: "FunctionCall",
+          params: {
+            methodName: "sign",
+            args: {
+              request: args,
+            },
+            gas: gasOrDefault(gas),
+            deposit,
+          },
+        };
+      }),
+    };
+  }
 }
 
 function gasOrDefault(gas?: bigint): string {
@@ -153,8 +206,13 @@ export interface IMpcContract {
   deriveEthAddress(derivationPath: string): Promise<Address>;
   getDeposit(): Promise<string>;
   requestSignature(signArgs: SignArgs, gas?: bigint): Promise<Signature>;
+  requestMulti(signArgs: SignArgs[], gas?: bigint): Promise<Signature[]>;
   encodeSignatureRequestTx(
     signArgs: SignArgs,
+    gas?: bigint
+  ): Promise<FunctionCallTransaction<{ request: SignArgs }>>;
+  encodeMulti(
+    signArgs: SignArgs[],
     gas?: bigint
   ): Promise<FunctionCallTransaction<{ request: SignArgs }>>;
 }
