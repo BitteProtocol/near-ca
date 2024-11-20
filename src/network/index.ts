@@ -9,7 +9,9 @@ export interface NetworkFields {
   name: string;
   rpcUrl: string;
   chainId: number;
+  // TODO(bh2smith): Scan data should become structure: viem/types/chain.ts
   scanUrl: string;
+  scanApiUrl: string;
   icon: string | undefined;
   testnet: boolean;
   nativeCurrency: {
@@ -30,6 +32,7 @@ export class Network implements NetworkFields {
   rpcUrl: string;
   chainId: number;
   scanUrl: string;
+  scanApiUrl: string;
   client: PublicClient;
   icon: string | undefined;
   testnet: boolean;
@@ -46,6 +49,7 @@ export class Network implements NetworkFields {
     rpcUrl,
     chainId,
     scanUrl,
+    scanApiUrl,
     nativeCurrency,
     icon,
   }: NetworkFields) {
@@ -55,6 +59,7 @@ export class Network implements NetworkFields {
     this.rpcUrl = rpcUrl;
     this.chainId = chainId;
     this.scanUrl = scanUrl;
+    this.scanApiUrl = scanApiUrl;
     this.client = createPublicClient({
       transport: http(network.rpcUrl),
     });
@@ -88,6 +93,7 @@ function createNetworkMap(supportedNetworks: Chain[]): NetworkMap {
       rpcUrl: network.rpcUrls.default.http[0]!,
       chainId: network.id,
       scanUrl: network.blockExplorers?.default.url || "",
+      scanApiUrl: network.blockExplorers?.default.apiUrl || "",
       icon,
       testnet: network.testnet || false,
       nativeCurrency: {
