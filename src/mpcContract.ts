@@ -1,4 +1,4 @@
-import { Contract, Account } from "near-api-js";
+import { Contract, Account, transactions } from "near-api-js";
 import { Address, Signature } from "viem";
 import {
   deriveChildPublicKey,
@@ -7,7 +7,8 @@ import {
 } from "./utils/kdf";
 import { TGAS } from "./chains/near";
 import { MPCSignature, FunctionCallTransaction, SignArgs } from "./types";
-import { transformSignature } from "./utils/signature";
+import { signatureFromOutcome } from "./utils/signature";
+import { FinalExecutionOutcome } from "near-api-js/lib/providers";
 
 /**
  * Near Contract Type for change methods.
@@ -107,14 +108,16 @@ export class MpcContract implements IMpcContract {
     signArgs: SignArgs,
     gas?: bigint
   ): Promise<Signature> => {
-    const mpcSig = await this.contract.sign({
-      signerAccount: this.connectedAccount,
-      args: { request: signArgs },
-      gas: gasOrDefault(gas),
-      amount: await this.getDeposit(),
-    });
-
-    return transformSignature(mpcSig);
+    // near-api-js SUX so bad we can't configure this RPC timeout.
+    // const mpcSig = await this.contract.sign({
+    //   signerAccount: this.connectedAccount,
+    //   args: { request: signArgs },
+    //   gas: gasOrDefault(gas),
+    //   amount: await this.getDeposit(),
+    // });
+    const transaction = await this.encodeSignatureRequestTx(signArgs, gas);
+    const outcome = await this.signAndSendSignRequest(transaction);
+    return signatureFromOutcome(outcome);
   };
 
   async encodeSignatureRequestTx(
@@ -136,6 +139,41 @@ export class MpcContract implements IMpcContract {
         },
       ],
     };
+  }
+
+  async signAndSendSignRequest(
+    transaction: FunctionCallTransaction<{ request: SignArgs }>,
+    blockTimeout: number = 30
+  ): Promise<FinalExecutionOutcome> {
+    const account = this.connectedAccount;
+    // @ts-expect-error: Account.signTransaction is protected (for no apparantly good reason)
+    const [txHash, signedTx] = await account.signTransaction(
+      this.contract.contractId,
+      transaction.actions.map(({ params: { args, gas, deposit } }) =>
+        transactions.functionCall("sign", args, BigInt(gas), BigInt(deposit))
+      )
+    );
+    const provider = account.connection.provider;
+    let outcome = await provider.sendTransactionAsync(signedTx);
+
+    let pings = 0;
+    while (
+      outcome.final_execution_status != "EXECUTED" &&
+      pings < blockTimeout
+    ) {
+      // Sleep 1 second before next ping.
+      await new Promise((resolve) => setTimeout(resolve, 1000));
+      // txStatus times out when waiting for 'EXECUTED'.
+      // Instead we wait for an earlier status type, sleep between and keep pinging.
+      outcome = await provider.txStatus(txHash, account.accountId, "INCLUDED");
+      pings += 1;
+    }
+    if (pings >= blockTimeout) {
+      console.warn(
+        `Request status polling exited before desired outcome.\n  Current status: ${outcome.final_execution_status}\nSignature Request will likley fail.`
+      );
+    }
+    return outcome;
   }
 }
 
