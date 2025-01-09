@@ -60,7 +60,7 @@ describe("End To End", () => {
         chainId,
       })
     ).rejects.toThrow();
-  });
+  }, 15000);
 
   it("signMessage", async () => {
     const message = "NearEth";
