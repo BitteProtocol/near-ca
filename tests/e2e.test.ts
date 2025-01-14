@@ -54,7 +54,7 @@ describe("End To End", () => {
       address: mockedAdapter.address,
     });
     await expect(
-      realAdapter.signAndSendTransaction({
+      mockedAdapter.signAndSendTransaction({
         to,
         value: senderBalance + ONE_WEI,
         chainId,
