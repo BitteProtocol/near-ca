@@ -17,7 +17,7 @@
     "chain-signatures"
   ],
   "main": "dist/cjs/index.js",
-  "module": "dist/mjs/index.js",
+  "module": "dist/esm/index.js",
   "types": "dist/esm/index.d.ts",
   "files": [
     "dist/**/*"
