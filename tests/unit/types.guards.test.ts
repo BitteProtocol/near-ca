@@ -4,6 +4,7 @@ import {
   isRlpHex,
   isSignMethod,
   isTransactionSerializable,
+  isTypedDataDomain,
 } from "../../src/";
 
 const validEIP1559Transaction: TransactionSerializable = {
@@ -142,6 +143,31 @@ describe("isTransactionSerializable", () => {
     commonInvalidCases.forEach((testCase) => {
       expect(isTransactionSerializable(testCase)).toBe(false);
     });
+  });
+});
+
+describe("isTypedDataDomain", () => {
+  it("returns true for various valid domains", async () => {
+    const permit2Domain = {
+      name: "Permit2",
+      chainId: "43114",
+      verifyingContract: "0x000000000022d473030f116ddee9f6b43ac78ba3",
+    };
+    expect(isTypedDataDomain(permit2Domain)).toBe(true);
+    expect(
+      isTypedDataDomain({
+        name: "Ether Mail",
+        version: "1",
+        chainId: 1,
+        verifyingContract: "0xCcCCccccCCCCcCCCCCCcCcCccCcCCCcCcccccccC",
+      })
+    ).toBe(true);
+    expect(
+      isTypedDataDomain({
+        chainId: "0xaa36a7",
+        verifyingContract: "0x7fa8e8264985c7525fc50f98ac1a9b3765405489",
+      })
+    ).toBe(true);
   });
 });
 
