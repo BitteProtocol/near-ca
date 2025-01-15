@@ -22,7 +22,9 @@ export function isSignMethod(method: unknown): method is SignMethod {
   );
 }
 
-const isTypedDataDomain = (domain: unknown): domain is TypedDataDomain => {
+export const isTypedDataDomain = (
+  domain: unknown
+): domain is TypedDataDomain => {
   if (typeof domain !== "object" || domain === null) return false;
 
   const candidate = domain as Record<string, unknown>;
@@ -34,7 +36,8 @@ const isTypedDataDomain = (domain: unknown): domain is TypedDataDomain => {
         return (
           typeof value === "undefined" ||
           typeof value === "number" ||
-          isHex(value)
+          isHex(value) ||
+          (typeof value === "string" && typeof parseInt(value) === "number")
         );
       case "name":
       case "version":
