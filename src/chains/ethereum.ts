@@ -108,8 +108,12 @@ export class NearEthAdapter {
     txData: BaseTx[],
     nearGas?: bigint
   ): Promise<Hash[]> {
-    // Note that chainIds must be all different or
-    // we have to make special consideration for the nonces.
+    // TODO: Note that chainIds must be all different or
+    // we will have to make special consideration for the nonces.
+    console.log(
+      `Creating ${txData.length} payload(s) for ${this.nearAccountId()} <> ${this.address}`
+    );
+
     const txArray = await Promise.all(
       txData.map((tx) => this.createTxPayload(tx))
     );
@@ -185,11 +189,10 @@ export class NearEthAdapter {
    * @returns Transaction and its bytes (the payload to be signed on Near).
    */
   async createTxPayload(tx: BaseTx): Promise<TxPayload> {
-    console.log(
-      `Creating payload for sender: ${this.nearAccountId()} <> ${this.address}`
-    );
     const transaction = await this.buildTransaction(tx);
-    console.log("Built (unsigned) Transaction", transaction);
+    console.log(
+      `Built (unsigned) Transaction for chainId=${tx.chainId}: ${transaction}`
+    );
     const signArgs = {
       payload: buildTxPayload(transaction),
       path: this.derivationPath,

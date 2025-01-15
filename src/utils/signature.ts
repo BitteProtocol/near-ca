@@ -17,13 +17,13 @@ export interface JSONRPCResponse<T> {
   };
 }
 
-export async function signatureFromTxHash(
+export async function signaturesFromTxHash(
   nodeUrl: string,
   txHash: string,
   /// This field doesn't appear to be necessary although (possibly for efficiency),
   /// the docs mention that it is "used to determine which shard to query for transaction".
   accountId: string = "non-empty"
-): Promise<Signature> {
+): Promise<Signature[]> {
   const payload = {
     jsonrpc: "2.0",
     id: "dontcare",
@@ -50,9 +50,8 @@ export async function signatureFromTxHash(
   if (json.error) {
     throw new Error(`JSON-RPC error: ${json.error.message}`);
   }
-
   if (json.result) {
-    return signatureFromOutcome(json.result);
+    return signaturesFromOutcome(json.result);
   } else {
     throw new Error(`No FinalExecutionOutcome in response: ${json}`);
   }
@@ -67,47 +66,78 @@ export function transformSignature(mpcSig: MPCSignature): Signature {
   };
 }
 
-export function signatureFromOutcome(
+function isNonEmptyString(value: unknown): value is string {
+  return typeof value === "string" && value.trim().length > 0;
+}
+
+export function signaturesFromOutcome(
   // The Partial object is intended to make up for the
   // difference between all the different near-api versions and wallet-selector bullshit
   // the field `final_execution_status` is in one, but not the other and we don't use it anyway.
   outcome:
     | FinalExecutionOutcome
     | Omit<FinalExecutionOutcome, "final_execution_status">
-): Signature {
+): Signature[] {
+  const successValues: string[] = outcome.receipts_outcome
+    // Map to get SuccessValues: The Signature will appear twice.
+    .map(
+      (receipt) => (receipt.outcome.status as FinalExecutionStatus).SuccessValue
+    )
+    .filter((b64) => isNonEmptyString(b64));
+
+  const signatures = successValues
+    .map((v) => {
+      const decodedValue = Buffer.from(v, "base64").toString("utf-8");
+      const possibleSignature = JSON.parse(decodedValue);
+      if (isMPCSignature(possibleSignature)) {
+        return transformSignature(possibleSignature);
+      }
+      return;
+    })
+    .filter((sig) => sig !== undefined);
+
   const txHash = outcome.transaction_outcome?.id;
-  // TODO - find a scenario when outcome.status is `FinalExecutionStatusBasic`!
-  let b64Sig = (outcome.status as FinalExecutionStatus).SuccessValue;
-  if (!b64Sig) {
-    // This scenario occurs when sign call is relayed (i.e. executed by someone else).
-    // E.g. https://testnet.nearblocks.io/txns/G1f1HVUxDBWXAEimgNWobQ9yCx1EgA2tzYHJBFUfo3dj
-    // We have to dig into `receipts_outcome` and extract the signature from within.
-    // We want the second occurence of the signature because
-    // the first is nested inside `{ Ok: MPCSignature }`)
-    b64Sig = outcome.receipts_outcome
-      // Map to get SuccessValues: The Signature will appear twice.
-      .map(
-        (receipt) =>
-          (receipt.outcome.status as FinalExecutionStatus).SuccessValue
-      )
-      // Reverse the to "find" the last non-empty value!
-      .reverse()
-      .find((value) => value && value.trim().length > 0);
-  }
-  if (!b64Sig) {
-    throw new Error(`No detectable signature found in transaction ${txHash}`);
-  }
-  if (b64Sig === "eyJFcnIiOiJGYWlsZWQifQ==") {
+  if (successValues.includes("eyJFcnIiOiJGYWlsZWQifQ==")) {
     // {"Err": "Failed"}
     throw new Error(`Signature Request Failed in ${txHash}`);
   }
-  const decodedValue = Buffer.from(b64Sig, "base64").toString("utf-8");
-  const signature = JSON.parse(decodedValue);
-  if (isMPCSignature(signature)) {
-    return transformSignature(signature);
-  } else {
-    throw new Error(`No detectable signature found in transaction ${txHash}`);
+  if (signatures.length === 0) {
+    throw new Error(`No signature detected in transaction ${txHash}`);
   }
+  return signatures;
+
+  // // TODO - find a scenario when outcome.status is `FinalExecutionStatusBasic`!
+  // let b64Sig = (outcome.status as FinalExecutionStatus).SuccessValue;
+  // if (!b64Sig) {
+  //   // This scenario occurs when sign call is relayed (i.e. executed by someone else).
+  //   // E.g. https://testnet.nearblocks.io/txns/G1f1HVUxDBWXAEimgNWobQ9yCx1EgA2tzYHJBFUfo3dj
+  //   // We have to dig into `receipts_outcome` and extract the signature from within.
+  //   // We want the second occurence of the signature because
+  //   // the first is nested inside `{ Ok: MPCSignature }`)
+  //   b64Sig = outcome.receipts_outcome
+  //     // Map to get SuccessValues: The Signature will appear twice.
+  //     .map(
+  //       (receipt) =>
+  //         (receipt.outcome.status as FinalExecutionStatus).SuccessValue
+  //     )
+  //     // Reverse the to "find" the last non-empty value!
+  //     .reverse()
+  //     .find((value) => value && value.trim().length > 0);
+  // }
+  // if (!b64Sig) {
+  //   throw new Error(`No detectable signature found in transaction ${txHash}`);
+  // }
+  // if (b64Sig === "eyJFcnIiOiJGYWlsZWQifQ==") {
+  //   // {"Err": "Failed"}
+  //   throw new Error(`Signature Request Failed in ${txHash}`);
+  // }
+  // const decodedValue = Buffer.from(b64Sig, "base64").toString("utf-8");
+  // const signature = JSON.parse(decodedValue);
+  // if (isMPCSignature(signature)) {
+  //   return transformSignature(signature);
+  // } else {
+  //   throw new Error(`No detectable signature found in transaction ${txHash}`);
+  // }
 }
 
 // type guard for MPCSignature object.

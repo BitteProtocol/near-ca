@@ -4,11 +4,11 @@ dotenv.config();
 
 const run = async (): Promise<void> => {
   const evm = await setupNearEthAdapter();
-  console.log(evm.address);
-  // throw new Error("You foked up");
+  const { to, value } = { to: evm.address, value: 1n };
+  // MULTI-SEND!
   const transactions = [
-    { to: evm.address, value: 1n, chainId: 97 },
-    { to: evm.address, value: 1n, chainId: 1301 },
+    { to, value, chainId: 11155111 },
+    { to, value, chainId: 1301 },
   ];
   await evm.signAndSendTransaction(transactions);
 };

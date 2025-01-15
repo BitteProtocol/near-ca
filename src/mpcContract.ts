@@ -7,8 +7,7 @@ import {
 } from "./utils/kdf";
 import { TGAS } from "./chains/near";
 import { MPCSignature, FunctionCallTransaction, SignArgs } from "./types";
-import { signatureFromOutcome, transformSignature } from "./utils/signature";
-import { Action, FunctionCall } from "near-api-js/lib/transaction";
+import { signaturesFromOutcome } from "./utils/signature";
 import { FinalExecutionOutcome } from "near-api-js/lib/providers";
 
 /**
@@ -118,7 +117,8 @@ export class MpcContract implements IMpcContract {
     // });
     const transaction = await this.encodeSignatureRequestTx(signArgs, gas);
     const outcome = await this.signAndSendSignRequest(transaction);
-    return signatureFromOutcome(outcome);
+    // signaturesFromOutcome guarantees non empty array > 0.
+    return signaturesFromOutcome(outcome)[0]!;
   };
 
   requestMulti = async (
@@ -126,27 +126,8 @@ export class MpcContract implements IMpcContract {
     gas?: bigint
   ): Promise<Signature[]> => {
     const transaction = await this.encodeMulti(signArgs, gas);
-    // TODO: This is a hack to prevent out of gas errors
-    const maxGasPerAction = 300000000000000n / BigInt(signArgs.length);
-    const result = await this.connectedAccount.signAndSendTransaction({
-      receiverId: transaction.receiverId,
-      actions: transaction.actions.map((action) => {
-        return new Action({
-          functionCall: new FunctionCall({
-            methodName: "sign",
-            args: Buffer.from(JSON.stringify(action.params.args)),
-            gas: maxGasPerAction,
-            deposit: BigInt(action.params.deposit),
-          }),
-        });
-      }),
-    });
-
-    // Extract signatures from each receipt outcome in order
-    const mpcSigs = result.receipts_outcome.map(
-      (receipt) => receipt.outcome.status as MPCSignature
-    );
-    return mpcSigs.map(transformSignature);
+    const result = await this.signAndSendSignRequest(transaction);
+    return signaturesFromOutcome(result);
   };
 
   async encodeSignatureRequestTx(
@@ -175,6 +156,8 @@ export class MpcContract implements IMpcContract {
     gas?: bigint
   ): Promise<FunctionCallTransaction<{ request: SignArgs }>> {
     const deposit = await this.getDeposit();
+    // TODO: This is a hack to prevent out of gas errors
+    const maxGasPerAction = (gas || 300000000000000n) / BigInt(signArgs.length);
     return {
       signerId: this.connectedAccount.accountId,
       receiverId: this.contract.contractId,
@@ -186,7 +169,7 @@ export class MpcContract implements IMpcContract {
             args: {
               request: args,
             },
-            gas: gasOrDefault(gas),
+            gas: maxGasPerAction.toString(),
             deposit,
           },
         };
