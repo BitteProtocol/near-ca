@@ -4,10 +4,9 @@ import {
   relaySignedTransaction,
   toPayload,
 } from "./utils/transaction";
-import { NearEncodedSignRequest, signMethods } from "./types";
+import { isSignMethod, NearEncodedSignRequest, signMethods } from "./types";
 import { NearEthAdapter } from "./chains/ethereum";
 import { Web3WalletTypes } from "@walletconnect/web3wallet";
-import { isSignMethod } from "./guards";
 import { requestRouter } from "./utils/request";
 
 function stripEip155Prefix(eip155Address: string): string {

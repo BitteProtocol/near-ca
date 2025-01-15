@@ -20,9 +20,19 @@
     "exactOptionalPropertyTypes": true,                  /* Interpret optional property types as written, rather than adding 'undefined'. */
     "noImplicitReturns": true,                           /* Enable error reporting for codepaths that do not explicitly return in a function. */
     "noFallthroughCasesInSwitch": true,                  /* Enable error reporting for fallthrough cases in switch statements. */
-    "noUncheckedIndexedAccess": true,     
-    "noPropertyAccessFromIndexSignature": false,
-    "skipLibCheck": true
+    "noUncheckedIndexedAccess": true,
+    "noPropertyAccessFromIndexSignature": false, // This is actually loose.
+    "skipLibCheck": true,
+    
+    // New Strict Settings
+    "allowUnreachableCode": false,                       /* Error on unreachable code */
+    "allowUnusedLabels": false,                          /* Error on unused labels */
+    "noImplicitOverride": true,                          /* Ensure overriding members are marked with override modifier */
+    "noEmitOnError": true,                               /* Do not emit outputs if any errors were reported */
+    "isolatedModules": true,                             /* Ensure each file can be safely transpiled without relying on other imports */
+    "forceConsistentCasingInFileNames": true,            /* Ensure consistent casing in file names */
+    // TODO(maybe): change all type imports to explicitly say import type X from ...
+    // "verbatimModuleSyntax": true,                        /* Only allow import/export statements that are part of ES modules */
   },
   "include": ["src/**/*.ts"],
   "exclude": ["node_modules", "dist", "examples", "tests", "eslint.config.js"]

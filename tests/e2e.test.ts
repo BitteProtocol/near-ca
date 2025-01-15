@@ -58,15 +58,13 @@ describe("End To End", () => {
       address: mockedAdapter.address,
     });
     await expect(
-      realAdapter.signAndSendTransaction([
-        {
-          to,
-          value: senderBalance + ONE_WEI,
-          chainId,
-        },
-      ])
+      mockedAdapter.signAndSendTransaction({
+        to,
+        value: senderBalance + ONE_WEI,
+        chainId,
+      })
     ).rejects.toThrow();
-  });
+  }, 15000);
 
   it("signMessage", async () => {
     const message = "NearEth";

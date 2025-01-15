@@ -2,7 +2,7 @@ import {
   signatureFromOutcome,
   signatureFromTxHash,
   transformSignature,
-} from "../../src/utils/signature";
+} from "../../../src/utils/signature";
 
 describe("utility: get Signature", () => {
   const url: string = "https://archival-rpc.testnet.near.org";

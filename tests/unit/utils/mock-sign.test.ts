@@ -1,5 +1,5 @@
 import { recoverMessageAddress } from "viem";
-import { mockAdapter } from "../../src/utils/mock-sign";
+import { mockAdapter } from "../../../src/utils/mock-sign";
 
 describe("Mock Signing", () => {
   it("MockAdapter", async () => {

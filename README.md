@@ -1,7 +1,5 @@
 # NEAR Chain Abstraction Layer (NEAR-CA)
 
-**DISCLAIMER: This should only be used for educational purposes.**
-
 NEAR-CA is a TypeScript library designed to provide an abstraction layer for interacting with the NEAR blockchain, simplifying the process of performing transactions and managing accounts on both NEAR and Ethereum chains. This library is intended for use in server-side applications only.
 
 ## Features

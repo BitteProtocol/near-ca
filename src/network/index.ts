@@ -2,6 +2,12 @@ import { Chain, createPublicClient, http, PublicClient } from "viem";
 import * as chains from "viem/chains";
 import { CHAIN_INFO } from "./constants";
 
+// Viem defaults are known to be unreliable.
+const rpcOverrides: { [key: number]: string } = {
+  43114: "https://rpc.ankr.com/avalanche",
+  11155111: "https://ethereum-sepolia-rpc.publicnode.com",
+};
+
 // We support all networks exported by viem
 const SUPPORTED_NETWORKS = createNetworkMap(Object.values(chains));
 
@@ -63,15 +69,25 @@ export class Network implements NetworkFields {
     this.icon = icon;
   }
 
-  static fromChainId(chainId: number): Network {
+  static fromChainId(
+    chainId: number,
+    options: { rpcUrl?: string; scanUrl?: string } = {}
+  ): Network {
     const networkFields = SUPPORTED_NETWORKS[chainId];
     if (!networkFields) {
       throw new Error(
         `Network with chainId ${chainId} is not supported.
-        Please reach out to the developers of https://github.com/Mintbase/near-ca`
+        Please reach out to the developers of https://github.com/bitteprotocol/near-ca`
       );
     }
-    return new Network(networkFields);
+    const mergedFields = {
+      ...networkFields,
+      // Manual Settings.
+      rpcUrl: options.rpcUrl || networkFields.rpcUrl,
+      scanUrl: options.scanUrl || networkFields.scanUrl,
+    };
+
+    return new Network(mergedFields);
   }
 }
 
@@ -85,7 +101,7 @@ function createNetworkMap(supportedNetworks: Chain[]): NetworkMap {
     const icon = chainInfo?.icon || `/${network.nativeCurrency.symbol}.svg`;
     networkMap[network.id] = {
       name: network.name,
-      rpcUrl: network.rpcUrls.default.http[0]!,
+      rpcUrl: rpcOverrides[network.id] || network.rpcUrls.default.http[0]!,
       chainId: network.id,
       scanUrl: network.blockExplorers?.default.url || "",
       icon,
