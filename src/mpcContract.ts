@@ -7,7 +7,7 @@ import {
 } from "./utils/kdf";
 import { TGAS } from "./chains/near";
 import { MPCSignature, FunctionCallTransaction, SignArgs } from "./types";
-import { signatureFromOutcome } from "./utils/signature";
+import { signatureFromOutcome, transformSignature } from "./utils/signature";
 import { Action, FunctionCall } from "near-api-js/lib/transaction";
 import { FinalExecutionOutcome } from "near-api-js/lib/providers";
 
@@ -169,7 +169,7 @@ export class MpcContract implements IMpcContract {
       ],
     };
   }
-  
+
   async encodeMulti(
     signArgs: SignArgs[],
     gas?: bigint
