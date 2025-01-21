@@ -16,11 +16,6 @@ type NetworkId = "mainnet" | "testnet";
  */
 export function getNetworkId(accountId: string): NetworkId {
   const accountExt = accountId.split(".").pop() || "";
-  if (!["near", "testnet"].includes(accountExt)) {
-    console.warn(
-      `Unusual or invalid network extracted from accountId ${accountId}`
-    );
-  }
   // Consider anything that isn't testnet as mainnet.
   return accountExt !== "testnet" ? "mainnet" : accountExt;
 }
