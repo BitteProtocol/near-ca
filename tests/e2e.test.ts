@@ -2,7 +2,11 @@ import { SEPOLIA_CHAIN_ID, setupNearEthAdapter } from "../examples/setup";
 import { mockAdapter, NearEthAdapter, Network } from "../src";
 import { getBalance } from "viem/actions";
 import dotenv from "dotenv";
-import { recoverTypedDataAddress, recoverMessageAddress } from "viem";
+import {
+  recoverTypedDataAddress,
+  recoverMessageAddress,
+  zeroAddress,
+} from "viem";
 dotenv.config();
 
 describe("End To End", () => {
@@ -123,5 +127,34 @@ describe("End To End", () => {
       signature,
     });
     expect(recoveredAddress).toBe(mockedAdapter.address);
+  });
+
+  it("MPC: signAndSendSignRequest", async () => {
+    const { nearPayload } = await realAdapter.encodeSignRequest({
+      method: "eth_sendTransaction",
+      chainId: 11_155_111, // Sepolia
+      params: [
+        {
+          from: realAdapter.address,
+          to: "0xdeADBeeF0000000000000000000000000b00B1e5",
+          value: "0x01", // 1 WEI
+          // data: "0x", // Optional
+        },
+      ],
+    });
+    const outcome =
+      // @ts-expect-error: Property does not exist on IMpcContract
+      await realAdapter.mpcContract.signAndSendSignRequest(nearPayload);
+    expect(outcome.final_execution_status).toBe("EXECUTED");
+  }, 15000);
+
+  it("Adapter: getSignatureRequestPayload", async () => {
+    const { requestPayload } = await realAdapter.getSignatureRequestPayload({
+      chainId: 11_155_111,
+      to: zeroAddress,
+    });
+    expect(requestPayload.receiverId).toBe(realAdapter.mpcContract.accountId());
+    expect(requestPayload.signerId).toBe(realAdapter.nearAccountId());
+    expect(requestPayload.actions[0]!.params.methodName).toBe("sign");
   });
 });

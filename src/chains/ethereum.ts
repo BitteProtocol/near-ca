@@ -27,6 +27,7 @@ import {
 } from "..";
 import { Beta } from "../beta";
 import { requestRouter } from "../utils/request";
+import { Account } from "near-api-js";
 
 export class NearEthAdapter {
   readonly mpcContract: IMpcContract;
@@ -48,7 +49,14 @@ export class NearEthAdapter {
   }
 
   /**
-   * @returns Near accountId linked to derived ETH.
+   * @returns Near Account linked to derived EVM account.
+   */
+  nearAccount(): Account {
+    return this.mpcContract.connectedAccount;
+  }
+
+  /**
+   * @returns Near accountId linked to derived EVM account.
    */
   nearAccountId(): string {
     return this.mpcContract.connectedAccount.accountId;

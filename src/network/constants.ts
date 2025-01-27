@@ -56,7 +56,7 @@ export const CHAIN_INFO: Record<number, ChainInfo> = {
   137: {
     icon: POLYGON_ICON,
     currencyIcon: POL,
-    wrappedToken: "0x7d1afa7b718fb893db30a3abc0cfc608aacfebb0",
+    wrappedToken: "0x0d500b1d8e8ef31e21c99d1db9a6444d3adf1270",
   },
   // Base
   8453: {
