@@ -10,61 +10,21 @@ NEAR-CA is a TypeScript library designed to provide an abstraction layer for int
 - Support for EIP-1559 transactions on Ethereum.
 - Wallet Connect intergration tools.
 
-## Contracts
-
-### Get Started
-
-This project requires Node.js version 20.0.0 or higher.
-If you are using nvm, you can run `nvm use` to use the node version specified in `.nvmrc`.
-
-To install dependencies and set up the project:
-
-```sh
-# Install dependencies
-yarn
-# Credentials
-cp .env.example .env  <---- paste your Near credentials
-# Send Eth. You'll need to fund your account first.
-# More details in the 'Fund your account' part of this document
-npx tsx examples/send-eth.ts
-```
-
-### NEAR Credentials
-
-Before using NEAR-CA, ensure you have the following environment variables set in your `.env` file:
-
-- `NEAR_ACCOUNT_ID`: Your NEAR account identifier.
-- `NEAR_ACCOUNT_PRIVATE_KEY`: Your NEAR account private key.
-- `MPC_CONTRACT_ID`: The NEAR contract that handles multichain operations.
-- `NETWORK`: Either `near` or `testnet`.
-
-Copy the `.env.example` file and add these values to the `.env` file.
-
-For setting up a wallet, use the NEAR testnet wallet.
-The testnet wallet is different from the main wallet.
-For example, you can use the [Mintbase Wallet](https://testnet.wallet.mintbase.xyz/).
-
-## Fund your account
-
-Get your address
-
-```sh
-npx tsx examples/getEthAddress.ts
-```
-
-After getting your address fund it from one of your own wallets.
-
-# Examples
+### Usage
 
 ## CLI
 
 For Ethereum, you can derive addresses, create payloads for transactions, and send signed transactions.
 
-For more detailed examples, see the [Examples README](./examples/README.md).
+For more detailed usage examples, see the [Examples README](./examples/README.md).
 
-## Frontend
+## Integrations
 
-To install NEAR-CA in your project, run the following command:
+[near-safe](https://github.com/BitteProtocol/near-safe) extends this tool kit by using the EOA as an owner of an ERC-4337 [Safe](https://safe.global/) account.
+
+## Frontend/UI
+
+Install near-ca, run the following command:
 
 ```bash
 yarn add near-ca
@@ -76,26 +36,59 @@ Here's an example of how to set up the `NearEthAdapter` and send ETH:
 
 ```typescript
 import dotenv from "dotenv";
-import { setupAdapter } from "near-ca";
+import {
+  broadcastSignedTransaction,
+  convertToAction,
+  isRlpHex,
+  setupAdapter,
+  signatureFromOutcome,
+} from "near-ca";
 
 dotenv.config();
 const { NEAR_ACCOUNT_ID, NEAR_ACCOUNT_PRIVATE_KEY } = process.env;
 
 const adapter = await setupAdapter({
   accountId: NEAR_ACCOUNT_ID!,
-  privateKey: NEAR_ACCOUNT_PRIVATE_KEY!,
   mpcContractId: MPC_CONTRACT_ID!,
+  // privateKey: NEAR_ACCOUNT_PRIVATE_KEY!, // Optional depending on setup
 });
 
-await adapter.signAndSendTransaction({
-  receiver: "0xdeADBeeF0000000000000000000000000b00B1e5",
-  amount: 1n,
-  chainId: 11_155_111,
-  // Optional: Set nearGas (default is 250 TGAS, which sometimes might not be sufficient)
+const {
+  evmMessage,
+  nearPayload: { receiverId, actions },
+} = await evm.encodeSignRequest({
+  method: "eth_sendTransaction",
+  chainId: 11_155_111, // Sepolia
+  params: [
+    {
+      from: evm.address,
+      to: "0xdeADBeeF0000000000000000000000000b00B1e5",
+      value: "0x01", // 1 WEI
+      // data: "0x", // Optional
+    },
+  ],
 });
+console.log(`Requesting Signature for ${evmMessage}`);
+// Using your near Account, send the nearPaylod as signature request:
+const nearAccount = adapter.nearAccount();
+//
+const outtcome = await nearAccount.signAndSendTransaction({
+  receiverId,
+  actions: actions.map((a) => convertToAction(a)),
+});
+const signature = signatureFromOutcome(outtcome);
+console.log("Signature aquired!");
+if (isRlpHex(evmMessage)) {
+  // This will be true for what we built above.
+  broadcastSignedTransaction({ transaction: evmMessage, signature });
+} else {
+  // Use Signature for whatever else.
+}
 ```
 
-### Other Examples
+### Other Examples (CLI)
+
+These examples require Private Key to be supplied:
 
 Each of the following scripts can be run with
 
