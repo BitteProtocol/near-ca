@@ -83,22 +83,7 @@ export class MpcContract implements IMpcContract {
   };
 
   getDeposit = async (): Promise<string> => {
-    let deposit = 1e23;
-    try {
-      deposit = await this.contract.experimental_signature_deposit();
-    } catch (error: unknown) {
-      if (
-        error instanceof Error &&
-        error.message === "Contract method is not found"
-      ) {
-        // Clown town
-        deposit = await this.contract.experimantal_signature_deposit();
-      } else {
-        console.warn(
-          `Failed to get deposit with ${error} - using fallback of 0.1 Near`
-        );
-      }
-    }
+    const deposit = await this.contract.experimental_signature_deposit();
     return BigInt(
       deposit.toLocaleString("fullwide", { useGrouping: false })
     ).toString();

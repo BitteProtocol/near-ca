@@ -35,6 +35,6 @@ export function convertToCompatibleFormat<T>(input: T): object | Uint8Array {
     return new TextEncoder().encode(jsonString);
   } catch (error: unknown) {
     const message = error instanceof Error ? error.message : String(error);
-    throw new Error(`Failed to convert the input ${message}`);
+    throw new Error(`Failed to convert the input: ${message}`);
   }
 }
