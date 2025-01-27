@@ -6,6 +6,31 @@ You can run any of the following example scripts using the command:
 npx tsx examples/*.ts
 ```
 
+### NEAR Credentials
+
+Before using NEAR-CA, ensure you have the following environment variables set in your `.env` file:
+
+- `NEAR_ACCOUNT_ID`: Your NEAR account identifier.
+- `MPC_CONTRACT_ID`: The NEAR contract that handles multichain operations.
+- `NETWORK`: Either `near` or `testnet`.
+- `NEAR_ACCOUNT_PRIVATE_KEY`: Your NEAR account private key.
+
+Copy the `.env.example` file and add these values to the `.env` file.
+
+For setting up a wallet, use the NEAR testnet wallet.
+The testnet wallet is different from the main wallet.
+For example, you can use the [Bitte Wallet](https://testnet.wallet.bitte.ai/).
+
+## Fund your account
+
+Get your address
+
+```sh
+npx tsx examples/getEthAddress.ts
+```
+
+After getting your address fund it from one of your own wallets.
+
 Here are some of the available examples:
 
 1. **Basic:**
