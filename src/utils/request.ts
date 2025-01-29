@@ -18,20 +18,15 @@ import {
 } from "../types";
 
 /**
- * Handles routing of signature requests based on the provided method, chain ID, and parameters.
+ * Routes signature requests to appropriate handlers based on method type
  *
- * @async
- * @function requestRouter
- * @param {SignRequestData} params - An object containing the method, chain ID, and request parameters.
- * @returns {Promise<NearEncodedSignRequest>}
- * - Returns a promise that resolves to an object containing the Ethereum Virtual Machine (EVM) message,
- *   the payload (hashed data), and recovery data needed for reconstructing the signature request.
+ * @param request - The signature request data
+ * @returns Object containing the EVM message, payload hash, and recovery data
  */
-export async function requestRouter({
-  method,
-  chainId,
-  params,
-}: SignRequestData): Promise<EncodedSignRequest> {
+export async function requestRouter(
+  request: SignRequestData
+): Promise<EncodedSignRequest> {
+  const { method, chainId, params } = request;
   switch (method) {
     case "eth_sign": {
       const [_, messageHash] = params as EthSignParams;

@@ -13,6 +13,13 @@ import {
 import { BaseTx, TransactionWithSignature } from "../types";
 import { Network } from "../network";
 
+/**
+ * Converts a message hash to a payload array
+ *
+ * @param msgHash - The message hash to convert
+ * @returns Array of numbers representing the payload
+ * @throws Error if the payload length is not 32 bytes
+ */
 export function toPayload(msgHash: Hex | Uint8Array): number[] {
   const bytes = isBytes(msgHash) ? msgHash : toBytes(msgHash);
   if (bytes.length !== 32) {
@@ -21,6 +28,13 @@ export function toPayload(msgHash: Hex | Uint8Array): number[] {
   return Array.from(bytes);
 }
 
+/**
+ * Converts a payload array back to a hexadecimal string
+ *
+ * @param payload - The payload array to convert
+ * @returns Hexadecimal string representation
+ * @throws Error if the payload length is not 32 bytes
+ */
 export function fromPayload(payload: number[]): Hex {
   if (payload.length !== 32) {
     throw new Error(`Payload must have 32 bytes: ${payload}`);
@@ -29,10 +43,25 @@ export function fromPayload(payload: number[]): Hex {
   return toHex(new Uint8Array(payload));
 }
 
+/**
+ * Builds a transaction payload from a serialized transaction
+ *
+ * @param serializedTx - The serialized transaction
+ * @returns Array of numbers representing the transaction payload
+ */
 export function buildTxPayload(serializedTx: `0x${string}`): number[] {
   return toPayload(keccak256(serializedTx));
 }
 
+/**
+ * Populates a transaction with necessary data
+ *
+ * @param tx - The base transaction data
+ * @param from - The sender's address
+ * @param client - Optional public client
+ * @returns Complete transaction data
+ * @throws Error if chain IDs don't match
+ */
 export async function populateTx(
   tx: BaseTx,
   from: Hex,
@@ -68,6 +97,12 @@ export async function populateTx(
   };
 }
 
+/**
+ * Adds a signature to a transaction
+ *
+ * @param params - Object containing transaction and signature
+ * @returns Serialized signed transaction
+ */
 export function addSignature({
   transaction,
   signature,
@@ -81,9 +116,11 @@ export function addSignature({
 }
 
 /**
- * Relays signed transaction to Ethereum mem-pool for execution.
- * @param serializedTransaction - Signed Ethereum transaction.
- * @returns Transaction Hash of relayed transaction.
+ * Relays a signed transaction to the Ethereum mempool
+ *
+ * @param serializedTransaction - The signed transaction to relay
+ * @param wait - Whether to wait for confirmation
+ * @returns Transaction hash
  */
 export async function relaySignedTransaction(
   serializedTransaction: Hex,
@@ -105,10 +142,10 @@ export async function relaySignedTransaction(
 }
 
 /**
- * Relays valid representation of signed transaction to Etherem mempool for execution.
+ * Broadcasts a signed transaction to the Ethereum mempool
  *
- * @param {TransactionWithSignature} tx - Signed Ethereum transaction.
- * @returns Hash of relayed transaction.
+ * @param tx - The signed transaction to broadcast
+ * @returns Transaction hash
  */
 export async function broadcastSignedTransaction(
   tx: TransactionWithSignature
