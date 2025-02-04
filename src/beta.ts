@@ -1,3 +1,4 @@
+import { WalletKitTypes } from "@reown/walletkit";
 import { Hex, Signature, serializeSignature } from "viem";
 import {
   addSignature,
@@ -6,7 +7,6 @@ import {
 } from "./utils/transaction";
 import { isSignMethod, NearEncodedSignRequest, signMethods } from "./types";
 import { NearEthAdapter } from "./chains/ethereum";
-import { Web3WalletTypes } from "@walletconnect/web3wallet";
 import { requestRouter } from "./utils/request";
 
 function stripEip155Prefix(eip155Address: string): string {
@@ -25,7 +25,7 @@ export class Beta {
   }
 
   async handleSessionRequest(
-    request: Partial<Web3WalletTypes.SessionRequest>
+    request: Partial<WalletKitTypes.SessionRequest>
   ): Promise<NearEncodedSignRequest> {
     const {
       chainId,
