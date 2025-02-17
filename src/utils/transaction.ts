@@ -95,7 +95,6 @@ export async function relaySignedTransaction(
     const hash = await network.client.sendRawTransaction({
       serializedTransaction,
     });
-    console.log(`Transaction Confirmed: ${network.scanUrl}/tx/${hash}`);
     return hash;
   } else {
     network.client.sendRawTransaction({

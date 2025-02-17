@@ -115,7 +115,6 @@ export class NearEthAdapter {
     nearGas?: bigint
   ): Promise<Hash> {
     const { transaction, signArgs } = await this.createTxPayload(txData);
-    console.log(`Requesting signature from ${this.mpcContract.accountId()}`);
     const signature = await this.mpcContract.requestSignature(
       signArgs,
       nearGas
@@ -178,11 +177,7 @@ export class NearEthAdapter {
    * @returns Transaction and its bytes (the payload to be signed on Near).
    */
   async createTxPayload(tx: BaseTx): Promise<TxPayload> {
-    console.log(
-      `Creating payload for sender: ${this.nearAccountId()} <> ${this.address}`
-    );
     const transaction = await this.buildTransaction(tx);
-    console.log("Built (unsigned) Transaction", transaction);
     const signArgs = {
       payload: buildTxPayload(transaction),
       path: this.derivationPath,
@@ -198,7 +193,6 @@ export class NearEthAdapter {
    */
   async buildTransaction(tx: BaseTx): Promise<Hex> {
     const transaction = await populateTx(tx, this.address);
-    console.log("Transaction Request", transaction);
     return serializeTransaction(transaction);
   }
 

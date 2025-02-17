@@ -31,7 +31,6 @@ export class Beta {
       chainId,
       request: { method, params },
     } = request.params!;
-    console.log(`Session Request of type ${method} for chainId ${chainId}`);
     if (!isSignMethod(method)) {
       throw new Error(
         `Unsupported sign method ${method}: Available sign methods ${signMethods}`
@@ -42,7 +41,6 @@ export class Beta {
       chainId: parseInt(stripEip155Prefix(chainId)),
       params,
     });
-    console.log("Parsed Request:", evmMessage, hashToSign);
     return {
       nearPayload: await this.adapter.mpcContract.encodeSignatureRequestTx({
         path: this.adapter.derivationPath,
