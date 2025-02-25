@@ -1,18 +1,22 @@
 import { keyStores, KeyPair, connect, Account } from "near-api-js";
 import { NearConfig } from "near-api-js/lib/near";
+import { NearAccountConfig } from "../types/interfaces";
 
+/** Gas unit constant for NEAR transactions (1 TeraGas) */
 export const TGAS = 1000000000000n;
+
+/** Default deposit value for NEAR transactions */
 export const NO_DEPOSIT = "0";
 
+/** Valid NEAR network identifiers */
 type NetworkId = "mainnet" | "testnet";
 
 /**
- * Extracts the network ID from a given NEAR account ID.
- * If the account ID does not end with "near" or "testnet", it logs a warning.
- * Defaults to "mainnet" if the network ID is not "testnet".
+ * Extracts the network ID from a given NEAR account ID
  *
- * @param accountId - The NEAR account ID to extract the network ID from.
- * @returns The network ID, either "mainnet" or "testnet".
+ * @param accountId - The NEAR account ID to analyze
+ * @returns The network ID ("mainnet" or "testnet")
+ * @remarks If the account ID doesn't end with "near" or "testnet", defaults to "mainnet"
  */
 export function getNetworkId(accountId: string): NetworkId {
   const accountExt = accountId.split(".").pop() || "";
@@ -21,10 +25,10 @@ export function getNetworkId(accountId: string): NetworkId {
 }
 
 /**
- * Generates a NEAR configuration object based on the provided network ID.
+ * Generates a NEAR configuration object for a specific network
  *
- * @param networkId - The network ID, either "mainnet" or "testnet".
- * @returns A NearConfig object containing the network ID and node URL.
+ * @param networkId - The target network identifier
+ * @returns Configuration object for NEAR connection
  */
 export function configFromNetworkId(networkId: NetworkId): NearConfig {
   return {
@@ -34,27 +38,24 @@ export function configFromNetworkId(networkId: NetworkId): NearConfig {
 }
 
 /**
- * Loads Near Account from provided keyPair and accountId
+ * Creates a NEAR Account instance from provided credentials
  *
- * @param keyPair {KeyPair}
- * @param accountId {string}
- * @param network {NearConfig} network settings
- * @returns A Promise that resolves to a NEAR Account instance.
+ * @param config - Configuration containing account ID, network, and key pair
+ * @returns A NEAR Account instance
  */
-export const nearAccountFromKeyPair = async (config: {
-  keyPair: KeyPair;
-  accountId: string;
-  network: NearConfig;
-}): Promise<Account> => {
+export const nearAccountFromKeyPair = async (
+  config: NearAccountConfig
+): Promise<Account> => {
   return createNearAccount(config.accountId, config.network, config.keyPair);
 };
 
-/** Minimally sufficient Account instance to construct readonly MpcContract connection.
- *  Can't be used to change methods.
+/**
+ * Creates a read-only NEAR Account instance from an account ID
  *
- * @param accountId {string}
- * @param network {NearConfig} network settings
- * @returns A Promise that resolves to a NEAR Account instance.
+ * @param accountId - The NEAR account identifier
+ * @param network - The NEAR network configuration
+ * @returns A read-only NEAR Account instance
+ * @remarks This account cannot perform write operations
  */
 export const nearAccountFromAccountId = async (
   accountId: string,
@@ -64,12 +65,12 @@ export const nearAccountFromAccountId = async (
 };
 
 /**
- * Creates a NEAR account instance using the provided account ID, network configuration, and optional key pair.
+ * Creates a NEAR Account instance with optional write capabilities
  *
- * @param accountId - The NEAR account ID.
- * @param network - The NEAR network configuration.
- * @param keyPair - (Optional) The key pair for the account.
- * @returns A Promise that resolves to a NEAR Account instance.
+ * @param accountId - The NEAR account identifier
+ * @param network - The NEAR network configuration
+ * @param keyPair - Optional key pair for write access
+ * @returns A NEAR Account instance
  */
 export const createNearAccount = async (
   accountId: string,

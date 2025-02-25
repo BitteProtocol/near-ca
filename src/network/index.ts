@@ -2,34 +2,56 @@ import { Chain, createPublicClient, http, PublicClient } from "viem";
 import * as chains from "viem/chains";
 import { CHAIN_INFO } from "./constants";
 
-// Viem defaults are known to be unreliable.
+/** Custom RPC endpoint overrides for specific chain IDs */
 const rpcOverrides: { [key: number]: string } = {
   43114: "https://rpc.ankr.com/avalanche",
   11155111: "https://ethereum-sepolia-rpc.publicnode.com",
 };
 
-// We support all networks exported by viem
+/** Map of all supported networks exported by viem */
 const SUPPORTED_NETWORKS = createNetworkMap(Object.values(chains));
 
+/** Interface defining the required fields for a network configuration */
 export interface NetworkFields {
+  /** Display name of the network */
   name: string;
+  /** RPC endpoint URL */
   rpcUrl: string;
+  /** Unique chain identifier */
   chainId: number;
+  /** Block explorer URL */
   scanUrl: string;
+  /** Network logo URL */
   icon: string | undefined;
+  /** Whether this is a test network */
   testnet: boolean;
+  /** Native currency information */
   nativeCurrency: {
+    /** Number of decimal places */
     decimals: number;
+    /** Full name of the currency */
     name: string;
+    /** Currency symbol */
     symbol: string;
+    /** Address of wrapped token contract */
     wrappedAddress: string | undefined;
-    // This is often Network logo, but sometimes not (e.g. Gnosis Chain & xDai)
+    /** Currency logo URL (may differ from network icon) */
     icon: string | undefined;
   };
 }
+
+/** Interface defining optional configuration overrides for a Network instance */
+interface NetworkOptions {
+  /** Override the default RPC URL */
+  rpcUrl?: string;
+  /** Override the default block explorer URL */
+  scanUrl?: string;
+}
+
 /**
- * Leveraging Network Data provided from through viem
- * This class makes all relevant network fields accessible dynamically by chain ID.
+ * Network class that provides access to network-specific data and functionality
+ * Leverages network data provided through viem to make all relevant network fields
+ * accessible dynamically by chain ID.
  */
 export class Network implements NetworkFields {
   name: string;
@@ -47,6 +69,11 @@ export class Network implements NetworkFields {
     icon: string | undefined;
   };
 
+  /**
+   * Creates a new Network instance
+   *
+   * @param fields - Network configuration fields
+   */
   constructor({
     name,
     rpcUrl,
@@ -69,10 +96,15 @@ export class Network implements NetworkFields {
     this.icon = icon;
   }
 
-  static fromChainId(
-    chainId: number,
-    options: { rpcUrl?: string; scanUrl?: string } = {}
-  ): Network {
+  /**
+   * Creates a Network instance from a chain ID
+   *
+   * @param chainId - The chain ID to create the network for
+   * @param options - Optional configuration overrides
+   * @returns A new Network instance
+   * @throws Error if the chain ID is not supported
+   */
+  static fromChainId(chainId: number, options: NetworkOptions = {}): Network {
     const networkFields = SUPPORTED_NETWORKS[chainId];
     if (!networkFields) {
       throw new Error(
@@ -91,9 +123,15 @@ export class Network implements NetworkFields {
   }
 }
 
+/** Mapping of chain IDs to their network configurations */
 type NetworkMap = { [key: number]: NetworkFields };
 
-/// Dynamically generate network map accessible by chainId.
+/**
+ * Creates a map of network configurations indexed by chain ID
+ *
+ * @param supportedNetworks - Array of Chain objects from viem
+ * @returns A map of network configurations
+ */
 function createNetworkMap(supportedNetworks: Chain[]): NetworkMap {
   const networkMap: NetworkMap = {};
   supportedNetworks.forEach((network) => {
@@ -117,6 +155,12 @@ function createNetworkMap(supportedNetworks: Chain[]): NetworkMap {
   return networkMap;
 }
 
+/**
+ * Checks if a given chain ID corresponds to a test network
+ *
+ * @param chainId - The chain ID to check
+ * @returns True if the network is a testnet, false otherwise
+ */
 export function isTestnet(chainId: number): boolean {
   return Network.fromChainId(chainId).testnet;
 }
