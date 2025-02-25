@@ -3,6 +3,12 @@ import { ec as EC } from "elliptic";
 import { Address, keccak256 } from "viem";
 import { sha3_256 } from "js-sha3";
 
+/**
+ * Converts a NEAR account public key string to an uncompressed hex point
+ *
+ * @param najPublicKeyStr - The NEAR account public key string
+ * @returns Uncompressed hex point string prefixed with "04"
+ */
 export function najPublicKeyStrToUncompressedHexPoint(
   najPublicKeyStr: string
 ): string {
@@ -10,6 +16,14 @@ export function najPublicKeyStrToUncompressedHexPoint(
   return "04" + Buffer.from(decodedKey).toString("hex");
 }
 
+/**
+ * Derives a child public key using elliptic curve operations
+ *
+ * @param parentUncompressedPublicKeyHex - Parent public key as uncompressed hex
+ * @param signerId - The signer's identifier
+ * @param path - Optional derivation path (defaults to empty string)
+ * @returns Derived child public key as uncompressed hex string
+ */
 export function deriveChildPublicKey(
   parentUncompressedPublicKeyHex: string,
   signerId: string,
@@ -36,6 +50,13 @@ export function deriveChildPublicKey(
   return "04" + newX + newY;
 }
 
+/**
+ * Converts an uncompressed hex point to an Ethereum address
+ *
+ * @param uncompressedHexPoint - The uncompressed hex point string
+ * @returns Ethereum address derived from the public key
+ * @remarks Takes the last 20 bytes of the keccak256 hash of the public key
+ */
 export function uncompressedHexPointToEvmAddress(
   uncompressedHexPoint: string
 ): Address {

@@ -29,6 +29,9 @@ import { Beta } from "../beta";
 import { requestRouter } from "../utils/request";
 import { Account } from "near-api-js";
 
+/**
+ * Adapter class for interacting with Ethereum through NEAR MPC contract
+ */
 export class NearEthAdapter {
   readonly mpcContract: IMpcContract;
   readonly address: Address;
@@ -49,24 +52,28 @@ export class NearEthAdapter {
   }
 
   /**
-   * @returns Near Account linked to derived EVM account.
+   * Gets the NEAR Account linked to derived EVM account
+   *
+   * @returns The connected NEAR Account
    */
   nearAccount(): Account {
     return this.mpcContract.connectedAccount;
   }
 
   /**
-   * @returns Near accountId linked to derived EVM account.
+   * Gets the NEAR account ID linked to derived EVM account
+   *
+   * @returns The connected NEAR account ID
    */
   nearAccountId(): string {
     return this.mpcContract.connectedAccount.accountId;
   }
 
   /**
-   * Retrieves the balance of the Ethereum address associated with this adapter.
+   * Retrieves the balance of the Ethereum address associated with this adapter
    *
-   * @param {number} chainId - The chain ID of the Ethereum network to query.
-   * @returns {Promise<bigint>} - A promise that resolves to the balance of the address in wei.
+   * @param chainId - The chain ID of the Ethereum network to query
+   * @returns The balance of the address in wei
    */
   async getBalance(chainId: number): Promise<bigint> {
     const network = Network.fromChainId(chainId);
@@ -74,11 +81,12 @@ export class NearEthAdapter {
   }
 
   /**
-   * Constructs an EVM instance with the provided configuration.
-   * @param {AdapterParams} args - The configuration object for the Adapter instance.
+   * Constructs an EVM instance with the provided configuration
+   *
+   * @param args - The configuration object for the Adapter instance
+   * @returns A new NearEthAdapter instance
    */
   static async fromConfig(args: AdapterParams): Promise<NearEthAdapter> {
-    // Sender is uniquely determined by the derivation path!
     const mpcContract = args.mpcContract;
     const derivationPath = args.derivationPath || "ethereum,1";
     return new NearEthAdapter({
@@ -89,11 +97,12 @@ export class NearEthAdapter {
   }
 
   /**
-   * Constructs an EVM instance with the provided configuration.
-   * @param {AdapterParams} args - The configuration object for the Adapter instance.
+   * Creates a mocked EVM instance with the provided configuration
+   *
+   * @param args - The configuration object for the Adapter instance
+   * @returns A new mocked NearEthAdapter instance
    */
   static async mocked(args: AdapterParams): Promise<NearEthAdapter> {
-    // Sender is uniquely determined by the derivation path!
     const mpcContract = args.mpcContract;
     const derivationPath = args.derivationPath || "ethereum,1";
     return new NearEthAdapter({
@@ -106,11 +115,11 @@ export class NearEthAdapter {
   /**
    * Takes a minimally declared Ethereum Transaction,
    * builds the full transaction payload (with gas estimates, prices etc...),
-   * acquires signature from Near MPC Contract and submits transaction to public mempool.
+   * acquires signature from Near MPC Contract and submits transaction to public mempool
    *
-   * @param {BaseTx} txData - Minimal transaction data to be signed by Near MPC and executed on EVM.
-   * @param {bigint} nearGas - manually specified gas to be sent with signature request.
-   * Note that the signature request is a recursive function.
+   * @param txData - Minimal transaction data to be signed by Near MPC and executed on EVM
+   * @param nearGas - Manually specified gas to be sent with signature request
+   * @returns The ethereum transaction hashes aligned with txData indices.
    */
   async signAndSendTransaction(
     txData: BaseTx[],
@@ -145,11 +154,11 @@ export class NearEthAdapter {
   /**
    * Takes a minimally declared Ethereum Transaction,
    * builds the full transaction payload (with gas estimates, prices etc...),
-   * acquires signature from Near MPC Contract and submits transaction to public mempool.
+   * and prepares the signature request payload for the Near MPC Contract
    *
-   * @param {BaseTx} txData - Minimal transaction data to be signed by Near MPC and executed on EVM.
-   * @param {bigint} nearGas - manually specified gas to be sent with signature request.
-   * Note that the signature request is a recursive function.
+   * @param txData - Minimal transaction data to be signed by Near MPC and executed on EVM
+   * @param nearGas - Manually specified gas to be sent with signature request
+   * @returns The transaction and request payload
    */
   async getSignatureRequestPayload(
     txData: BaseTx,
@@ -169,10 +178,11 @@ export class NearEthAdapter {
   }
 
   /**
-   * Builds a Near Transaction Payload for Signing serialized EVM Transaction.
-   * @param {Hex} transaction RLP encoded (i.e. serialized) Ethereum Transaction
-   * @param nearGas optional gas parameter
-   * @returns {FunctionCallTransaction<SignArgs>} Prepared Near Transaction with signerId as this.address
+   * Builds a Near Transaction Payload for Signing serialized EVM Transaction
+   *
+   * @param transaction - RLP encoded (i.e. serialized) Ethereum Transaction
+   * @param nearGas - Optional gas parameter
+   * @returns Prepared Near Transaction with signerId as this.address
    */
   async mpcSignRequest(
     transaction: Hex,
@@ -190,11 +200,10 @@ export class NearEthAdapter {
 
   /**
    * Builds a complete, unsigned transaction (with nonce, gas estimates, current prices)
-   * and payload bytes in preparation to be relayed to Near MPC contract.
+   * and payload bytes in preparation to be relayed to Near MPC contract
    *
-   * @param {BaseTx} tx - Minimal transaction data to be signed by Near MPC and executed on EVM.
-   * @param {number?} nonce - Optional transaction nonce.
-   * @returns Transaction and its bytes (the payload to be signed on Near).
+   * @param tx - Minimal transaction data to be signed by Near MPC and executed on EVM
+   * @returns Transaction and its bytes (the payload to be signed on Near)
    */
   async createTxPayload(tx: BaseTx): Promise<TxPayload> {
     const transaction = await this.buildTransaction(tx);
@@ -210,18 +219,22 @@ export class NearEthAdapter {
   }
 
   /**
-   * Transforms minimal transaction request data into a fully populated EVM transaction.
-   * @param {BaseTx} tx - Minimal transaction request data
-   * @returns {Hex} serialized (aka RLP encoded) transaction.
+   * Transforms minimal transaction request data into a fully populated EVM transaction
+   *
+   * @param tx - Minimal transaction request data
+   * @returns Serialized (aka RLP encoded) transaction
    */
   async buildTransaction(tx: BaseTx): Promise<Hex> {
     const transaction = await populateTx(tx, this.address);
-    console.log("Transaction Request", transaction);
     return serializeTransaction(transaction);
   }
 
-  // Below code is inspired by https://github.com/Connor-ETHSeoul/near-viem
-
+  /**
+   * Signs typed data according to EIP-712
+   *
+   * @param typedData - The typed data to sign
+   * @returns The signature hash
+   */
   async signTypedData<
     const typedData extends TypedData | Record<string, unknown>,
     primaryType extends keyof typedData | "EIP712Domain" = keyof typedData,
@@ -229,14 +242,21 @@ export class NearEthAdapter {
     return this.sign(hashTypedData(typedData));
   }
 
+  /**
+   * Signs a message according to personal_sign
+   *
+   * @param message - The message to sign
+   * @returns The signature hash
+   */
   async signMessage(message: SignableMessage): Promise<Hash> {
     return this.sign(hashMessage(message));
   }
 
   /**
-   * Requests signature from Near MPC Contract.
-   * @param msgHash - Message Hash to be signed.
-   * @returns Two different potential signatures for the hash (one of which is valid).
+   * Requests signature from Near MPC Contract
+   *
+   * @param msgHash - Message Hash to be signed
+   * @returns Two different potential signatures for the hash (one of which is valid)
    */
   async sign(msgHash: `0x${string}` | Uint8Array): Promise<Hex> {
     const signature = await this.mpcContract.requestSignature({
@@ -248,14 +268,10 @@ export class NearEthAdapter {
   }
 
   /**
-   * Encodes a signature request for submission to the Near-Ethereum transaction MPC contract.
+   * Encodes a signature request for submission to the Near-Ethereum transaction MPC contract
    *
-   * @async
-   * @function encodeSignRequest
-   * @param {SignRequestData} signRequest - The signature request data containing method, chain ID, and parameters.
-   * @returns {Promise<NearEthTxData>}
-   * - Returns a promise that resolves to an object containing the encoded Near-Ethereum transaction data,
-   *   the original EVM message, and recovery data necessary for verifying or reconstructing the signature.
+   * @param signRequest - The signature request data containing method, chain ID, and parameters
+   * @returns The encoded Near-Ethereum transaction data, original EVM message, and recovery data
    */
   async encodeSignRequest(
     signRequest: SignRequestData

@@ -5,18 +5,34 @@ import {
   FinalExecutionStatus,
 } from "near-api-js/lib/providers";
 
-// Basic structure of the JSON-RPC response
+/** Basic structure of the JSON-RPC response */
 export interface JSONRPCResponse<T> {
+  /** JSON-RPC version */
   jsonrpc: string;
+  /** Request identifier */
   id: number | string | null;
+  /** Response result */
   result?: T;
+  /** Error information if request failed */
   error?: {
+    /** Error code */
     code: number;
+    /** Error message */
     message: string;
+    /** Additional error data */
     data?: unknown;
   };
 }
 
+/**
+ * Retrieves a signature from a transaction hash
+ *
+ * @param nodeUrl - URL of the NEAR node
+ * @param txHash - Transaction hash to query
+ * @param accountId - Account ID used to determine shard for query (defaults to "non-empty")
+ * @returns The signature from the transaction
+ * @throws Error if HTTP request fails or response is invalid
+ */
 export async function signaturesFromTxHash(
   nodeUrl: string,
   txHash: string,
@@ -46,10 +62,20 @@ export async function signaturesFromTxHash(
   }
 
   const json: JSONRPCResponse<FinalExecutionOutcome> = await response.json();
-
   if (json.error) {
     throw new Error(`JSON-RPC error: ${json.error.message}`);
   }
+
+  if (
+    typeof json.result?.status === "object" &&
+    "Failure" in json.result.status
+  ) {
+    const message = JSON.stringify(json.result.status.Failure);
+    throw new Error(
+      `Signature Request Failed in ${txHash} with message: ${message}`
+    );
+  }
+
   if (json.result) {
     return signaturesFromOutcome(json.result);
   } else {
@@ -57,6 +83,12 @@ export async function signaturesFromTxHash(
   }
 }
 
+/**
+ * Transforms an MPC signature into a standard Ethereum signature
+ *
+ * @param mpcSig - The MPC signature to transform
+ * @returns Standard Ethereum signature
+ */
 export function transformSignature(mpcSig: MPCSignature): Signature {
   const { big_r, s, recovery_id } = mpcSig;
   return {
@@ -70,6 +102,17 @@ function isNonEmptyString(value: unknown): value is string {
   return typeof value === "string" && value.trim().length > 0;
 }
 
+/**
+ * Extracts a signature from a transaction outcome
+ *
+ * @param outcome - Transaction outcome from NEAR API
+ * @returns The extracted signature
+ * @throws Error if signature is not found or is invalid
+ * @remarks
+ * Handles both standard and relayed signature requests. For relayed requests,
+ * extracts signature from receipts_outcome, taking the second occurrence as
+ * the first is nested inside `{ Ok: MPCSignature }`.
+ */
 export function signaturesFromOutcome(
   // The Partial object is intended to make up for the
   // difference between all the different near-api versions and wallet-selector bullshit
@@ -140,7 +183,12 @@ export function signaturesFromOutcome(
   // }
 }
 
-// type guard for MPCSignature object.
+/**
+ * Type guard to check if an object is a valid MPC signature
+ *
+ * @param obj - The object to check
+ * @returns True if the object matches MPCSignature structure
+ */
 function isMPCSignature(obj: unknown): obj is MPCSignature {
   return (
     typeof obj === "object" &&

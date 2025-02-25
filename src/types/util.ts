@@ -4,9 +4,9 @@ import { FunctionCallAction } from "./interfaces";
 /**
  * Converts a FunctionCallTransaction to an array of Action.
  *
- * @template T - The type of the function call action arguments.
- * @param {FunctionCallTransaction<T>} transaction - The function call transaction to convert.
- * @returns {Action[]} - An array of Action objects.
+ * @typeParam T - The type of the function call action arguments
+ * @param action - The function call transaction to convert
+ * @returns An array of Action objects
  */
 export function convertToAction<T>(action: FunctionCallAction<T>): Action {
   return functionCall(
@@ -18,10 +18,12 @@ export function convertToAction<T>(action: FunctionCallAction<T>): Action {
 }
 
 /**
- * Converts a structure `T` into `object | Uint8Array`.
+ * Converts a structure `T` into `object | Uint8Array`
  *
- * @param {T} input - The input structure to convert.
- * @returns {object | Uint8Array} - The converted result.
+ * @typeParam T - The type of the input structure
+ * @param input - The input structure to convert
+ * @returns The converted result as either an object or Uint8Array
+ * @throws Error if conversion fails
  */
 export function convertToCompatibleFormat<T>(input: T): object | Uint8Array {
   try {

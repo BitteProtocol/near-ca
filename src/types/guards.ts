@@ -7,8 +7,19 @@ import {
   TransactionSerializable,
   TypedDataDomain,
 } from "viem";
-import { EIP712TypedData, SignMethod, TypedMessageTypes } from ".";
+import {
+  EIP712TypedData,
+  KeyPairString,
+  SignMethod,
+  TypedMessageTypes,
+} from ".";
 
+/**
+ * Type guard to check if a value is a valid SignMethod
+ *
+ * @param method - The value to check
+ * @returns True if the value is a valid SignMethod
+ */
 export function isSignMethod(method: unknown): method is SignMethod {
   return (
     typeof method === "string" &&
@@ -22,6 +33,13 @@ export function isSignMethod(method: unknown): method is SignMethod {
   );
 }
 
+/**
+ * Type guard to check if a value is a valid TypedDataDomain
+ * Validates all optional properties according to EIP-712 specification
+ *
+ * @param domain - The value to check
+ * @returns True if the value matches TypedDataDomain structure
+ */
 export const isTypedDataDomain = (
   domain: unknown
 ): domain is TypedDataDomain => {
@@ -55,6 +73,12 @@ export const isTypedDataDomain = (
   });
 };
 
+/**
+ * Type guard to check if a value matches the TypedMessageTypes structure
+ *
+ * @param types - The value to check
+ * @returns True if the value matches TypedMessageTypes structure
+ */
 const isTypedMessageTypes = (types: unknown): types is TypedMessageTypes => {
   if (typeof types !== "object" || types === null) return false;
 
@@ -74,6 +98,13 @@ const isTypedMessageTypes = (types: unknown): types is TypedMessageTypes => {
   });
 };
 
+/**
+ * Type guard to check if a value is a valid EIP712TypedData
+ * Validates the structure according to EIP-712 specification
+ *
+ * @param obj - The value to check
+ * @returns True if the value matches EIP712TypedData structure
+ */
 export const isEIP712TypedData = (obj: unknown): obj is EIP712TypedData => {
   if (typeof obj !== "object" || obj === null) return false;
 
@@ -92,7 +123,13 @@ export const isEIP712TypedData = (obj: unknown): obj is EIP712TypedData => {
   );
 };
 
-// Cheeky attempt to serialize. return true if successful!
+/**
+ * Type guard to check if a value can be serialized as an Ethereum transaction
+ * Attempts to serialize the input and returns true if successful
+ *
+ * @param data - The value to check
+ * @returns True if the value can be serialized as a transaction
+ */
 export function isTransactionSerializable(
   data: unknown
 ): data is TransactionSerializable {
@@ -104,6 +141,13 @@ export function isTransactionSerializable(
   }
 }
 
+/**
+ * Type guard to check if a value is a valid RLP-encoded transaction hex string
+ * Attempts to parse the input as a transaction and returns true if successful
+ *
+ * @param data - The value to check
+ * @returns True if the value is a valid RLP-encoded transaction hex
+ */
 export function isRlpHex(data: unknown): data is Hex {
   try {
     parseTransaction(data as Hex);
@@ -111,4 +155,31 @@ export function isRlpHex(data: unknown): data is Hex {
   } catch (error) {
     return false;
   }
+}
+
+/**
+ * Type guard to check if a value is a valid NEAR key pair string
+ *
+ * @param value - The value to check
+ * @returns True if the value is a valid KeyPairString format
+ * @example
+ * ```ts
+ * isKeyPairString("ed25519:ABC123") // true
+ * isKeyPairString("secp256k1:DEF456") // true
+ * isKeyPairString("invalid:GHI789") // false
+ * isKeyPairString("ed25519") // false
+ * ```
+ */
+export function isKeyPairString(value: unknown): value is KeyPairString {
+  if (typeof value !== "string") return false;
+
+  const [prefix, key] = value.split(":");
+
+  // Check if we have both parts and the prefix is valid
+  if (!prefix || !key || !["ed25519", "secp256k1"].includes(prefix)) {
+    return false;
+  }
+
+  // Check if the key part exists and is non-empty
+  return key.length > 0;
 }
