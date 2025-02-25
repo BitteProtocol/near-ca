@@ -36,6 +36,7 @@ export class NearEthAdapter {
   readonly mpcContract: IMpcContract;
   readonly address: Address;
   readonly derivationPath: string;
+  readonly keyVersion: number;
   readonly beta: Beta;
 
   private constructor(config: {
@@ -45,6 +46,7 @@ export class NearEthAdapter {
   }) {
     this.mpcContract = config.mpcContract;
     this.derivationPath = config.derivationPath;
+    this.keyVersion = 0;
     this.address = config.sender;
     this.beta = new Beta(this);
   }
@@ -117,18 +119,36 @@ export class NearEthAdapter {
    *
    * @param txData - Minimal transaction data to be signed by Near MPC and executed on EVM
    * @param nearGas - Manually specified gas to be sent with signature request
-   * @returns The ethereum transaction hash
+   * @returns The ethereum transaction hashes aligned with txData indices.
    */
   async signAndSendTransaction(
-    txData: BaseTx,
+    txData: BaseTx[],
     nearGas?: bigint
-  ): Promise<Hash> {
-    const { transaction, signArgs } = await this.createTxPayload(txData);
-    const signature = await this.mpcContract.requestSignature(
-      signArgs,
+  ): Promise<Hash[]> {
+    // TODO: Note that chainIds must be all different or
+    // we will have to make special consideration for the nonces.
+    console.log(
+      `Creating ${txData.length} payload(s) for ${this.nearAccountId()} <> ${this.address}`
+    );
+
+    const txArray = await Promise.all(
+      txData.map((tx) => this.createTxPayload(tx))
+    );
+
+    console.log(`Requesting signature from ${this.mpcContract.accountId()}`);
+    const signatures = await this.mpcContract.requestMulti(
+      txArray.map((tx) => tx.signArgs),
       nearGas
     );
-    return broadcastSignedTransaction({ transaction, signature });
+    const transactions = txArray.map((tx) => tx.transaction);
+    return Promise.all(
+      transactions.map((transaction, i) =>
+        broadcastSignedTransaction({
+          transaction,
+          signature: signatures[i]!,
+        })
+      )
+    );
   }
 
   /**
@@ -187,6 +207,9 @@ export class NearEthAdapter {
    */
   async createTxPayload(tx: BaseTx): Promise<TxPayload> {
     const transaction = await this.buildTransaction(tx);
+    console.log(
+      `Built (unsigned) Transaction for chainId=${tx.chainId}: ${transaction}`
+    );
     const signArgs = {
       payload: buildTxPayload(transaction),
       path: this.derivationPath,
