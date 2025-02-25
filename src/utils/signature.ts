@@ -46,9 +46,17 @@ export async function signatureFromTxHash(
   }
 
   const json: JSONRPCResponse<FinalExecutionOutcome> = await response.json();
-
   if (json.error) {
     throw new Error(`JSON-RPC error: ${json.error.message}`);
+  }
+  if (
+    typeof json.result?.status === "object" &&
+    "Failure" in json.result.status
+  ) {
+    const message = JSON.stringify(json.result.status.Failure);
+    throw new Error(
+      `Signature Request Failed in ${txHash} with message: ${message}`
+    );
   }
 
   if (json.result) {

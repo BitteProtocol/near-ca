@@ -6,27 +6,31 @@ import {
 
 describe("utility: get Signature", () => {
   const url: string = "https://archival-rpc.testnet.near.org";
-  // const accountId = "neareth-dev.testnet";
-  const successHash = "GeqmwWmWxddzh2yCEhugbJkhzsJMhCuFyQZa61w5dk7N";
-  const relayedSuccessHash = "G1f1HVUxDBWXAEimgNWobQ9yCx1EgA2tzYHJBFUfo3dj";
-  const failedHash = "6yRm5FjHn9raRYPoHH6wimizhT53PnPnuvkpecyQDqLY";
+  const accountId = "neareth-dev.testnet";
+  const successHash = "CYGDarJXUtUug83ur6QsRzr86bDjAxN3wk8N3acGXMgg";
+  const relayedSuccessHash = "FWtVVNGLkdAmHwQQCHvZCbNGynEWSJbeKA5GCZy1ghYf";
+  const failedHash = "ERdVFTNmuf1uHsiGyTu2n6XDbVfXqZXQ4N9rU6BqRMjk";
   const nonExistantTxHash = "7yRm5FjHn9raRYPoHH6wimizhT53PnPnuvkpecyQDqLY";
   const nonSignatureRequestHash =
-    "4pNDN238dgEjj5eNaAF4qzoztF4TmrN82hwJs2zTwuqe";
+    "BCxYwZ6YfscaHza5MEDmk4DRgKZWJ77ZtBS5L9kH3Ve7";
 
   it("successful: signatureFromTxHash", async () => {
-    const sig = await signatureFromTxHash(url, successHash);
+    const sig = await signatureFromTxHash(url, successHash, accountId);
     expect(sig).toEqual({
-      r: "0x3BA6A8CE1369484EF384084EC1089581D815260FC274FEF780478C7969F3CFFC",
-      s: "0x5194CCE1D9F239C28C7765453873A07F35850A485DFE285551FB62C899B61170",
-      yParity: 1,
+      r: "0x200209319EBF0858BB8543A9A927BDE6A54E7BD4914B76F96BDF67AEA4211CDD",
+      s: "0x412F478B129A7A586B158BA178C7A921978473384130ACF9E4034E16063FF5B5",
+      yParity: 0,
     });
 
-    const relayedSig = await signatureFromTxHash(url, relayedSuccessHash);
+    const relayedSig = await signatureFromTxHash(
+      url,
+      relayedSuccessHash,
+      "mintbase.testnet"
+    );
     expect(relayedSig).toEqual({
-      r: "0x593873A56AB98F91C60C23DCA370835CA05254A0305F2753A1CFC3CEB4C46F86",
-      s: "0x783D9887FB4AA9B07E672D7FA88587FB45E7FDC066F7ECA0774E6FE36806404F",
-      yParity: 1,
+      r: "0xFEA01D93DFF2EAA73F81545902788603E8D930786B809DC9DC62E5680D91DD72",
+      s: "0x4A4487EA25EDFEBBEE1FBA556AE4F90E141CAAFA13648CA8C8D144890F8EA1C4",
+      yParity: 0,
     });
   });
 
