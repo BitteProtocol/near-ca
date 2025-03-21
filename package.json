@@ -38,6 +38,7 @@
   "dependencies": {
     "@reown/walletkit": "^1.2.0",
     "elliptic": "^6.5.6",
+    "js-sha3": "^0.9.3",
     "near-api-js": "^5.0.1",
     "viem": "^2.22.15"
   },
