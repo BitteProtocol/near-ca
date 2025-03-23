@@ -82,10 +82,7 @@ export class MockMpcContract implements IMpcContract {
    * @param signArgs - The signature request arguments
    * @returns The signature
    */
-  requestSignature = async (
-    signArgs: SignArgs,
-    _gas?: bigint
-  ): Promise<Signature> => {
+  requestSignature = async (signArgs: SignArgs): Promise<Signature> => {
     const hexSignature = await this.ethAccount.sign({
       hash: fromPayload(signArgs.payload),
     });
