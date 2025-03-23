@@ -1,12 +1,9 @@
 import { keyStores, KeyPair, connect, Account } from "near-api-js";
 import { NearConfig } from "near-api-js/lib/near";
-import { NearAccountConfig } from "../types/interfaces";
+import { NearAccountConfig } from "../types";
 
 /** Gas unit constant for NEAR transactions (1 TeraGas) */
 export const TGAS = 1000000000000n;
-
-/** Default deposit value for NEAR transactions */
-export const NO_DEPOSIT = "0";
 
 /** Valid NEAR network identifiers */
 type NetworkId = "mainnet" | "testnet";
