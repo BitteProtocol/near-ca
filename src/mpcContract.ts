@@ -3,11 +3,11 @@ import { Address, Signature } from "viem";
 import {
   deriveChildPublicKey,
   najPublicKeyStrToUncompressedHexPoint,
+  signatureFromOutcome,
   uncompressedHexPointToEvmAddress,
-} from "./utils/kdf";
-import { TGAS } from "./chains/near";
+} from "./utils";
+import { TGAS } from "./chains";
 import { MPCSignature, FunctionCallTransaction, SignArgs } from "./types";
-import { signatureFromOutcome } from "./utils/signature";
 import { FinalExecutionOutcome } from "near-api-js/lib/providers";
 
 /**
@@ -162,7 +162,7 @@ export class MpcContract implements IMpcContract {
     blockTimeout: number = 30
   ): Promise<FinalExecutionOutcome> {
     const account = this.connectedAccount;
-    // @ts-expect-error: Account.signTransaction is protected (for no apparantly good reason)
+    // @ts-expect-error: Account.signTransaction is protected (for no apparently good reason)
     const [txHash, signedTx] = await account.signTransaction(
       this.contract.contractId,
       transaction.actions.map(({ params: { args, gas, deposit } }) =>
@@ -183,7 +183,7 @@ export class MpcContract implements IMpcContract {
     }
     if (pings >= blockTimeout) {
       console.warn(
-        `Request status polling exited before desired outcome.\n  Current status: ${outcome.final_execution_status}\nSignature Request will likley fail.`
+        `Request status polling exited before desired outcome.\n  Current status: ${outcome.final_execution_status}\nSignature Request will likely fail.`
       );
     }
     return outcome;

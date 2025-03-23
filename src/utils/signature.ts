@@ -111,7 +111,7 @@ export function transformSignature(mpcSig: MPCSignature): Signature {
 export function signatureFromOutcome(
   // The Partial object is intended to make up for the
   // difference between all the different near-api versions and wallet-selector bullshit
-  // the field `final_execution_status` is in one, but not the other and we don't use it anyway.
+  // the field `final_execution_status` is in one, but not the other, and we don't use it anyway.
   outcome:
     | FinalExecutionOutcome
     | Omit<FinalExecutionOutcome, "final_execution_status">
@@ -123,7 +123,7 @@ export function signatureFromOutcome(
     // This scenario occurs when sign call is relayed (i.e. executed by someone else).
     // E.g. https://testnet.nearblocks.io/txns/G1f1HVUxDBWXAEimgNWobQ9yCx1EgA2tzYHJBFUfo3dj
     // We have to dig into `receipts_outcome` and extract the signature from within.
-    // We want the second occurence of the signature because
+    // We want the second occurrence of the signature because
     // the first is nested inside `{ Ok: MPCSignature }`)
     b64Sig = outcome.receipts_outcome
       // Map to get SuccessValues: The Signature will appear twice.
@@ -131,7 +131,7 @@ export function signatureFromOutcome(
         (receipt) =>
           (receipt.outcome.status as FinalExecutionStatus).SuccessValue
       )
-      // Reverse the to "find" the last non-empty value!
+      // Reverse to "find" the last non-empty value!
       .reverse()
       .find((value) => value && value.trim().length > 0);
   }
@@ -153,7 +153,18 @@ export function signatureFromOutcome(
 
 /**
  * Type guard to check if an object is a valid MPC signature
- *
+ * E.g.
+ * {
+ *   big_r: {
+ *     affine_point:
+ *       "0337F110D095850FD1D6451B30AF40C15A82566C7FA28997D3EF83C5588FBAF99C",
+ *   },
+ *   s: {
+ *     scalar:
+ *       "4C5D1C3A8CAFF5F0C13E34B4258D114BBEAB99D51AF31648482B7597F3AD5B72",
+ *   },
+ *   recovery_id: 1,
+ * }
  * @param obj - The object to check
  * @returns True if the object matches MPCSignature structure
  */

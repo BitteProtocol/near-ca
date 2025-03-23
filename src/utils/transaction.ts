@@ -129,10 +129,9 @@ export async function relaySignedTransaction(
   const tx = parseTransaction(serializedTransaction);
   const network = Network.fromChainId(tx.chainId!);
   if (wait) {
-    const hash = await network.client.sendRawTransaction({
+    return network.client.sendRawTransaction({
       serializedTransaction,
     });
-    return hash;
   } else {
     network.client.sendRawTransaction({
       serializedTransaction,

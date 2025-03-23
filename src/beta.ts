@@ -1,13 +1,7 @@
 import { WalletKitTypes } from "@reown/walletkit";
-import { Hex, Signature, serializeSignature } from "viem";
-import {
-  addSignature,
-  relaySignedTransaction,
-  toPayload,
-} from "./utils/transaction";
+import { requestRouter, toPayload } from "./utils";
 import { isSignMethod, NearEncodedSignRequest, signMethods } from "./types";
-import { NearEthAdapter } from "./chains/ethereum";
-import { requestRouter } from "./utils/request";
+import { NearEthAdapter } from "./chains";
 
 /**
  * Removes the EIP-155 prefix from an address string
@@ -68,24 +62,5 @@ export class Beta {
       evmMessage,
       hashToSign,
     };
-  }
-
-  /**
-   * Responds to a session request with a signature
-   *
-   * @param signature - The signature to respond with
-   * @param transaction - Optional transaction hex
-   * @returns The serialized signature or transaction hash
-   */
-  async respondSessionRequest(
-    signature: Signature,
-    transaction?: Hex
-  ): Promise<Hex> {
-    if (transaction) {
-      const signedTx = addSignature({ transaction, signature });
-      // Returns relayed transaction hash (without waiting for confirmation).
-      return relaySignedTransaction(signedTx, false);
-    }
-    return serializeSignature(signature);
   }
 }
