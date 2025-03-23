@@ -26,8 +26,7 @@ import {
   NearEncodedSignRequest,
 } from "..";
 import { Beta } from "../beta";
-import { requestRouter } from "../utils/request";
-import { Account } from "near-api-js";
+import { requestRouter } from "../utils";
 
 /**
  * Adapter class for interacting with Ethereum through NEAR MPC contract
@@ -47,15 +46,6 @@ export class NearEthAdapter {
     this.derivationPath = config.derivationPath;
     this.address = config.sender;
     this.beta = new Beta(this);
-  }
-
-  /**
-   * Gets the NEAR Account linked to derived EVM account
-   *
-   * @returns The connected NEAR Account
-   */
-  nearAccount(): Account {
-    return this.mpcContract.connectedAccount;
   }
 
   /**
@@ -85,22 +75,6 @@ export class NearEthAdapter {
    * @returns A new NearEthAdapter instance
    */
   static async fromConfig(args: AdapterParams): Promise<NearEthAdapter> {
-    const mpcContract = args.mpcContract;
-    const derivationPath = args.derivationPath || "ethereum,1";
-    return new NearEthAdapter({
-      sender: await mpcContract.deriveEthAddress(derivationPath),
-      derivationPath,
-      mpcContract,
-    });
-  }
-
-  /**
-   * Creates a mocked EVM instance with the provided configuration
-   *
-   * @param args - The configuration object for the Adapter instance
-   * @returns A new mocked NearEthAdapter instance
-   */
-  static async mocked(args: AdapterParams): Promise<NearEthAdapter> {
     const mpcContract = args.mpcContract;
     const derivationPath = args.derivationPath || "ethereum,1";
     return new NearEthAdapter({
