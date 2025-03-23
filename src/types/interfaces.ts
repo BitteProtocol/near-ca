@@ -4,7 +4,6 @@ import {
   Address,
   Hash,
   Hex,
-  SignableMessage,
   Signature,
   TransactionSerializable,
   TypedDataDomain,
@@ -86,14 +85,6 @@ export interface NearEncodedSignRequest extends EncodedSignRequest {
   }>;
 }
 
-/** Represents the gas fees for an Ethereum transaction */
-export interface GasFees {
-  /** The maximum fee per gas unit */
-  maxFeePerGas: bigint;
-  /** The maximum priority fee per gas unit */
-  maxPriorityFeePerGas: bigint;
-}
-
 /**
  * Arguments required for signature request from MPC Contract.
  * {@link https://github.com/near/mpc/blob/48a572baab5904afe3cd62bd0da5a036db3a34b6/chain-signatures/contract/src/primitives.rs#L268}
@@ -127,7 +118,7 @@ export interface FunctionCallTransaction<T> {
 
 /**
  * Result Type of MPC contract signature request.
- * Representing Affine Points on eliptic curve.
+ * Representing Affine Points on elliptic curve.
  * Example:
  * ```json
  * {
@@ -148,14 +139,6 @@ export interface MPCSignature {
   s: { scalar: string };
   /** The recovery ID */
   recovery_id: number;
-}
-
-/** Represents the data for a message */
-export interface MessageData {
-  /** The address associated with the message */
-  address: Hex;
-  /** The signable message */
-  message: SignableMessage;
 }
 
 export interface TypedDataTypes {
