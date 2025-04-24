@@ -4,7 +4,7 @@ import { CHAIN_INFO } from "./constants";
 
 /** Custom RPC endpoint overrides for specific chain IDs */
 const rpcOverrides: { [key: number]: string } = {
-  43114: "https://rpc.ankr.com/avalanche",
+  43114: "https://avalanche.drpc.org",
   11155111: "https://ethereum-sepolia-rpc.publicnode.com",
 };
 
