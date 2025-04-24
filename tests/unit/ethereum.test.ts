@@ -6,7 +6,7 @@ const network = {
   networkId: "testnet",
   nodeUrl: "https://rpc.testnet.near.org",
 };
-
+const mpcContractId = "v1.signer-prod.testnet";
 // disable logging on this file.
 console.log = () => null;
 describe("ethereum", () => {
@@ -14,7 +14,7 @@ describe("ethereum", () => {
     const adapter = await setupAdapter({
       accountId,
       network,
-      mpcContractId: "v1.signer-prod.testnet",
+      mpcContractId,
       derivationPath: "ethereum,1",
     });
     expect(await adapter.address).toBe(
@@ -54,7 +54,7 @@ describe("ethereum", () => {
     expect(ethSign).toStrictEqual({
       nearPayload: {
         signerId: "farmface.testnet",
-        receiverId: "v1.signer-prod.testnet",
+        receiverId: mpcContractId,
         actions: [
           {
             type: "FunctionCall",
