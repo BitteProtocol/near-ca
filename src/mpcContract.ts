@@ -106,8 +106,9 @@ export class MpcContract implements IMpcContract {
         deposit.toLocaleString("fullwide", { useGrouping: false })
       ).toString();
     } catch {
-      // They are phasing out the required deposit (see v1.signer-prod.testnet).
-      return "0";
+      // They are phasing out experimental_signature_deposit. 
+      // required deposit is 1 yocto (see v1.signer-prod.testnet).
+      return "1";
     }
   };
 
