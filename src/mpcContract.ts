@@ -100,10 +100,15 @@ export class MpcContract implements IMpcContract {
    * @returns The required deposit amount as a string
    */
   getDeposit = async (): Promise<string> => {
-    const deposit = await this.contract.experimental_signature_deposit();
-    return BigInt(
-      deposit.toLocaleString("fullwide", { useGrouping: false })
-    ).toString();
+    try {
+      const deposit = await this.contract.experimental_signature_deposit();
+      return BigInt(
+        deposit.toLocaleString("fullwide", { useGrouping: false })
+      ).toString();
+    } catch {
+      // They are phasing out the required deposit (see v1.signer-prod.testnet).
+      return "0";
+    }
   };
 
   /**
