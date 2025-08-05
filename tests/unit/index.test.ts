@@ -40,7 +40,7 @@ describe("index", () => {
       network: configFromNetworkId(networkId),
       mpcContractId,
     };
-    await expect(() => setupAdapter(config)).rejects.toThrow(
+    await expect(setupAdapter(config)).rejects.toThrow(
       `accountId ${accountId} doesn't match the networkId ${networkId}. Please ensure that your accountId is correct and corresponds to the intended network.`
     );
   });

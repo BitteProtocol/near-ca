@@ -26,7 +26,7 @@ describe("End To End", () => {
   });
 
   it("Adapter.getBalance", async () => {
-    await expect(realAdapter.getBalance(chainId)).resolves.not.toThrow();
+    await expect(realAdapter.getBalance(chainId)).resolves.toBeDefined();
   });
 
   it.skip("signAndSendTransaction", async () => {

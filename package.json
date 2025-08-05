@@ -23,13 +23,13 @@
     "dist/**/*"
   ],
   "scripts": {
-    "build": "rm -fr dist/* && yarn build:esm && yarn build:cjs",
+    "build": "rm -fr dist/* && bun build:esm && bun build:cjs",
     "build:esm": "tsc -p tsconfig.esm.json",
     "build:cjs": "tsc -p tsconfig.cjs.json",
     "lint": "eslint . --ignore-pattern dist/ && prettier --check **/*.ts",
     "test": "jest --passWithNoTests",
-    "coverage": "yarn test --coverage",
-    "verify": "yarn coverage unit",
+    "coverage": "bun test --coverage",
+    "verify": "bun coverage unit",
     "fmt": "prettier --write '{src,examples,tests}/**/*.{js,jsx,ts,tsx}' && eslint src/ --fix"
   },
   "engines": {
@@ -39,19 +39,18 @@
     "@reown/walletkit": "^1.2.4",
     "elliptic": "^6.6.1",
     "js-sha3": "^0.9.3",
-    "near-api-js": "^5.1.1",
+    "near-api-js": "^6.2.4",
     "viem": "^2.29.3"
   },
   "devDependencies": {
     "@types/elliptic": "^6.4.18",
-    "@types/jest": "^29.5.12",
-    "@types/node": "^22.13.5",
+    "@types/jest": "^30.0.0",
+    "@types/node": "^24.2.0",
     "@typescript-eslint/eslint-plugin": "^8.21.0",
     "@typescript-eslint/parser": "^8.21.0",
-    "dotenv": "^16.4.5",
+    "dotenv": "^17.2.1",
     "eslint": "^9.19.0",
     "ethers": "^6.13.3",
-    "jest": "^29.7.0",
     "opensea-js": "^7.1.12",
     "prettier": "^3.5.3",
     "ts-jest": "^29.2.3",

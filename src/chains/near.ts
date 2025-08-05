@@ -1,4 +1,5 @@
-import { keyStores, KeyPair, connect, Account } from "near-api-js";
+import { KeyPair, Account, KeyPairSigner } from "near-api-js";
+import { JsonRpcProvider, Provider } from "near-api-js/lib/providers";
 import { NearConfig } from "near-api-js/lib/near";
 import { NearAccountConfig } from "../types";
 
@@ -74,10 +75,10 @@ export const createNearAccount = async (
   network: NearConfig,
   keyPair?: KeyPair
 ): Promise<Account> => {
-  const keyStore = new keyStores.InMemoryKeyStore();
-  if (keyPair) {
-    await keyStore.setKey(network.networkId, accountId, keyPair);
-  }
-  const near = await connect({ ...network, keyStore });
-  return near.account(accountId);
+  const provider = new JsonRpcProvider({ url: network.nodeUrl }) as Provider;
+  return new Account(
+    accountId,
+    provider,
+    keyPair ? KeyPairSigner.fromSecretKey(keyPair.toString()) : undefined
+  );
 };

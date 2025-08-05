@@ -30,7 +30,7 @@ describe("ethereum", () => {
     const request = await adapter.mpcSignRequest(transaction);
     expect(request.actions.length).toEqual(1);
 
-    expect(() =>
+    await expect(
       adapter.beta.handleSessionRequest({
         params: {
           chainId: "11155111",
