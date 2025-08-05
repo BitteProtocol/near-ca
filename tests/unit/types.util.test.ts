@@ -35,7 +35,7 @@ describe("types/utils", () => {
 
   it("convertToCompatibleFormat fails", async () => {
     expect(() => convertToCompatibleFormat(1n)).toThrow(
-      "Failed to convert the input: Do not know how to serialize a BigInt"
+      "Failed to convert the input: JSON.stringify cannot serialize BigInt."
     );
   });
 });

@@ -61,7 +61,7 @@ describe("Transaction Builder Functions", () => {
       chainId: 11155111,
       to: zeroAddress,
     };
-    await expect(() =>
+    await expect(
       populateTx(baseTx, zeroAddress, Network.fromChainId(100).client)
     ).rejects.toThrow("client chainId=100 mismatch with tx.chainId=11155111");
 

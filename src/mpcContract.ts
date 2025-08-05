@@ -58,7 +58,7 @@ export class MpcContract implements IMpcContract {
     this.connectedAccount = account;
     this.rootPublicKey = rootPublicKey;
 
-    this.contract = new Contract(account.connection, contractId, {
+    this.contract = new Contract(account.getConnection(), contractId, {
       changeMethods: ["sign"],
       viewMethods: ["public_key", "experimental_signature_deposit"],
       useLocalViewExecution: false,
@@ -164,35 +164,16 @@ export class MpcContract implements IMpcContract {
    * @returns The execution outcome
    */
   async signAndSendSignRequest(
-    transaction: FunctionCallTransaction<{ request: SignArgs }>,
-    blockTimeout: number = 30
+    transaction: FunctionCallTransaction<{ request: SignArgs }>
   ): Promise<FinalExecutionOutcome> {
     const account = this.connectedAccount;
-    // @ts-expect-error: Account.signTransaction is protected (for no apparently good reason)
-    const [txHash, signedTx] = await account.signTransaction(
+    const signedTx = await account.createSignedTransaction(
       this.contract.contractId,
       transaction.actions.map(({ params: { args, gas, deposit } }) =>
         transactions.functionCall("sign", args, BigInt(gas), BigInt(deposit))
       )
     );
-    const provider = account.connection.provider;
-    let outcome = await provider.sendTransactionAsync(signedTx);
-
-    let pings = 0;
-    while (
-      outcome.final_execution_status != "EXECUTED" &&
-      pings < blockTimeout
-    ) {
-      await new Promise((resolve) => setTimeout(resolve, 1000));
-      outcome = await provider.txStatus(txHash, account.accountId, "INCLUDED");
-      pings += 1;
-    }
-    if (pings >= blockTimeout) {
-      console.warn(
-        `Request status polling exited before desired outcome.\n  Current status: ${outcome.final_execution_status}\nSignature Request will likely fail.`
-      );
-    }
-    return outcome;
+    return account.provider.sendTransactionUntil(signedTx, "EXECUTED");
   }
 }
 
