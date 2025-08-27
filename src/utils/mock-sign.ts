@@ -68,15 +68,6 @@ export class MockMpcContract implements IMpcContract {
   };
 
   /**
-   * Returns a mock deposit amount
-   *
-   * @returns A constant deposit value of "1"
-   */
-  getDeposit = async (): Promise<string> => {
-    return "1";
-  };
-
-  /**
    * Signs a message using the mock private key
    *
    * @param signArgs - The signature request arguments
@@ -110,7 +101,7 @@ export class MockMpcContract implements IMpcContract {
             methodName: "sign",
             args: { request: signArgs },
             gas: gas ? gas.toString() : "1",
-            deposit: await this.getDeposit(),
+            deposit: "1",
           },
         },
       ],
