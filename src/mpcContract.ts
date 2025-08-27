@@ -1,4 +1,4 @@
-import { Contract, Account, transactions } from "near-api-js";
+import { Account, transactions } from "near-api-js";
 import { Address, Signature } from "viem";
 import {
   deriveChildPublicKey,
@@ -7,7 +7,7 @@ import {
   uncompressedHexPointToEvmAddress,
 } from "./utils";
 import { TGAS } from "./chains";
-import { MPCSignature, FunctionCallTransaction, SignArgs } from "./types";
+import { FunctionCallTransaction, SignArgs } from "./types";
 import { FinalExecutionOutcome } from "near-api-js/lib/providers";
 
 /**
@@ -26,25 +26,14 @@ export interface ChangeMethodArgs<T> {
   amount: string;
 }
 
-/** Interface extending the base NEAR Contract with MPC-specific methods */
-interface MpcContractInterface extends Contract {
-  /** Returns the public key */
-  public_key: () => Promise<string>;
-  /** Returns required deposit based on current request queue */
-  experimental_signature_deposit: () => Promise<number>;
-  /** Signs a request using the MPC contract */
-  sign: (
-    args: ChangeMethodArgs<{ request: SignArgs }>
-  ) => Promise<MPCSignature>;
-}
-
 /**
  * High-level interface for the Near MPC-Recovery Contract
  * located in: https://github.com/near/mpc-recovery
  */
 export class MpcContract implements IMpcContract {
   rootPublicKey: string | undefined;
-  contract: MpcContractInterface;
+  contractId: string;
+  // contract: MpcContractInterface;
   connectedAccount: Account;
 
   /**
@@ -57,12 +46,12 @@ export class MpcContract implements IMpcContract {
   constructor(account: Account, contractId: string, rootPublicKey?: string) {
     this.connectedAccount = account;
     this.rootPublicKey = rootPublicKey;
-
-    this.contract = new Contract(account.getConnection(), contractId, {
-      changeMethods: ["sign"],
-      viewMethods: ["public_key", "experimental_signature_deposit"],
-      useLocalViewExecution: false,
-    }) as MpcContractInterface;
+    this.contractId = contractId;
+    // this.contract = new Contract(account, contractId, {
+    //   changeMethods: ["sign"],
+    //   viewMethods: ["public_key", "experimental_signature_deposit"],
+    //   useLocalViewExecution: false,
+    // }) as MpcContractInterface;
   }
 
   /**
@@ -71,7 +60,7 @@ export class MpcContract implements IMpcContract {
    * @returns The contract ID
    */
   accountId(): string {
-    return this.contract.contractId;
+    return this.contractId;
   }
 
   /**
@@ -82,34 +71,20 @@ export class MpcContract implements IMpcContract {
    */
   deriveEthAddress = async (derivationPath: string): Promise<Address> => {
     if (!this.rootPublicKey) {
-      this.rootPublicKey = await this.contract.public_key();
+      this.rootPublicKey = await this.connectedAccount.provider.callFunction(
+        this.contractId,
+        "public_key",
+        {}
+      );
     }
 
     const publicKey = deriveChildPublicKey(
-      najPublicKeyStrToUncompressedHexPoint(this.rootPublicKey),
+      najPublicKeyStrToUncompressedHexPoint(this.rootPublicKey!),
       this.connectedAccount.accountId,
       derivationPath
     );
 
     return uncompressedHexPointToEvmAddress(publicKey);
-  };
-
-  /**
-   * Gets the required deposit for the signature
-   *
-   * @returns The required deposit amount as a string
-   */
-  getDeposit = async (): Promise<string> => {
-    try {
-      const deposit = await this.contract.experimental_signature_deposit();
-      return BigInt(
-        deposit.toLocaleString("fullwide", { useGrouping: false })
-      ).toString();
-    } catch {
-      // They are phasing out experimental_signature_deposit.
-      // required deposit is 1 yocto (see v1.signer-prod.testnet).
-      return "1";
-    }
   };
 
   /**
@@ -141,7 +116,7 @@ export class MpcContract implements IMpcContract {
   ): Promise<FunctionCallTransaction<{ request: SignArgs }>> {
     return {
       signerId: this.connectedAccount.accountId,
-      receiverId: this.contract.contractId,
+      receiverId: this.contractId,
       actions: [
         {
           type: "FunctionCall",
@@ -149,7 +124,7 @@ export class MpcContract implements IMpcContract {
             methodName: "sign",
             args: { request: signArgs },
             gas: gasOrDefault(gas),
-            deposit: await this.getDeposit(),
+            deposit: "1",
           },
         },
       ],
@@ -168,7 +143,7 @@ export class MpcContract implements IMpcContract {
   ): Promise<FinalExecutionOutcome> {
     const account = this.connectedAccount;
     const signedTx = await account.createSignedTransaction(
-      this.contract.contractId,
+      this.contractId,
       transaction.actions.map(({ params: { args, gas, deposit } }) =>
         transactions.functionCall("sign", args, BigInt(gas), BigInt(deposit))
       )
@@ -195,7 +170,6 @@ export interface IMpcContract {
   connectedAccount: Account;
   accountId(): string;
   deriveEthAddress(derivationPath: string): Promise<Address>;
-  getDeposit(): Promise<string>;
   requestSignature(signArgs: SignArgs, gas?: bigint): Promise<Signature>;
   encodeSignatureRequestTx(
     signArgs: SignArgs,

@@ -7,7 +7,10 @@ import {
   recoverMessageAddress,
   zeroAddress,
 } from "viem";
-dotenv.config();
+dotenv.config({
+  override: true,
+  quiet: true,
+});
 
 describe("End To End", () => {
   let mockedAdapter: NearEthAdapter;
@@ -32,13 +35,12 @@ describe("End To End", () => {
   it.skip("signAndSendTransaction", async () => {
     await expect(
       realAdapter.signAndSendTransaction({
-        // Sending 1 WEI to self (so we never run out of funds)
         to: realAdapter.address,
         value: ONE_WEI,
         chainId,
       })
-    ).resolves.not.toThrow();
-  });
+    ).resolves.toMatch(/^0x[a-fA-F0-9]{64}$/); // crude match for tx hash
+  }, 20000);
 
   it.skip("signAndSendTransaction - Gnosis Chain", async () => {
     await expect(
