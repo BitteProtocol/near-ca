@@ -47,11 +47,6 @@ export class MpcContract implements IMpcContract {
     this.connectedAccount = account;
     this.rootPublicKey = rootPublicKey;
     this.contractId = contractId;
-    // this.contract = new Contract(account, contractId, {
-    //   changeMethods: ["sign"],
-    //   viewMethods: ["public_key", "experimental_signature_deposit"],
-    //   useLocalViewExecution: false,
-    // }) as MpcContractInterface;
   }
 
   /**
