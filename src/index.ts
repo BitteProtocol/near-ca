@@ -6,5 +6,3 @@ export * from "./utils";
 /// Files
 export * from "./mpcContract";
 export * from "./setup";
-/// Beta features
-export * from "./beta";
