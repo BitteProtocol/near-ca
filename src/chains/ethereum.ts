@@ -25,7 +25,6 @@ import {
   IMpcContract,
   NearEncodedSignRequest,
 } from "..";
-import { Beta } from "../beta";
 import { requestRouter } from "../utils";
 
 /**
@@ -35,7 +34,6 @@ export class NearEthAdapter {
   readonly mpcContract: IMpcContract;
   readonly address: Address;
   readonly derivationPath: string;
-  readonly beta: Beta;
 
   private constructor(config: {
     mpcContract: IMpcContract;
@@ -45,7 +43,6 @@ export class NearEthAdapter {
     this.mpcContract = config.mpcContract;
     this.derivationPath = config.derivationPath;
     this.address = config.sender;
-    this.beta = new Beta(this);
   }
 
   /**

@@ -36,7 +36,6 @@
     "node": ">=20.0.0"
   },
   "dependencies": {
-    "@reown/walletkit": "^1.2.11",
     "elliptic": "^6.6.1",
     "js-sha3": "^0.9.3",
     "near-api-js": "^6.3.0",
